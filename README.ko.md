@@ -17,9 +17,9 @@ jevfetch https://docs.python.org/3/library/functools.html "What happens if lru_c
 ```text
 # jevfetch: https://docs.python.org/3/library/functools.html
 # status: filtered (blocks are quoted from the page; '##' lines are the page's heading path)
-# 8/133 blocks, 403 of 6009 tokens
+# 8/133 blocks, 461 of 7141 tokens
 ## functools — Higher-order functions and operations on callable objects
-Source code: Lib/functools.py
+Source code: [Lib/functools.py](https://github.com/python/cpython/tree/3.14/Lib/functools.py)
 ## functools — Higher-order functions and operations on callable objects > @functools.lru_cache(maxsize=128, typed=False)
 Decorator to wrap a function with a memoizing callable that saves up to the maxsize most recent calls. ...
 If maxsize is set to None, the LRU feature is disabled and the cache can grow without bound.
@@ -27,9 +27,9 @@ If maxsize is set to None, the LRU feature is disabled and the cache can grow wi
 ```
 
 > [!NOTE]
-> 에이전트는 페이지 6,009토큰 중 403토큰만 받는다. 캐시가 비어 있을 때 이 호출에 Jev 입력 38,624토큰(약 $0.0016)이 들었다.
+> 에이전트는 페이지 7,141토큰 중 461토큰만 받는다. 캐시가 비어 있을 때 이 호출에 Jev 입력 37,327토큰(약 $0.0015)이 들었다.
 
-`##` 줄은 바로 아래 발췌가 속한 제목 경로다. 함수 시그니처 같은 정의 목록 항목도 경로에 들어가므로, 에이전트는 `maxsize=None` 설명이 `lru_cache`에 대한 것임을 알 수 있다. 본문은 페이지에서 그대로 가져온다. jevfetch가 하는 일은 연속 공백을 하나로 줄이고, 표 셀 사이에 ` | `를 넣고, 합친 목록 항목 앞에 `- `를 붙이고, `##` 줄을 추가하는 것뿐이다.
+`##` 줄은 바로 아래 발췌가 속한 제목 경로다. 함수 시그니처 같은 정의 목록 항목도 경로에 들어가므로, 에이전트는 `maxsize=None` 설명이 `lru_cache`에 대한 것임을 알 수 있다. 본문은 페이지에서 그대로 가져온다. jevfetch가 하는 일은 연속 공백을 하나로 줄이고, 링크를 `[텍스트](URL)`로 쓰고, 표 셀 사이에 ` | `를 넣고, 합친 목록 항목 앞에 `- `를 붙이고, `##` 줄을 추가하는 것뿐이다. JSON과 XML은 다시 직렬화하므로 공백, 이스케이프, 숫자 표기가 원본과 다를 수 있다(`1.10`은 `1.1`로 나온다).
 
 ## 왜 jevfetch인가
 
@@ -76,7 +76,7 @@ echo 'export TYPESAFE_API_KEY=<API 키>' >> ~/.zshrc
 스킬은 필요할 때 jevfetch를 직접 설치한다. 직접 설치하려면 아래 명령을 실행한다(Python 3.12 이상 필요).
 
 ```bash
-uv tool install git+https://github.com/a2sys-ai/jevfetch
+uv tool install git+https://github.com/a2sys-ai/jevfetch@v0.1.0
 ```
 
 Chrome이나 Chromium은 선택 사항이며, JavaScript로 본문을 불러오는 페이지를 읽을 때 쓴다. 맨 위 예시처럼 URL과 질문을 넘겨 실행한다. 출력 첫머리의 `#` 줄이 상태를 알려 준다.
@@ -87,7 +87,7 @@ Chrome이나 Chromium은 선택 사항이며, JavaScript로 본문을 불러오�
 | `passthrough` | 2,000토큰 이하의 짧은 페이지라 전체를 돌려준다 | 0 |
 | `no_match` | 임계값을 넘은 블록이 없어 점수가 가장 높은 블록들을 돌려준다. 페이지에 답이 없다는 뜻은 아니다 | 0 |
 | `empty` | 본문을 추출하지 못했다 | 0 |
-| `fetch_error` | 페이지를 가져오지 못했거나, URL이 PDF 같은 HTML이 아닌 파일이다. HTML이 아닌 파일이면 오류 메시지에 content type이 나오고, `# saved:` 줄에 내려받은 파일의 경로가 나온다 | 1 |
+| `fetch_error` | 페이지를 가져오지 못했거나, URL이 PDF나 이미지 같은 바이너리 파일이다. 바이너리 파일이면 오류 메시지에 content type이 나오고, `# saved:` 줄에 내려받은 파일의 경로가 나온다 | 1 |
 
 Jev 요청이 실패하면(키 없음, 크레딧 부족) 종료 코드 2로 끝난다. 옵션은 다음과 같다. `--json`은 토큰 수와 Jev 사용량을 포함해 JSON으로 출력하고, `--no-render`는 헤드리스 브라우저 렌더링을 끄고, `--model`은 Jev 모델을 지정한다.
 
@@ -121,6 +121,13 @@ WebFetch를 끄면 Claude Code가 모든 페이지를 jevfetch로 읽는다. 프
 
 PDF 같은 파일은 그래도 에이전트에게 전달된다. jevfetch가 파일을 저장하고, 에이전트는 저장된 파일을 Read로 연다. jevfetch는 페이지 전체 요약은 하지 않으므로, 그런 작업이 필요한 프로젝트에서는 WebFetch를 켜 둔다.
 
+Codex CLI와 Codex IDE 확장은 기본으로 명령의 네트워크 접근을 막으므로, 허용하기 전까지는 첫 설치와 jevfetch 호출이 모두 실패한다. `~/.codex/config.toml`에 아래 내용을 넣는다.
+
+```toml
+[sandbox_workspace_write]
+network_access = true
+```
+
 스킬을 지원하지 않는 에이전트는 지침 파일(`AGENTS.md`, `CLAUDE.md` 등)에 아래 내용을 넣는다.
 
 ```
@@ -136,13 +143,14 @@ jevfetch는 기술 문서, 레퍼런스, 위키백과처럼 긴 페이지에서 
 다음 경우에는 다른 도구가 낫다.
 - 요약이나 번역처럼 페이지 전체가 필요한 작업. jevfetch는 페이지 일부만 돌려준다.
 - 짧은 페이지. 2,000토큰 이하는 그대로 돌려주므로 차이가 없다.
-- PDF 같은 파일. jevfetch는 HTML과 텍스트에서만 구절을 고르고, 그 밖의 응답은 Jev를 호출하지 않고 content type을 담은 `fetch_error`로 끝낸다. 에이전트가 Read로 열 수 있게 파일은 저장한다.
+- PDF나 이미지 같은 바이너리 파일. jevfetch는 HTML과 Markdown, JSON, XML 같은 텍스트 형식에서 구절을 고르고, 바이너리 응답은 Jev를 호출하지 않고 content type을 담은 `fetch_error`로 끝낸다. 에이전트가 Read로 열 수 있게 파일은 저장한다.
 
 ## 개인정보와 보안
 
 - jevfetch는 페이지 텍스트와 질문을 TypeSafe API로 보낸다.
+- tiktoken은 jevfetch가 한 기기에서 처음 실행될 때 `cl100k_base` 인코딩을 `openaipublic.blob.core.windows.net`에서 내려받아 로컬에 저장한다.
 - Jev 응답은 `~/.cache/jevfetch`에 캐시된다(`JEVFETCH_CACHE_DIR`로 변경). 캐시는 언제 지워도 된다.
-- HTML이 아닌 PDF 같은 파일은 시스템 임시 디렉터리의 `jevfetch-<UID>` 폴더에 저장된다(`JEVFETCH_FILES_DIR`로 변경).
+- PDF 같은 바이너리 파일은 시스템 임시 디렉터리의 `jevfetch-<UID>` 폴더에 저장된다(`JEVFETCH_FILES_DIR`로 변경).
 
 > [!WARNING]
 > jevfetch는 받은 URL을 리다이렉트까지 따라가서 가져온다. 서비스로 운영한다면 가져올 수 있는 URL을 제한해야 한다.
@@ -150,7 +158,7 @@ jevfetch는 기술 문서, 레퍼런스, 위키백과처럼 긴 페이지에서 
 ## 동작 방식
 
 1. 페이지를 가져온다. 정적 HTML의 본문이 200토큰 미만이면 헤드리스 Chrome으로 렌더링한다.
-2. 페이지를 블록으로 나누고 블록마다 제목 경로를 붙인다. 내비게이션, 푸터 같은 영역은 버린다. 콜론으로 끝나는 문장은 같은 제목 아래 이어지는 목록 항목과 최대 1,500자까지 한 블록으로 합친다. 문장에 적힌 조건이 목록 항목과 떨어지지 않게 하려는 것이다.
+2. 페이지를 블록으로 나누고 블록마다 제목 경로를 붙인다. 내비게이션, 푸터 같은 영역은 버린다. 콜론으로 끝나는 문장은 같은 제목 아래 이어지는 목록 항목과 최대 1,500자까지 한 블록으로 합친다. 문장에 적힌 조건이 목록 항목과 떨어지지 않게 하려는 것이다. JSON은 키와 배열 원소 단위로, XML은 요소 단위로 나누고, 제목 경로 자리에 키나 태그 경로를 붙인다.
 3. 2,000토큰 이하 문서는 그대로 돌려준다.
 4. 1단계: 블록을 약 3,000토큰 단위 윈도우로 묶고, 윈도우마다 Jev 요청 하나로 블록별 예/아니오를 묻는다. 점수가 0.3 이상인 블록이 후보가 된다.
 5. 2단계: 후보마다 앞뒤 블록을 각각 최대 400자씩 문맥으로 붙여 다시 묻는다. 점수가 0.8 이상인 블록을 남긴다.
@@ -164,7 +172,7 @@ jevfetch는 기술 문서, 레퍼런스, 위키백과처럼 긴 페이지에서 
 |---|---|---|
 | `TYPESAFE_API_KEY` | 없음 | Jev API 키. 모든 요청이 캐시에서 처리되면 필요 없다 |
 | `JEVFETCH_CACHE_DIR` | `~/.cache/jevfetch` | Jev 응답 캐시 경로 |
-| `JEVFETCH_FILES_DIR` | 시스템 임시 디렉터리의 `jevfetch-<UID>` | 저장한 PDF 같은 HTML이 아닌 파일의 경로 |
+| `JEVFETCH_FILES_DIR` | 시스템 임시 디렉터리의 `jevfetch-<UID>` | 저장한 PDF 같은 바이너리 파일의 경로 |
 | `JEVFETCH_CHROME` | 자동 탐색 | 렌더링에 쓸 Chrome 또는 Chromium 실행 파일 |
 | `JEVFETCH_USER_AGENT` | jevfetch 이름, 버전, 저장소 주소 | 페이지 요청 시 보내는 User-Agent |
 

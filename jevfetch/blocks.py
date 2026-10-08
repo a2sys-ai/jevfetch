@@ -1,12 +1,14 @@
-"""Split an HTML or plain-text document into blocks, the unit that jevfetch scores and returns.
+"""Split a document into blocks, the unit that jevfetch scores and returns.
 
 A block is a paragraph, list item, table row, or code block, labelled with its heading path. A list
 lead-in ending in a colon is merged with the list items that follow it, because the lead-in often
 carries the condition that the items depend on."""
 
+import json
 import re
 from dataclasses import dataclass
 from typing import Literal
+from urllib.parse import quote, urljoin
 
 from bs4 import BeautifulSoup, CData, NavigableString, Tag
 
@@ -26,6 +28,7 @@ BLOCK_LEVEL = set(
     "h5 h6 header hr li main nav ol p pre section table tbody td tfoot th thead tr ul".split()
 )
 MAX_BLOCK_CHARS = 4000  # keeps a single Jev request within the model's input limit
+MAX_DATA_CHARS = 1500
 # A content-like element holding less of the page's text than this is one section, not the content: the HTML
 # of an RFC gives its section titled "Content" the id "content".
 MIN_ROOT_SHARE = 0.1
@@ -45,25 +48,39 @@ class Block:
         return " > ".join(self.path)
 
 
-def parse(doc: str) -> list[Block]:
-    """Blocks of an HTML page, or of plain text and markdown when the document is not HTML."""
-    return _parse_html(doc) if _is_html(doc) else _parse_plain(doc)
+def parse(doc: str, base_url: str = "") -> list[Block]:
+    """Blocks of an HTML page, a JSON or XML document, or plain text and markdown.
+
+    Links in HTML are written as [text](href); `base_url` resolves relative hrefs. JSON is split by key and
+    array item and XML by element, with the key or tag path in place of the heading path."""
+    kind = _kind(doc)
+    if kind == "html":
+        return _parse_html(doc, base_url)
+    try:
+        if kind == "json":
+            return _parse_json(doc)
+        if kind == "xml":
+            return _parse_xml(doc)
+    except RecursionError:  # nested deeper than the interpreter allows: the parsers accept it, the splitters cannot
+        pass
+    return _parse_plain(doc)
 
 
 def merge_fragments(blocks: list[Block], short: int = 100, cap: int = 800) -> list[Block]:
     """Merge consecutive short paragraphs or list items under the same heading (e.g. steps of a flow chart).
 
-    Such fragments rarely say on their own what they are about. Table rows and code are never merged."""
+    Such fragments rarely say on their own what they are about. Table rows and code are never merged. Lengths
+    are measured without link targets, so a list of short links still merges."""
     out: list[Block] = []
     for b in blocks:
         prev = out[-1] if out else None
         if (
             prev
             and b.kind in ("p", "li")
-            and len(b.text) < short
+            and len(plain(b.text)) < short
             and prev.path == b.path
-            and (prev.kind == "frag" or (prev.kind in ("p", "li") and len(prev.text) < short))
-            and len(prev.text) + len(b.text) < cap
+            and (prev.kind == "frag" or (prev.kind in ("p", "li") and len(plain(prev.text)) < short))
+            and len(plain(prev.text)) + len(plain(b.text)) < cap
         ):
             out[-1] = Block(0, prev.path, prev.text + "\n" + b.text, "frag")
         else:
@@ -87,7 +104,7 @@ def render(blocks: list[Block], keep: set[int] | None = None) -> str:
     return "\n".join(lines)
 
 
-def _text(el: Tag) -> str:
+def _text(el: Tag, *, links: bool = False, base: str = "") -> str:
     """The element's text with inline elements joined as written, so that <span>f</span><span>(x)</span> reads
     "f(x)" (BeautifulSoup's get_text(" ") gives "f (x)"). Block boundaries, <br>, and super- and subscripts
     separate words."""
@@ -98,7 +115,10 @@ def _text(el: Tag) -> str:
             if type(c) in (NavigableString, CData):
                 out.append(str(c))
             elif isinstance(c, Tag):
-                if c.name == "br":
+                target = _link_target(c, base) if links and c.name == "a" else ""
+                if target and (inner := _text(c, links=True, base=base).strip()):
+                    out.append(f"[{inner}]({target})")
+                elif c.name == "br":
                     out.append("\n")
                 elif c.name in BLOCK_LEVEL or c.name in ("sup", "sub"):  # 6<sup>4</sup> must not read as 64
                     out.append(" ")
@@ -111,6 +131,19 @@ def _text(el: Tag) -> str:
     return "".join(out)
 
 
+def _link_target(a: Tag, base: str) -> str:
+    href = (a.get("href") or "").strip()
+    if not href or href.startswith("#") or href.lower().startswith(("javascript:", "vbscript:", "data:")):
+        return ""
+    url = urljoin(base, href) if base else href
+    return re.sub(r"[()\s]", lambda m: quote(m.group()), url)
+
+
+def plain(text: str) -> str:
+    # _link_target percent-encodes "(", ")" and whitespace, so a generated target never contains them.
+    return re.sub(r"\[([^\]]*)\]\([^)\s]*\)", r"\1", text)
+
+
 def _norm(s: str) -> str:
     return re.sub(r"\s+", " ", s).strip()
 
@@ -118,6 +151,24 @@ def _norm(s: str) -> str:
 def _is_html(doc: str) -> bool:
     head = doc[:3000].lower()
     return any(t in head for t in ("<html", "<body", "<div", "<p>", "<!doctype"))
+
+
+def _kind(doc: str) -> Literal["html", "json", "xml", "text"]:
+    body = doc.lstrip()
+    if body[:1] in ("{", "["):
+        try:
+            json.loads(body)
+            return "json"
+        except (ValueError, RecursionError):
+            pass
+    if body.startswith("<?xml") and "<html" not in doc[:3000].lower():
+        return "xml"
+    if _is_html(doc):
+        return "html"
+    root = re.match(r"<([A-Za-z_][\w.:-]*)[\s>/]", body)
+    if root and body.rstrip().endswith(f"</{root.group(1)}>"):
+        return "xml"
+    return "text"
 
 
 def _root(soup: BeautifulSoup) -> Tag:
@@ -149,6 +200,96 @@ def _parse_plain(doc: str) -> list[Block]:
     return _number(_split_long(out))
 
 
+def _parse_json(doc: str) -> list[Block]:
+    """A node up to MAX_DATA_CHARS is one block. A longer object or array is split: its small members are
+    grouped in document order, each large member becomes its own blocks under the key or index, and a long
+    string is emitted as text."""
+    out: list[Block] = []
+
+    def dump(value) -> str:
+        return json.dumps(value, ensure_ascii=False)
+
+    def descend(node, path: list[str]) -> None:
+        text = dump(node)
+        if len(text) <= MAX_DATA_CHARS:
+            out.append(Block(0, path, text, "p"))
+            return
+        if isinstance(node, dict):
+            items, empty = list(node.items()), {}
+        elif isinstance(node, list):
+            items, empty = list(enumerate(node)), []
+        else:
+            out.append(Block(0, path, node if isinstance(node, str) else text, "p"))
+            return
+        group = empty.copy()
+
+        def flush() -> None:
+            nonlocal group
+            if group:
+                out.append(Block(0, path, dump(group), "p"))
+            group = empty.copy()
+
+        for key, value in items:
+            piece = dump({key: value}) if isinstance(node, dict) else dump(value)
+            if len(piece) > MAX_DATA_CHARS:
+                flush()
+                descend(value, path + [str(key)])
+                continue
+            candidate = {**group, key: value} if isinstance(group, dict) else [*group, value]
+            if group and len(dump(candidate)) > MAX_DATA_CHARS:
+                flush()
+                candidate = {key: value} if isinstance(group, dict) else [value]
+            group = candidate
+        flush()
+
+    descend(json.loads(doc), [])
+    return _number(_split_long(out))
+
+
+def _parse_xml(doc: str) -> list[Block]:
+    """An element up to MAX_DATA_CHARS is one block of its own markup. A longer element is split: runs of
+    same-named small children (with the text between them) are grouped, and each large child is split under
+    its tag path."""
+    out: list[Block] = []
+
+    def emit(text: str, path: list[str]) -> None:
+        text = _norm(text)
+        if len(text) >= 3:
+            out.append(Block(0, path, text, "p"))
+
+    def descend(el: Tag, path: list[str]) -> None:
+        text = str(el)
+        if len(text) <= MAX_DATA_CHARS:
+            emit(text, path)
+            return
+        path = path + [el.name]
+        if el.attrs:
+            emit(text[: text.index(">") + 1], path)
+        group: list[str] = []
+        name = None
+        for c in el.children:
+            if isinstance(c, Tag):
+                piece = str(c)
+                if (group and c.name != name) or sum(map(len, group)) + len(piece) > MAX_DATA_CHARS:
+                    emit("".join(group), path)
+                    group = []
+                if len(piece) > MAX_DATA_CHARS:
+                    descend(c, path)
+                    continue
+                name = c.name
+            elif type(c) in (NavigableString, CData):
+                piece = str(c)
+            else:
+                continue
+            group.append(piece)
+        emit("".join(group), path)
+
+    for c in BeautifulSoup(doc, "xml").children:
+        if isinstance(c, Tag):
+            descend(c, [])
+    return _number(_split_long(out))
+
+
 def _clean(soup: BeautifulSoup) -> None:
     # Keep the page title but drop the rest of the header: Wikipedia puts the h1 and its language menu
     # in the same <header>.
@@ -164,14 +305,14 @@ def _clean(soup: BeautifulSoup) -> None:
         t.decompose()
 
 
-def _own_text(li: Tag) -> str:
+def _own_text(li: Tag, base: str) -> str:
     """Text of a list item without its nested lists, including text inside inline tags."""
     parts = []
     for c in li.children:
         if isinstance(c, NavigableString):
             parts.append(str(c))
         elif isinstance(c, Tag) and c.name not in CONTAINERS:
-            parts.append(_text(c))
+            parts.append(_text(c, links=True, base=base))
     return " ".join(parts)
 
 
@@ -185,8 +326,10 @@ def _definition_items(dl: Tag) -> list[Tag]:
     return items
 
 
-def _parse_html(html: str) -> list[Block]:
+def _parse_html(html: str, base: str = "") -> list[Block]:
     soup = BeautifulSoup(html, "lxml")
+    if (tag := soup.find("base", href=True)) is not None:
+        base = urljoin(base, tag["href"])
     _clean(soup)
     path: list[tuple[int, str]] = []
     out: list[Block] = []
@@ -196,10 +339,31 @@ def _parse_html(html: str) -> list[Block]:
         if len(text.strip()) >= 3:
             out.append(Block(0, [h for _, h in path], text, kind))
 
-    def walk(node: Tag) -> None:
-        for ch in node.children:
+    def flush(run: list[NavigableString | Tag]) -> None:
+        """Mintlify writes each paragraph as <span data-as="p">, so such a span is a paragraph of its own; the
+        rest of a run of inline content is one paragraph."""
+        text = ""
+        for n in run:
+            if isinstance(n, Tag) and n.get("data-as") == "p":
+                emit(text, "p")
+                text = ""
+                emit(_text(n, links=True, base=base), "p")
+            else:
+                text += str(n) if isinstance(n, NavigableString) else _text(n, links=True, base=base)
+        emit(text, "p")
+        run.clear()
+
+    def walk(node: Tag, children: list[Tag] | None = None) -> None:
+        run: list[NavigableString | Tag] = []
+        for ch in node.children if children is None else children:
             if not isinstance(ch, Tag):
+                if type(ch) in (NavigableString, CData):
+                    run.append(ch)
                 continue
+            if ch.name not in BLOCK_LEVEL and not ch.find(list(BLOCK_LEVEL)):
+                run.append(ch)
+                continue
+            flush(run)
             if ch.name == "dl":
                 # A definition term (a function signature, an option name) becomes the heading of its
                 # descriptions; without it "the child process will be killed" loses which function it is about.
@@ -211,7 +375,7 @@ def _parse_html(html: str) -> list[Block]:
                     elif item.find(list(LEAF_BLOCKS | CONTAINERS | {"div"})):
                         walk(item)
                     else:
-                        emit(_text(item), "p")
+                        emit(_text(item, links=True, base=base), "p")
                 del path[depth:]
             elif ch.name in HEADINGS:
                 level = int(ch.name[1])
@@ -219,20 +383,21 @@ def _parse_html(html: str) -> list[Block]:
                     path.pop()
                 path.append((level, _norm(_text(ch))))
             elif ch.name == "tr":
-                cells = [_norm(_text(c)) for c in ch.find_all(["td", "th"], recursive=False)]
+                cells = [_norm(_text(c, links=True, base=base)) for c in ch.find_all(["td", "th"], recursive=False)]
                 emit(" | ".join(cells), "row")
             elif ch.name == "pre":
                 emit(ch.get_text(), "pre")
             elif ch.name == "li":
                 if ch.find(list(CONTAINERS)):
-                    emit(_own_text(ch), "li")  # becomes the lead-in of the nested list
-                    walk(ch)
+                    emit(_own_text(ch, base), "li")  # becomes the lead-in of the nested list
+                    walk(ch, ch.find_all(list(CONTAINERS), recursive=False))
                 else:
-                    emit(_text(ch), "li")
+                    emit(_text(ch, links=True, base=base), "li")
             elif ch.name in LEAF_BLOCKS and not ch.find(list((LEAF_BLOCKS - {"tr"}) | CONTAINERS)):
-                emit(_text(ch), "p")
+                emit(_text(ch, links=True, base=base), "p")
             else:
                 walk(ch)
+        flush(run)
 
     walk(_root(soup))
     return _number(_split_long(_merge_leadins(out)))

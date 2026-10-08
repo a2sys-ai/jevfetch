@@ -18,7 +18,17 @@ except PackageNotFoundError:
 USER_AGENT = os.environ.get(
     "JEVFETCH_USER_AGENT", f"Mozilla/5.0 (compatible; jevfetch/{_VERSION}; +https://github.com/a2sys-ai/jevfetch)"
 )
-TEXT_TYPES = {"text/html", "application/xhtml+xml", "text/plain", "text/markdown", "text/x-markdown"}
+# Text types outside text/* and the +xml and +json suffixes, which _unsupported_kind accepts by pattern.
+TEXT_TYPES = {
+    "application/json",
+    "application/xml",
+    "application/javascript",
+    "application/ecmascript",
+    "application/yaml",
+    "application/x-yaml",
+    "application/toml",
+    "application/x-ndjson",
+}
 UNLABELED = {"", "application/octet-stream", "binary/octet-stream"}
 
 
@@ -28,13 +38,18 @@ class UnsupportedContent(httpx.HTTPError):
         self.kind, self.content = kind, content
 
 
-def fetch(url: str, timeout: float = 30) -> str:
+def fetch_page(url: str, timeout: float = 30) -> tuple[str, str]:
+    """The page text and its final URL after redirects."""
     r = httpx.get(url, headers={"User-Agent": USER_AGENT}, follow_redirects=True, timeout=timeout)
     r.raise_for_status()
     kind = _unsupported_kind(r)
     if kind:
         raise UnsupportedContent(kind, r.content)
-    return r.text
+    return r.text, str(r.url)
+
+
+def fetch(url: str, timeout: float = 30) -> str:
+    return fetch_page(url, timeout)[0]
 
 
 def save_file(url: str, kind: str, content: bytes) -> str:
@@ -58,7 +73,9 @@ def _unsupported_kind(r: httpx.Response) -> str | None:
         return "application/pdf"
     values = r.headers.get_list("content-type")
     media = values[-1].split(";")[0].strip().lower() if values else ""
-    if media in TEXT_TYPES:
+    if media.startswith("image/"):
+        return media
+    if media.startswith("text/") or media in TEXT_TYPES or media.endswith(("+xml", "+json")):
         return None
     if media not in UNLABELED:
         return media

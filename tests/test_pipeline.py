@@ -79,7 +79,7 @@ async def test_fetch_error_is_reported_not_raised(monkeypatch):
     def fail(url):
         raise httpx.ConnectError("down")
 
-    monkeypatch.setattr(pipeline, "fetch", fail)
+    monkeypatch.setattr(pipeline, "fetch_page", fail)
     res = await fetch_relevant_async("https://example.com", "q", Config(), FakeJev())
     assert res.status == "fetch_error" and "ConnectError" in res.error and res.saved == ""
 
@@ -140,7 +140,7 @@ async def test_a_file_that_cannot_be_saved_is_still_a_fetch_error(monkeypatch, t
 
 async def test_nearly_empty_page_is_rendered_with_a_browser(monkeypatch):
     fake_scores(monkeypatch, {}, {})
-    monkeypatch.setattr(pipeline, "fetch", lambda url: "<html><body><div id='app'></div></body></html>")
+    monkeypatch.setattr(pipeline, "fetch_page", lambda url: ("<html><body><div id='app'></div></body></html>", url))
     monkeypatch.setattr(
         pipeline, "fetch_rendered", lambda url: "<html><body><p>" + "rendered text " * 40 + "</p></body></html>"
     )
@@ -199,3 +199,61 @@ def test_cli_exit_codes(monkeypatch, capsys):
     assert code == 2 and "402" in out.err
     code, _ = run_cli(monkeypatch, capsys, pipeline.Result("fetch_error", "", error="ConnectError: down"))
     assert code == 1
+
+
+class CapturingJev(FakeJev):
+    def __init__(self):
+        super().__init__()
+        self.states = []
+
+    async def ask(self, state, questions):
+        self.states.append(state)
+        return {k: {"noul": 0.0} for k in questions}
+
+
+async def test_stage1_sends_passages_without_link_targets():
+    jev = CapturingJev()
+    await scoring.fanout(jev, [Block(0, ["Doc"], "See the [guide](https://example.com/g) now.", "p")], "q")
+    assert jev.states[0]["passages"][0]["text"] == "See the guide now."
+
+
+async def test_stage2_sends_passage_and_context_without_link_targets():
+    jev = CapturingJev()
+    blocks = [Block(0, ["Doc"], "Before [a](x).", "p"), Block(1, ["Doc"], "The [guide](y) says so.", "p")]
+    await scoring.rescore(jev, blocks, [1], "q")
+    assert jev.states[0]["passage"] == "The guide says so." and jev.states[0]["context_before"] == "Before a."
+
+
+async def test_fetched_pages_resolve_relative_links_against_their_url(monkeypatch):
+    fake_scores(monkeypatch, {}, {})
+    html = '<html><body><p>Read the <a href="/docs/">docs</a>.</p></body></html>'
+    monkeypatch.setattr(pipeline, "fetch_page", lambda url: (html, url))
+    monkeypatch.setattr(pipeline, "fetch_rendered", lambda url: None)
+    res = await fetch_relevant_async("https://example.com/start", "q", Config(), FakeJev())
+    assert "[docs](https://example.com/docs/)" in res.text
+
+
+async def test_stage1_sends_code_blocks_as_written():
+    jev = CapturingJev()
+    await scoring.fanout(jev, [Block(0, ["Doc"], "handlers[key](event)", "pre")], "q")
+    assert jev.states[0]["passages"][0]["text"] == "handlers[key](event)"
+
+
+async def test_links_resolve_against_the_final_url_after_redirects(monkeypatch):
+    fake_scores(monkeypatch, {}, {})
+    html = '<html><body><p>Read the <a href="docs/">docs</a>.</p></body></html>'
+    monkeypatch.setattr(pipeline, "fetch_page", lambda url: (html, "https://example.com/v2/start"))
+    monkeypatch.setattr(pipeline, "fetch_rendered", lambda url: None)
+    res = await fetch_relevant_async("https://example.com/start", "q", Config(), FakeJev())
+    assert "[docs](https://example.com/v2/docs/)" in res.text
+
+
+def test_windows_measure_blocks_without_link_targets():
+    href = "https://example.com/" + "x" * 3000
+    linked = [Block(i, ["Doc"], f"[item {i}]({href})", "p") for i in range(6)]
+    visible = [Block(i, ["Doc"], f"item {i}", "p") for i in range(6)]
+
+    def ids(ws):
+        return [[b.id for b in w] for w in ws]
+
+    assert ids(scoring.windows(linked, 200)) == ids(scoring.windows(visible, 200))
