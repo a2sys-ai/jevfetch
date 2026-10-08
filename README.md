@@ -57,16 +57,16 @@ Output (trimmed):
 ```text
 # jevfetch: https://docs.python.org/3/library/functools.html
 # status: filtered (blocks are quoted from the page; '##' lines are the page's heading path)
-# 8/133 blocks, 403 of 6009 tokens
+# 8/133 blocks, 461 of 7141 tokens
 ## functools — Higher-order functions and operations on callable objects
-Source code: Lib/functools.py
+Source code: [Lib/functools.py](https://github.com/python/cpython/tree/3.14/Lib/functools.py)
 ## functools — Higher-order functions and operations on callable objects > @functools.lru_cache(maxsize=128, typed=False)
 Decorator to wrap a function with a memoizing callable that saves up to the maxsize most recent calls. ...
 If maxsize is set to None, the LRU feature is disabled and the cache can grow without bound.
 ...
 ```
 
-The agent gets 403 of the page's 6,009 tokens. Each `##` line is the heading path of the passage below it. Definition-list terms such as function signatures are included in the path, so the agent can tell that the sentence about `maxsize=None` belongs to `lru_cache`. The text is copied from the page. jevfetch only collapses whitespace, separates table cells with ` | `, adds `- ` before merged list items, and adds the `##` lines. This call used 38,624 Jev input tokens (about $0.0016) with an empty cache.
+The agent gets 461 of the page's 7,141 tokens. Each `##` line is the heading path of the passage below it. Definition-list terms such as function signatures are included in the path, so the agent can tell that the sentence about `maxsize=None` belongs to `lru_cache`. The text is copied from the page. jevfetch only collapses whitespace, writes links as `[text](url)`, separates table cells with ` | `, adds `- ` before merged list items, and adds the `##` lines. JSON and XML are re-serialized, so whitespace, escapes, and number notation in those blocks can differ from the source (`1.10` prints as `1.1`). This call used 37,327 Jev input tokens (about $0.0015) with an empty cache.
 
 | Status | Meaning | Exit code |
 |---|---|---|
@@ -74,7 +74,7 @@ The agent gets 403 of the page's 6,009 tokens. Each `##` line is the heading pat
 | `passthrough` | The page is 2,000 tokens or less, so it is returned whole | 0 |
 | `no_match` | No block passed the threshold, so the highest-scoring blocks are returned. The answer may still be on the page | 0 |
 | `empty` | No text could be extracted | 0 |
-| `fetch_error` | The page could not be fetched, or the URL is a PDF or other non-HTML file. For a non-HTML file, the error shows the content type and a `# saved:` line gives the path of the downloaded file | 1 |
+| `fetch_error` | The page could not be fetched, or the URL is a PDF, image, or other binary file. For a binary file, the error shows the content type and a `# saved:` line gives the path of the downloaded file | 1 |
 
 If a Jev request fails (missing key, no credits), jevfetch exits with code 2. Options: `--json` prints the result as JSON with token counts and Jev usage, `--no-render` disables the headless browser fallback, and `--model` sets the Jev model.
 
@@ -116,19 +116,19 @@ jevfetch is built for looking up specific facts on long pages: documentation, re
 Use something else when:
 - The task needs the whole page, such as a summary or translation. jevfetch returns only parts of the page.
 - The pages are short. Pages of 2,000 tokens or less are returned whole, so jevfetch adds nothing.
-- The URL is a PDF or other file. jevfetch picks passages only from HTML and plain text, and returns `fetch_error` with the content type for anything else, without calling Jev. It saves the file so the agent can open it with Read.
+- The URL is a PDF, image, or other binary file. jevfetch picks passages from HTML and from text formats such as Markdown, JSON, and XML, and returns `fetch_error` with the content type for binary files, without calling Jev. It saves the file so the agent can open it with Read.
 
 ## Privacy and security
 
 - jevfetch sends the page text and your question to the TypeSafe API.
 - Jev responses are cached in `~/.cache/jevfetch` (change it with `JEVFETCH_CACHE_DIR`). The cache is safe to delete.
-- PDFs and other non-HTML files are saved in a `jevfetch-<uid>` folder in the system's temporary directory (change it with `JEVFETCH_FILES_DIR`).
+- PDFs and other binary files are saved in a `jevfetch-<uid>` folder in the system's temporary directory (change it with `JEVFETCH_FILES_DIR`).
 - jevfetch follows redirects and fetches any URL it is given. If you run it as a service, restrict which URLs it can fetch.
 
 ## How it works
 
 1. Fetch the page. If the static HTML has less than 200 tokens of text, render it in headless Chrome.
-2. Split the page into blocks, each tagged with its heading path, and drop navigation, footers, and other page chrome. A sentence ending in a colon is merged with the list items that follow it under the same heading, up to 1,500 characters, so that a condition it states stays with the items.
+2. Split the page into blocks, each tagged with its heading path, and drop navigation, footers, and other page chrome. A sentence ending in a colon is merged with the list items that follow it under the same heading, up to 1,500 characters, so that a condition it states stays with the items. JSON is split by key and array item, and XML by element, with the key or tag path in place of the heading path.
 3. Return documents of 2,000 tokens or less as they are.
 4. Stage 1: group blocks into windows of about 3,000 tokens and send one Jev request per window, with a yes/no question for each block. Blocks scoring 0.3 or higher become candidates.
 5. Stage 2: ask about each candidate again on its own, with up to 400 characters of the neighboring blocks as context. Keep blocks scoring 0.8 or higher.
@@ -142,7 +142,7 @@ Requests within each stage run concurrently.
 |---|---|---|
 | `TYPESAFE_API_KEY` | none | Jev API key. Not needed if every request is served from the cache |
 | `JEVFETCH_CACHE_DIR` | `~/.cache/jevfetch` | Jev response cache directory |
-| `JEVFETCH_FILES_DIR` | `jevfetch-<uid>` in the system's temporary directory | Directory for saved PDFs and other non-HTML files |
+| `JEVFETCH_FILES_DIR` | `jevfetch-<uid>` in the system's temporary directory | Directory for saved PDFs and other binary files |
 | `JEVFETCH_CHROME` | auto-detected | Chrome or Chromium binary for rendering |
 | `JEVFETCH_USER_AGENT` | jevfetch name, version, and repository URL | User-Agent header for page requests |
 
