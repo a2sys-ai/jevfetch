@@ -1,52 +1,12 @@
 # jevfetch
 
+**Give an LLM agent the parts of a web page that answer its question, quoted verbatim.**
+
 [![ci](https://github.com/a2sys-ai/jevfetch/actions/workflows/ci.yml/badge.svg)](https://github.com/a2sys-ai/jevfetch/actions/workflows/ci.yml)
 [![MIT license](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 ![Python 3.12+](https://img.shields.io/badge/python-3.12%2B-blue)
 
-[한국어](README.ko.md)
-
-**Give an LLM agent the parts of a web page that answer its question, quoted verbatim.**
-
-Agents usually read web pages in one of two ways. Tools such as WebFetch use a small model to answer from the page, so the agent gets a paraphrase without the source text. Passing the whole page instead uses more context and costs more. jevfetch splits the page into blocks, asks TypeSafe's judgment model [Jev](https://docs.typesafe.ai) whether each block answers the question, and returns the matching blocks exactly as they appear on the page.
-
-## Quick start
-
-These steps set up Claude Code. You need [uv](https://docs.astral.sh/uv/), Node.js (for `npx`), and a [TypeSafe](https://typesafe.ai) API key.
-
-1. Add your API key to your shell profile (`~/.bashrc` for bash), then open a new terminal and start Claude Code from it:
-
-   ```bash
-   echo 'export TYPESAFE_API_KEY=<your key>' >> ~/.zshrc
-   ```
-
-2. Install the [jevfetch skill](skills/jevfetch/SKILL.md) in your project. Without it, Claude Code keeps using WebFetch. The skill tells it to read pages with jevfetch, including pages found with WebSearch, and how to handle each status:
-
-   ```bash
-   npx skills add a2sys-ai/jevfetch --skill jevfetch -a claude-code
-   ```
-
-3. Allow jevfetch to run without a permission prompt. Add this to `.claude/settings.json` in your project, or add the entry to `permissions.allow` if the file already exists:
-
-   ```json
-   {
-     "permissions": {
-       "allow": ["Bash(jevfetch:*)"]
-     }
-   }
-   ```
-
-Open Claude Code in the project and ask something that needs a documentation page. The first time, Claude Code installs the `jevfetch` command if it is missing, and asks for permission first unless your settings already allow it. For other agents, installing without Node.js, or turning WebFetch off, see [More agent setup](#more-agent-setup).
-
-## Command-line use
-
-The skill installs jevfetch when it needs it. To install it yourself (Python 3.12+ is required):
-
-```bash
-uv tool install git+https://github.com/a2sys-ai/jevfetch@v0.1.0
-```
-
-Chrome or Chromium is optional and is used for pages that load their content with JavaScript. Run it with a URL and a question:
+[한국어](README.ko.md) · [Quick start](#quick-start) · [Command-line use](#command-line-use) · [Python API](#python-api) · [More agent setup](#more-agent-setup)
 
 ```bash
 jevfetch https://docs.python.org/3/library/functools.html "What happens if lru_cache maxsize is None?"
@@ -66,7 +26,60 @@ If maxsize is set to None, the LRU feature is disabled and the cache can grow wi
 ...
 ```
 
-The agent gets 461 of the page's 7,141 tokens. Each `##` line is the heading path of the passage below it. Definition-list terms such as function signatures are included in the path, so the agent can tell that the sentence about `maxsize=None` belongs to `lru_cache`. The text is copied from the page. jevfetch only collapses whitespace, writes links as `[text](url)`, separates table cells with ` | `, adds `- ` before merged list items, and adds the `##` lines. JSON and XML are re-serialized, so whitespace, escapes, and number notation in those blocks can differ from the source (`1.10` prints as `1.1`). This call used 37,327 Jev input tokens (about $0.0015) with an empty cache.
+> [!NOTE]
+> The agent gets 461 of the page's 7,141 tokens. This call used 37,327 Jev input tokens (about $0.0015) with an empty cache.
+
+Each `##` line is the heading path of the passage below it. Definition-list terms such as function signatures are included in the path, so the agent can tell that the sentence about `maxsize=None` belongs to `lru_cache`. The text is copied from the page. jevfetch only collapses whitespace, writes links as `[text](url)`, separates table cells with ` | `, adds `- ` before merged list items, and adds the `##` lines. JSON and XML are re-serialized, so whitespace, escapes, and number notation in those blocks can differ from the source (`1.10` prints as `1.1`).
+
+## Why jevfetch
+
+| Approach | What the agent gets | Suited to |
+|---|---|---|
+| Fetch the whole page | The full extracted text | Summaries, translations |
+| A small model answers from the page (WebFetch) | A paraphrase, without the source text | Answers that do not need the page's wording |
+| jevfetch | Passages quoted verbatim, with their heading paths | Looking up a specific fact on a long page |
+
+Passing the whole page uses more context and costs more, and a paraphrase cannot be quoted or checked against the page. jevfetch splits the page into blocks, asks TypeSafe's judgment model [Jev](https://docs.typesafe.ai) whether each block answers the question, and returns the matching blocks exactly as they appear on the page.
+
+## Quick start
+
+The jevfetch skill installs into Claude Code, Codex, and many other coding agents with the [skills](https://github.com/vercel-labs/skills) CLI. These steps set up Claude Code. You need [uv](https://docs.astral.sh/uv/), Node.js (for `npx`), and a [TypeSafe](https://typesafe.ai) API key (see [API key](#api-key)).
+
+1. Install the [jevfetch skill](skills/jevfetch/SKILL.md) in your project. Without it, Claude Code keeps using WebFetch. The skill tells it to read pages with jevfetch, including pages found with WebSearch, and how to handle each status:
+
+   ```bash
+   npx skills add a2sys-ai/jevfetch --skill jevfetch -a claude-code
+   ```
+
+2. Allow jevfetch to run without a permission prompt. Add this to `.claude/settings.json` in your project, or add the entry to `permissions.allow` if the file already exists:
+
+   ```json
+   {
+     "permissions": {
+       "allow": ["Bash(jevfetch:*)"]
+     }
+   }
+   ```
+
+### API key
+
+Add your API key to your shell profile (`~/.bashrc` for bash), then open a new terminal and start Claude Code from it:
+
+```bash
+echo 'export TYPESAFE_API_KEY=<your key>' >> ~/.zshrc
+```
+
+Open Claude Code in the project and ask something that needs a documentation page. The first time, Claude Code installs the `jevfetch` command if it is missing, and asks for permission first unless your settings already allow it. For other agents, installing without Node.js, or turning WebFetch off, see [More agent setup](#more-agent-setup).
+
+## Command-line use
+
+The skill installs jevfetch when it needs it. To install it yourself (Python 3.12+ is required):
+
+```bash
+uv tool install git+https://github.com/a2sys-ai/jevfetch@v0.1.0
+```
+
+Chrome or Chromium is optional and is used for pages that load their content with JavaScript. Run it with a URL and a question, as in the example at the top. The first `#` lines report the status:
 
 | Status | Meaning | Exit code |
 |---|---|---|
@@ -82,12 +95,19 @@ jevfetch takes a URL. For HTML, Markdown, or plain text you already have, use th
 
 ## More agent setup
 
-The [skills](https://github.com/vercel-labs/skills) installer works with Claude Code, Codex, and many other coding agents. By default it installs into the current project. Use `-g` to install for your user, and `-a <agent>` to choose the agents. It needs Node.js. Without Node.js, install the skill for Claude Code manually (use `.claude/skills/` in the project instead of `~/.claude/skills/` to install it for one project):
+The [skills](https://github.com/vercel-labs/skills) installer works with Claude Code, Codex, and many other coding agents. By default it installs into the current project. Use `-g` to install for your user, and `-a <agent>` to choose the agents. It needs Node.js.
+
+<details>
+<summary>Install without Node.js</summary>
+
+Install the skill for Claude Code manually (use `.claude/skills/` in the project instead of `~/.claude/skills/` to install it for one project):
 
 ```bash
 mkdir -p ~/.claude/skills/jevfetch
 curl -fsSL https://raw.githubusercontent.com/a2sys-ai/jevfetch/main/skills/jevfetch/SKILL.md -o ~/.claude/skills/jevfetch/SKILL.md
 ```
+
+</details>
 
 To make Claude Code read every page with jevfetch, you can turn WebFetch off. Add a deny rule to `.claude/settings.json` in the project, or to `.claude/settings.local.json` to apply it only to yourself. For a single session, start Claude Code with `--disallowedTools WebFetch`.
 
@@ -131,7 +151,9 @@ Use something else when:
 - tiktoken downloads its `cl100k_base` encoding from `openaipublic.blob.core.windows.net` the first time jevfetch runs on a machine, and caches it locally.
 - Jev responses are cached in `~/.cache/jevfetch` (change it with `JEVFETCH_CACHE_DIR`). The cache is safe to delete.
 - PDFs and other binary files are saved in a `jevfetch-<uid>` folder in the system's temporary directory (change it with `JEVFETCH_FILES_DIR`).
-- jevfetch follows redirects and fetches any URL it is given. If you run it as a service, restrict which URLs it can fetch.
+
+> [!WARNING]
+> jevfetch follows redirects and fetches any URL it is given. If you run it as a service, restrict which URLs it can fetch.
 
 ## How it works
 
