@@ -43,7 +43,7 @@ Open Claude Code in the project and ask something that needs a documentation pag
 The skill installs jevfetch when it needs it. To install it yourself (Python 3.12+ is required):
 
 ```bash
-uv tool install git+https://github.com/a2sys-ai/jevfetch
+uv tool install git+https://github.com/a2sys-ai/jevfetch@v0.1.0
 ```
 
 Chrome or Chromium is optional and is used for pages that load their content with JavaScript. Run it with a URL and a question:

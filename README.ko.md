@@ -43,7 +43,7 @@ Claude Code 기준이다. [uv](https://docs.astral.sh/uv/), Node.js(`npx` 실행
 스킬은 필요할 때 jevfetch를 직접 설치한다. 직접 설치하려면 아래 명령을 실행한다(Python 3.12 이상 필요).
 
 ```bash
-uv tool install git+https://github.com/a2sys-ai/jevfetch
+uv tool install git+https://github.com/a2sys-ai/jevfetch@v0.1.0
 ```
 
 Chrome이나 Chromium은 선택 사항이며, JavaScript로 본문을 불러오는 페이지를 읽을 때 쓴다. URL과 질문을 넘겨 실행한다.

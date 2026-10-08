@@ -12,7 +12,7 @@ description: Read a web page for a specific fact and get it quoted verbatim, ins
 Run `jevfetch` directly. If the shell reports that the command is not found, install it with uv:
 
 ```sh
-uv tool install git+https://github.com/a2sys-ai/jevfetch
+uv tool install git+https://github.com/a2sys-ai/jevfetch@v0.1.0
 ```
 
 If `uv` is not installed either, ask the user to install it (https://docs.astral.sh/uv/) and stop. If the shell still cannot find `jevfetch` after installing, run `uv tool update-shell` and ask the user to restart the session. If the install or a call fails with a network error, the agent sandbox may be blocking network access (Codex does by default): ask the user to allow it and stop.
