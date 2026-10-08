@@ -8,6 +8,7 @@ import json
 import re
 from dataclasses import dataclass
 from typing import Literal
+from urllib.parse import quote, urljoin
 
 from bs4 import BeautifulSoup, CData, NavigableString, Tag
 
@@ -47,14 +48,14 @@ class Block:
         return " > ".join(self.path)
 
 
-def parse(doc: str) -> list[Block]:
+def parse(doc: str, base_url: str = "") -> list[Block]:
     """Blocks of an HTML page, a JSON or XML document, or plain text and markdown.
 
-    JSON is split by key and array item and XML by element, with the key or tag path in place of the heading
-    path."""
+    Links in HTML are written as [text](href); `base_url` resolves relative hrefs. JSON is split by key and
+    array item and XML by element, with the key or tag path in place of the heading path."""
     kind = _kind(doc)
     if kind == "html":
-        return _parse_html(doc)
+        return _parse_html(doc, base_url)
     if kind == "json":
         return _parse_json(doc)
     if kind == "xml":
@@ -65,17 +66,18 @@ def parse(doc: str) -> list[Block]:
 def merge_fragments(blocks: list[Block], short: int = 100, cap: int = 800) -> list[Block]:
     """Merge consecutive short paragraphs or list items under the same heading (e.g. steps of a flow chart).
 
-    Such fragments rarely say on their own what they are about. Table rows and code are never merged."""
+    Such fragments rarely say on their own what they are about. Table rows and code are never merged. Lengths
+    are measured without link targets, so a list of short links still merges."""
     out: list[Block] = []
     for b in blocks:
         prev = out[-1] if out else None
         if (
             prev
             and b.kind in ("p", "li")
-            and len(b.text) < short
+            and len(plain(b.text)) < short
             and prev.path == b.path
-            and (prev.kind == "frag" or (prev.kind in ("p", "li") and len(prev.text) < short))
-            and len(prev.text) + len(b.text) < cap
+            and (prev.kind == "frag" or (prev.kind in ("p", "li") and len(plain(prev.text)) < short))
+            and len(plain(prev.text)) + len(plain(b.text)) < cap
         ):
             out[-1] = Block(0, prev.path, prev.text + "\n" + b.text, "frag")
         else:
@@ -99,7 +101,7 @@ def render(blocks: list[Block], keep: set[int] | None = None) -> str:
     return "\n".join(lines)
 
 
-def _text(el: Tag) -> str:
+def _text(el: Tag, *, links: bool = False, base: str = "") -> str:
     """The element's text with inline elements joined as written, so that <span>f</span><span>(x)</span> reads
     "f(x)" (BeautifulSoup's get_text(" ") gives "f (x)"). Block boundaries, <br>, and super- and subscripts
     separate words."""
@@ -110,7 +112,10 @@ def _text(el: Tag) -> str:
             if type(c) in (NavigableString, CData):
                 out.append(str(c))
             elif isinstance(c, Tag):
-                if c.name == "br":
+                target = _link_target(c, base) if links and c.name == "a" else ""
+                if target and (inner := _text(c, links=True, base=base).strip()):
+                    out.append(f"[{inner}]({target})")
+                elif c.name == "br":
                     out.append("\n")
                 elif c.name in BLOCK_LEVEL or c.name in ("sup", "sub"):  # 6<sup>4</sup> must not read as 64
                     out.append(" ")
@@ -121,6 +126,19 @@ def _text(el: Tag) -> str:
 
     walk(el)
     return "".join(out)
+
+
+def _link_target(a: Tag, base: str) -> str:
+    href = (a.get("href") or "").strip()
+    if not href or href.startswith("#") or href.lower().startswith(("javascript:", "vbscript:", "data:")):
+        return ""
+    url = urljoin(base, href) if base else href
+    return re.sub(r"[()\s]", lambda m: quote(m.group()), url)
+
+
+def plain(text: str) -> str:
+    # _link_target percent-encodes "(", ")" and whitespace, so a generated target never contains them.
+    return re.sub(r"\[([^\]]*)\]\([^)\s]*\)", r"\1", text)
 
 
 def _norm(s: str) -> str:
@@ -284,14 +302,14 @@ def _clean(soup: BeautifulSoup) -> None:
         t.decompose()
 
 
-def _own_text(li: Tag) -> str:
+def _own_text(li: Tag, base: str) -> str:
     """Text of a list item without its nested lists, including text inside inline tags."""
     parts = []
     for c in li.children:
         if isinstance(c, NavigableString):
             parts.append(str(c))
         elif isinstance(c, Tag) and c.name not in CONTAINERS:
-            parts.append(_text(c))
+            parts.append(_text(c, links=True, base=base))
     return " ".join(parts)
 
 
@@ -305,8 +323,10 @@ def _definition_items(dl: Tag) -> list[Tag]:
     return items
 
 
-def _parse_html(html: str) -> list[Block]:
+def _parse_html(html: str, base: str = "") -> list[Block]:
     soup = BeautifulSoup(html, "lxml")
+    if (tag := soup.find("base", href=True)) is not None:
+        base = urljoin(base, tag["href"])
     _clean(soup)
     path: list[tuple[int, str]] = []
     out: list[Block] = []
@@ -331,7 +351,7 @@ def _parse_html(html: str) -> list[Block]:
                     elif item.find(list(LEAF_BLOCKS | CONTAINERS | {"div"})):
                         walk(item)
                     else:
-                        emit(_text(item), "p")
+                        emit(_text(item, links=True, base=base), "p")
                 del path[depth:]
             elif ch.name in HEADINGS:
                 level = int(ch.name[1])
@@ -339,18 +359,18 @@ def _parse_html(html: str) -> list[Block]:
                     path.pop()
                 path.append((level, _norm(_text(ch))))
             elif ch.name == "tr":
-                cells = [_norm(_text(c)) for c in ch.find_all(["td", "th"], recursive=False)]
+                cells = [_norm(_text(c, links=True, base=base)) for c in ch.find_all(["td", "th"], recursive=False)]
                 emit(" | ".join(cells), "row")
             elif ch.name == "pre":
                 emit(ch.get_text(), "pre")
             elif ch.name == "li":
                 if ch.find(list(CONTAINERS)):
-                    emit(_own_text(ch), "li")  # becomes the lead-in of the nested list
+                    emit(_own_text(ch, base), "li")  # becomes the lead-in of the nested list
                     walk(ch)
                 else:
-                    emit(_text(ch), "li")
+                    emit(_text(ch, links=True, base=base), "li")
             elif ch.name in LEAF_BLOCKS and not ch.find(list((LEAF_BLOCKS - {"tr"}) | CONTAINERS)):
-                emit(_text(ch), "p")
+                emit(_text(ch, links=True, base=base), "p")
             else:
                 walk(ch)
 

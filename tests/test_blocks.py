@@ -1,6 +1,6 @@
 import json
 
-from jevfetch.blocks import merge_fragments, parse, render
+from jevfetch.blocks import merge_fragments, parse, plain, render
 
 PAD = "<p>" + "filler text " * 60 + "</p>"  # long enough for <main> to be chosen as the content root
 
@@ -136,6 +136,35 @@ def test_block_boundaries_still_separate_words():
     assert "first second" in t and "one two" in t
 
 
+def test_links_keep_their_targets_resolved_against_the_page_url():
+    t = [
+        b.text
+        for b in parse(page('<p>See the <a href="/docs/x.html">guide</a> for details.</p>'), "https://example.com/a/b")
+    ]
+    assert "See the [guide](https://example.com/docs/x.html) for details." in t
+
+
+def test_links_without_a_page_url_keep_the_href_as_written():
+    t = texts(page('<ul><li><a href="other.html">Other page</a></li></ul>'))
+    assert "[Other page](other.html)" in t
+
+
+def test_fragment_links_and_heading_links_stay_plain():
+    blocks = parse(page('<h2><a href="#sec">Section</a></h2><p><a href="#top">top</a> of the text here.</p>'))
+    assert blocks[-1].path == ["Section"] and blocks[-1].text == "top of the text here."
+
+
+def test_plain_strips_link_targets():
+    assert plain("See the [guide](https://example.com/g) and [a](b) now.") == "See the guide and a now."
+
+
+def test_short_linked_items_merge_by_their_visible_length():
+    href = "https://example.com/a/very/long/path/that/pushes/the/linked/length/of/each/item/past/the/limit"
+    items = "".join(f'<li><a href="{href}/{i}">item {i}</a></li>' for i in range(3))
+    blocks = merge_fragments(parse(page(f"<ul>{items}</ul>")))
+    assert any(b.kind == "frag" and b.text.count("](") == 3 for b in blocks)
+
+
 def test_small_json_is_one_block():
     blocks = parse('{"name": "httpx", "version": "0.28.1"}')
     assert [(b.path, b.text) for b in blocks] == [([], '{"name": "httpx", "version": "0.28.1"}')]
@@ -196,6 +225,29 @@ def test_xml_without_a_declaration_is_parsed_as_xml():
     assert len(blocks) == 1 and blocks[0].text.startswith("<rss")
 
 
+def test_link_target_with_parentheses_is_encoded_and_stripped_whole():
+    html = page('<p>See <a href="/wiki/Python_(programming_language)">Python</a> for details.</p>')
+    t = [b.text for b in parse(html, "https://en.wikipedia.org/wiki/Main")]
+    linked = "See [Python](https://en.wikipedia.org/wiki/Python_%28programming_language%29) for details."
+    assert linked in t and plain(linked) == "See Python for details."
+
+
+def test_link_target_with_a_space_is_encoded_and_stripped():
+    html = page('<p>See <a href="/a b.html">the page</a> for details.</p>')
+    t = [b.text for b in parse(html, "https://example.com/")]
+    assert t[-1] == "See [the page](https://example.com/a%20b.html) for details."
+    assert plain(t[-1]) == "See the page for details."
+
+
+def test_base_href_resolves_relative_links():
+    html = (
+        '<html><head><base href="https://cdn.example.org/docs/"></head><body><main>'
+        f'{PAD}<p>See the <a href="guide.html">guide</a> now.</p></main></body></html>'
+    )
+    t = [b.text for b in parse(html, "https://example.com/a/b")]
+    assert "See the [guide](https://cdn.example.org/docs/guide.html) now." in t
+
+
 def test_deeply_nested_json_does_not_crash():
     parse("[" * 100000 + "]" * 100000)
 
@@ -209,3 +261,8 @@ def test_oversized_xml_element_keeps_its_attributes():
 def test_json_groups_count_key_length_and_separators():
     doc = json.dumps({"k" * 2000: 1, **{f"key{i}": "v" * 100 for i in range(30)}})
     assert all(len(b.text) <= 1500 for b in parse(doc))
+
+
+def test_script_and_data_links_stay_plain():
+    t = texts(page('<p><a href="JavaScript:void(0)">menu</a> and <a href="data:text/html,x">inline</a> text.</p>'))
+    assert "menu and inline text." in t

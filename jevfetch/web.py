@@ -38,13 +38,18 @@ class UnsupportedContent(httpx.HTTPError):
         self.kind, self.content = kind, content
 
 
-def fetch(url: str, timeout: float = 30) -> str:
+def fetch_page(url: str, timeout: float = 30) -> tuple[str, str]:
+    """The page text and its final URL after redirects."""
     r = httpx.get(url, headers={"User-Agent": USER_AGENT}, follow_redirects=True, timeout=timeout)
     r.raise_for_status()
     kind = _unsupported_kind(r)
     if kind:
         raise UnsupportedContent(kind, r.content)
-    return r.text
+    return r.text, str(r.url)
+
+
+def fetch(url: str, timeout: float = 30) -> str:
+    return fetch_page(url, timeout)[0]
 
 
 def save_file(url: str, kind: str, content: bytes) -> str:
