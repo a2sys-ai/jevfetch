@@ -1,3 +1,5 @@
+import json
+
 from jevfetch.blocks import merge_fragments, parse, render
 
 PAD = "<p>" + "filler text " * 60 + "</p>"  # long enough for <main> to be chosen as the content root
@@ -132,3 +134,78 @@ def test_superscripts_stay_separate_and_hidden_text_is_dropped():
 def test_block_boundaries_still_separate_words():
     t = texts(page("<ul><li><div>first</div><div>second</div></li></ul><p>one<br>two</p>"))
     assert "first second" in t and "one two" in t
+
+
+def test_small_json_is_one_block():
+    blocks = parse('{"name": "httpx", "version": "0.28.1"}')
+    assert [(b.path, b.text) for b in blocks] == [([], '{"name": "httpx", "version": "0.28.1"}')]
+
+
+def test_large_json_splits_into_records_with_key_paths():
+    url = "https://files.example/" + "x" * 300
+    files = [{"filename": f"httpx-0.1.{i}.whl", "sha256": "f" * 64, "url": url} for i in range(3)]
+    doc = json.dumps({"info": {"name": "httpx", "version": "0.28.1"}, "releases": {"0.1": files, "0.2": files}})
+    assert len(doc) > 1500
+    blocks = parse(doc)
+    assert any(b.path == [] and b.text == '{"info": {"name": "httpx", "version": "0.28.1"}}' for b in blocks)
+    versions = [b for b in blocks if "httpx-0.1.0.whl" in b.text]
+    assert [(b.path, b.text[:8]) for b in versions] == [(["releases"], '{"0.1": '), (["releases"], '{"0.2": ')]
+    assert all(len(b.text) <= 1500 for b in blocks)
+
+
+def test_long_json_string_value_is_its_own_block():
+    doc = json.dumps({"info": {"description": "# httpx\n\nA client. " * 150, "version": "1.0"}})
+    blocks = parse(doc)
+    description = [b for b in blocks if b.path == ["info", "description"]]
+    assert description and description[0].text.startswith("# httpx")
+    assert any('"version": "1.0"' in b.text and b.path == ["info"] for b in blocks)
+
+
+def test_invalid_json_is_plain_text():
+    blocks = parse('{"name": not json')
+    assert [b.text for b in blocks] == ['{"name": not json']
+
+
+def test_small_xml_is_one_block():
+    blocks = parse('<?xml version="1.0"?><note><to>Ann</to><body>Call me.</body></note>')
+    assert [(b.path, b.text) for b in blocks] == [([], "<note><to>Ann</to><body>Call me.</body></note>")]
+
+
+def test_large_xml_splits_into_elements_with_tag_paths():
+    items = "".join(
+        f"<item><title>Story {i}</title><description>{'words ' * 150}</description></item>" for i in range(3)
+    )
+    blocks = parse(f'<?xml version="1.0"?>\n<rss><channel><title>News</title>{items}</channel></rss>')
+    stories = [b for b in blocks if "<title>Story" in b.text]
+    assert len(stories) == 3 and all(b.path == ["rss", "channel"] and b.text.startswith("<item>") for b in stories)
+    assert any(b.path == ["rss", "channel"] and "<title>News</title>" in b.text for b in blocks)
+
+
+def test_markdown_starting_with_an_html_tag_is_plain_text():
+    blocks = parse('<h1 align="center">Project</h1>\n\nSome intro text here.\n\n## Install\n\nRun pip install.')
+    assert [b.path for b in blocks] == [[], [], ["Install"]]
+
+
+def test_markdown_with_a_centered_logo_keeps_its_headings():
+    blocks = parse('<p align="center"><img src="logo.png"></p>\n\n# Title\n\nBody text paragraph.\n')
+    assert any(b.path == ["Title"] and b.text == "Body text paragraph." for b in blocks)
+
+
+def test_xml_without_a_declaration_is_parsed_as_xml():
+    blocks = parse('<rss version="2.0"><channel><title>News</title></channel></rss>')
+    assert len(blocks) == 1 and blocks[0].text.startswith("<rss")
+
+
+def test_deeply_nested_json_does_not_crash():
+    parse("[" * 100000 + "]" * 100000)
+
+
+def test_oversized_xml_element_keeps_its_attributes():
+    entries = "".join(f"<entry><title>Story {i}</title><summary>{'words ' * 150}</summary></entry>" for i in range(3))
+    blocks = parse(f'<?xml version="1.0"?><feed xml:lang="en">{entries}</feed>')
+    assert any(b.path == ["feed"] and b.text == '<feed xml:lang="en">' for b in blocks)
+
+
+def test_json_groups_count_key_length_and_separators():
+    doc = json.dumps({"k" * 2000: 1, **{f"key{i}": "v" * 100 for i in range(30)}})
+    assert all(len(b.text) <= 1500 for b in parse(doc))
