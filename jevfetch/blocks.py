@@ -56,10 +56,13 @@ def parse(doc: str, base_url: str = "") -> list[Block]:
     kind = _kind(doc)
     if kind == "html":
         return _parse_html(doc, base_url)
-    if kind == "json":
-        return _parse_json(doc)
-    if kind == "xml":
-        return _parse_xml(doc)
+    try:
+        if kind == "json":
+            return _parse_json(doc)
+        if kind == "xml":
+            return _parse_xml(doc)
+    except RecursionError:  # nested deeper than the interpreter allows: the parsers accept it, the splitters cannot
+        pass
     return _parse_plain(doc)
 
 

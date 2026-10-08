@@ -1,4 +1,6 @@
+import inspect
 import json
+import sys
 
 import pytest
 
@@ -306,3 +308,36 @@ def test_json_groups_count_key_length_and_separators():
 def test_script_and_data_links_stay_plain():
     t = texts(page('<p><a href="JavaScript:void(0)">menu</a> and <a href="data:text/html,x">inline</a> text.</p>'))
     assert "menu and inline text." in t
+
+
+def test_json_nested_deeper_than_the_recursion_limit_falls_back_to_text(monkeypatch):
+    doc = ('["' + "x" * 1600 + '", ') * 100 + "[]" + "]" * 100  # every level is over MAX_DATA_CHARS, so each descends
+    limit = sys.getrecursionlimit()
+    low = len(inspect.stack(0)) + 60
+    real_loads = json.loads
+
+    def loads_with_room(text):  # the C parser accepts depths that a per-level descent does not fit
+        sys.setrecursionlimit(limit)
+        try:
+            return real_loads(text)
+        finally:
+            sys.setrecursionlimit(low)
+
+    monkeypatch.setattr(json, "loads", loads_with_room)
+    sys.setrecursionlimit(low)
+    try:
+        blocks = parse(doc)
+    finally:
+        sys.setrecursionlimit(limit)
+    assert "".join(b.text for b in blocks) == doc
+
+
+def test_xml_nested_deeper_than_the_recursion_limit_falls_back_to_text():
+    doc = ("<a>" + "x" * 1600) * 100 + "</a>" * 100  # every element is over MAX_DATA_CHARS, so each level descends
+    limit = sys.getrecursionlimit()
+    sys.setrecursionlimit(len(inspect.stack(0)) + 60)
+    try:
+        blocks = parse(doc)
+    finally:
+        sys.setrecursionlimit(limit)
+    assert "".join(b.text for b in blocks) == doc
