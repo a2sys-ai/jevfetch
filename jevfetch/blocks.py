@@ -336,10 +336,31 @@ def _parse_html(html: str, base: str = "") -> list[Block]:
         if len(text.strip()) >= 3:
             out.append(Block(0, [h for _, h in path], text, kind))
 
-    def walk(node: Tag) -> None:
-        for ch in node.children:
+    def flush(run: list[NavigableString | Tag]) -> None:
+        """Mintlify writes each paragraph as <span data-as="p">, so such a span is a paragraph of its own; the
+        rest of a run of inline content is one paragraph."""
+        text = ""
+        for n in run:
+            if isinstance(n, Tag) and n.get("data-as") == "p":
+                emit(text, "p")
+                text = ""
+                emit(_text(n, links=True, base=base), "p")
+            else:
+                text += str(n) if isinstance(n, NavigableString) else _text(n, links=True, base=base)
+        emit(text, "p")
+        run.clear()
+
+    def walk(node: Tag, children: list[Tag] | None = None) -> None:
+        run: list[NavigableString | Tag] = []
+        for ch in node.children if children is None else children:
             if not isinstance(ch, Tag):
+                if type(ch) in (NavigableString, CData):
+                    run.append(ch)
                 continue
+            if ch.name not in BLOCK_LEVEL and not ch.find(list(BLOCK_LEVEL)):
+                run.append(ch)
+                continue
+            flush(run)
             if ch.name == "dl":
                 # A definition term (a function signature, an option name) becomes the heading of its
                 # descriptions; without it "the child process will be killed" loses which function it is about.
@@ -366,13 +387,14 @@ def _parse_html(html: str, base: str = "") -> list[Block]:
             elif ch.name == "li":
                 if ch.find(list(CONTAINERS)):
                     emit(_own_text(ch, base), "li")  # becomes the lead-in of the nested list
-                    walk(ch)
+                    walk(ch, ch.find_all(list(CONTAINERS), recursive=False))
                 else:
                     emit(_text(ch, links=True, base=base), "li")
             elif ch.name in LEAF_BLOCKS and not ch.find(list((LEAF_BLOCKS - {"tr"}) | CONTAINERS)):
                 emit(_text(ch, links=True, base=base), "p")
             else:
                 walk(ch)
+        flush(run)
 
     walk(_root(soup))
     return _number(_split_long(_merge_leadins(out)))

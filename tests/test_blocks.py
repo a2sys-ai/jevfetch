@@ -1,5 +1,7 @@
 import json
 
+import pytest
+
 from jevfetch.blocks import merge_fragments, parse, plain, render
 
 PAD = "<p>" + "filler text " * 60 + "</p>"  # long enough for <main> to be chosen as the content root
@@ -136,6 +138,30 @@ def test_block_boundaries_still_separate_words():
     assert "first second" in t and "one two" in t
 
 
+def test_paragraphs_in_spans_become_separate_blocks():
+    # Mintlify renders each paragraph as <span data-as="p">, with only a newline between them.
+    html = page(
+        '<h2>Behavior</h2><span data-as="p">First paragraph is long enough.</span>\n'
+        '<span data-as="p">Second paragraph, also long enough.</span>\n<ul><li>alpha item one</li></ul>'
+    )
+    blocks = [b for b in parse(html) if b.path == ["Behavior"]]
+    assert [b.text for b in blocks] == [
+        "First paragraph is long enough.",
+        "Second paragraph, also long enough.",
+        "alpha item one",
+    ]
+
+
+def test_bare_text_in_a_container_is_kept_in_order():
+    t = texts(page("<div>Loose text before the paragraph.<p>A paragraph.</p>Loose text after it.</div>"))
+    assert t[-3:] == ["Loose text before the paragraph.", "A paragraph.", "Loose text after it."]
+
+
+def test_inline_fragments_around_bare_text_stay_one_paragraph():
+    t = texts(page("<div>This is <em>very</em> <strong>important</strong> text.</div>"))
+    assert "This is very important text." in t
+
+
 def test_links_keep_their_targets_resolved_against_the_page_url():
     t = [
         b.text
@@ -246,6 +272,20 @@ def test_base_href_resolves_relative_links():
     )
     t = [b.text for b in parse(html, "https://example.com/a/b")]
     assert "See the [guide](https://cdn.example.org/docs/guide.html) now." in t
+
+
+@pytest.mark.parametrize("tag", ["div", "p"])
+def test_list_leadin_wrapped_in_a_block_tag_is_printed_once(tag):
+    t = texts(page(f"<ul><li><{tag}>Lead text here</{tag}><ul><li>sub item one</li></ul></li></ul>"))
+    assert t.count("Lead text here") == 1 and "sub item one" in t
+
+
+def test_inline_tags_separated_by_whitespace_are_one_paragraph():
+    assert "Important message" in texts(page("<div><strong>Important</strong> <span>message</span></div>"))
+
+
+def test_short_inline_pieces_are_not_dropped():
+    assert "A: Yes" in texts(page("<div><b>A:</b> <span>Yes</span></div>"))
 
 
 def test_deeply_nested_json_does_not_crash():
