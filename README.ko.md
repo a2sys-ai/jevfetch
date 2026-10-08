@@ -101,6 +101,13 @@ WebFetch를 끄면 Claude Code가 모든 페이지를 jevfetch로 읽는다. 프
 
 PDF 같은 파일은 그래도 에이전트에게 전달된다. jevfetch가 파일을 저장하고, 에이전트는 저장된 파일을 Read로 연다. jevfetch는 페이지 전체 요약은 하지 않으므로, 그런 작업이 필요한 프로젝트에서는 WebFetch를 켜 둔다.
 
+Codex CLI와 Codex IDE 확장은 기본으로 명령의 네트워크 접근을 막으므로, 허용하기 전까지는 첫 설치와 jevfetch 호출이 모두 실패한다. `~/.codex/config.toml`에 아래 내용을 넣는다.
+
+```toml
+[sandbox_workspace_write]
+network_access = true
+```
+
 스킬을 지원하지 않는 에이전트는 지침 파일(`AGENTS.md`, `CLAUDE.md` 등)에 아래 내용을 넣는다.
 
 ```
@@ -121,6 +128,7 @@ jevfetch는 기술 문서, 레퍼런스, 위키백과처럼 긴 페이지에서 
 ## 개인정보와 보안
 
 - jevfetch는 페이지 텍스트와 질문을 TypeSafe API로 보낸다.
+- tiktoken은 jevfetch가 한 기기에서 처음 실행될 때 `cl100k_base` 인코딩을 `openaipublic.blob.core.windows.net`에서 내려받아 로컬에 저장한다.
 - Jev 응답은 `~/.cache/jevfetch`에 캐시된다(`JEVFETCH_CACHE_DIR`로 변경). 캐시는 언제 지워도 된다.
 - PDF 같은 바이너리 파일은 시스템 임시 디렉터리의 `jevfetch-<UID>` 폴더에 저장된다(`JEVFETCH_FILES_DIR`로 변경).
 - jevfetch는 받은 URL을 리다이렉트까지 따라가서 가져온다. 서비스로 운영한다면 가져올 수 있는 URL을 제한해야 한다.

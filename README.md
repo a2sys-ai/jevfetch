@@ -101,6 +101,13 @@ To make Claude Code read every page with jevfetch, you can turn WebFetch off. Ad
 
 PDFs and other files still reach the agent: jevfetch saves them, and the agent opens the saved file with Read. Keep WebFetch on in projects that summarize whole pages, since jevfetch does not.
 
+Codex CLI and the Codex IDE extension run commands with network access off by default, so the first-time install and every jevfetch call fail until you allow it. Add this to `~/.codex/config.toml`:
+
+```toml
+[sandbox_workspace_write]
+network_access = true
+```
+
 For agents that do not support skills, add these lines to the agent's instruction file (`AGENTS.md`, `CLAUDE.md`, and so on):
 
 ```
@@ -121,6 +128,7 @@ Use something else when:
 ## Privacy and security
 
 - jevfetch sends the page text and your question to the TypeSafe API.
+- tiktoken downloads its `cl100k_base` encoding from `openaipublic.blob.core.windows.net` the first time jevfetch runs on a machine, and caches it locally.
 - Jev responses are cached in `~/.cache/jevfetch` (change it with `JEVFETCH_CACHE_DIR`). The cache is safe to delete.
 - PDFs and other binary files are saved in a `jevfetch-<uid>` folder in the system's temporary directory (change it with `JEVFETCH_FILES_DIR`).
 - jevfetch follows redirects and fetches any URL it is given. If you run it as a service, restrict which URLs it can fetch.
