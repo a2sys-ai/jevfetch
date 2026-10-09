@@ -1,0 +1,2582 @@
+[
+ {
+  "case": "claude-cache",
+  "arm": "webfetch",
+  "rep": 0,
+  "finished": true,
+  "answer": "Anthropic 공식 문서(Prompt caching)에서 확인한 내용입니다. 문서 앞쪽 100,000자만 읽었고 뒤쪽 약 60,000자는 읽지 않았습니다. 아래 내용은 읽은 범위에서 가져왔습니다.\n\n## 1. 최소 캐시 가능 프롬프트 길이\n모델마다 다릅니다. 기준보다 짧은 프롬프트는 에러 없이 캐싱되지 않고 그냥 처리됩니다.\n\n| 최소 토큰 | 모델 |\n|---|---|\n| **512** | Claude Fable 5.1, Mythos 5.1, Opus 5.5, Opus 5, Sonnet 5.5, Fable 5, Mythos 5, Haiku 5.5 |\n| **1,024** | Opus 4.8, Sonnet 5, Sonnet 4.6, Sonnet 4.5(deprecated), Opus 4.1, Opus 4, Sonnet 4 (Opus 4.1·Sonnet 4는 Bedrock·Google Cloud에서만 이용 가능하고, Opus 4는 Google Cloud에서만 가능) |\n| **2,048** | Mythos Preview, Opus 4.7, Haiku 3.5 (Google Cloud 외에서는 retired) |\n| **4,096** | Opus 4.6, Opus 4.5, Haiku 4.5 |\n\n- 이 기준은 Claude API, Claude Platform on AWS, Google Cloud, Microsoft Foundry에 적용됩니다.\n- Bedrock은 모델별 최소값이 따로 있고 AWS 문서에 별도로 나와 있습니다.\n- 실제로 캐싱됐는지는 응답 usage의 `cache_creation_input_tokens`와 `cache_read_input_tokens`로 확인합니다.\n\n## 2. 캐시 수명(TTL)\n- **기본값은 5분**입니다. `{\"type\": \"ephemeral\"}`로 지정합니다.\n- **1시간**은 `\"cache_control\": {\"type\": \"ephemeral\", \"ttl\": \"1h\"}`로 지정합니다.\n- **갱신**: 캐시 히트가 날 때마다 추가 비용 없이 수명이 갱신됩니다. 수명은 응답이 끝난 시점이 아니라 쓰기나 읽기를 한 요청의 시작 시점부터 계산합니다. 예를 들어 응답 스트리밍에 4분이 걸렸다면, 다음 요청은 응답 완료 후 약 1분 안에 시작해야 합니다.\n- **TTL 혼용**: 1시간 항목은 프롬프트에서 5분 항목보다 앞에 있어야 합니다.\n- **사전 워밍**: 5분 캐시는 최소 5분마다 워밍 요청을 다시 보내야 유지됩니다.\n\n## 3. 가격 배수 (기본 입력가 대비)\n- 5분 캐시 쓰기는 1.25배, 1시간 캐시 쓰기는 2배입니다.\n- 캐시 읽기·갱신은 기본 0.1배입니다.\n  - Fable 5.1과 Mythos 5.1은 0.025배입니다.\n  - Opus 5.5와 Sonnet 5.5는 0.05배입니다.\n- 배수는 Batch API 할인, 데이터 레지던시와 중첩 적용됩니다. 브레이크포인트 자체에는 비용이 없습니다.\n\n## 4. 적용 조건과 주의사항\n- 브레이크포인트는 요청당 명시적으로 최대 4개까지 둘 수 있습니다. 자동 캐싱도 이 4개 중 1개를 씁니다. 명시적 브레이크포인트가 이미 4개면 자동 캐싱은 400 에러를 반환합니다.\n- 각 브레이크포인트는 이전 캐시 쓰기를 찾으려고 최대 20개 블록까지만 거슬러 올라갑니다. 캐시 쓰기는 브레이크포인트에서만 일어납니다.\n- 접두부가 텍스트와 이미지까지 완전히 같아야 히트합니다. 순서는 `tools` → `system` → `messages`입니다.\n- 캐시 항목은 첫 응답이 시작된 뒤에야 사용할 수 있습니다. 병렬 요청에서 히트가 필요하면 첫 응답을 기다려야 합니다.\n- 캐시 타입은 `ephemeral`만 지원합니다.\n- thinking 블록과 빈 텍스트 블록은 직접 캐시할 수 없습니다. 인용(citations) 같은 하위 콘텐츠는 단독으로 캐시할 수 없으니 최상위 블록을 캐시해야 합니다.\n- 캐시는 조직별로 격리됩니다. Claude API, Claude Platform on AWS, Microsoft Foundry에서는 워크스페이스별로도 격리됩니다. Bedrock과 Google Cloud는 조직 단위 격리만 적용됩니다.\n- `max_tokens: 0` 사전 워밍은 스트리밍, extended thinking, structured outputs, 강제 `tool_choice`, Message Batches와 함께 쓰면 거부됩니다.\n\n## 출처\n- https://platform.claude.com/docs/en/build-with-claude/prompt-caching\n- 원래 요청한 https://docs.claude.com/en/docs/build-with-claude/prompt-caching 는 위 주소로 302 리다이렉트됩니다.",
+  "subtype": "success",
+  "cost": 0.0496981,
+  "reader_model_cost": 0.0050935,
+  "main_model_cost": 0.0446046,
+  "main_output_tokens": 2315,
+  "seconds": 32.457,
+  "turns": 3,
+  "main_input_tokens": 20028,
+  "jevfetch_calls": 0,
+  "webfetch_calls": 2,
+  "curl_calls": 0,
+  "denied_calls": 0,
+  "page_tokens": null,
+  "claude_version": "2.1.295",
+  "models": [
+   "claude-haiku-5-5",
+   "claude-sonnet-5-5"
+  ],
+  "votes": [],
+  "answer_sha1": "056287327107",
+  "jev_input_tokens": 0,
+  "jev_requests": 0,
+  "jev_models": [],
+  "jev_cost": 0.0,
+  "cost_with_jev": 0.0496981,
+  "timed_out": false,
+  "wall_seconds": 33.6,
+  "failed_attempts": 0,
+  "failed_attempt_cost": 0,
+  "instructions_sha1": "f78365cad4",
+  "with_url": false,
+  "small_model": null,
+  "concurrency": 2,
+  "seed": null,
+  "lang": "ko",
+  "bucket": "medium",
+  "allowed": [
+   "WebSearch",
+   "WebFetch",
+   "Bash(curl:*)",
+   "Bash(grep:*)",
+   "Bash(head:*)"
+  ],
+  "grade": {
+   "right": 4,
+   "total": 4,
+   "split": [],
+   "judge_cost": 0
+  }
+ },
+ {
+  "case": "claude-cache",
+  "arm": "webfetch",
+  "rep": 1,
+  "finished": true,
+  "answer": "# Claude 프롬프트 캐싱: 최소 길이와 TTL\n\n## 1. 최소 캐시 가능 프롬프트 길이\n\n최소 길이는 모델마다 다릅니다. 이보다 짧은 프롬프트는 캐싱 없이 처리되고, 오류도 반환되지 않습니다. 캐시가 실제로 적용됐는지는 응답 usage의 `cache_creation_input_tokens`와 `cache_read_input_tokens`로 확인합니다.\n\n| 최소 토큰 | 모델 |\n|---|---|\n| **512** | Fable 5.1, Mythos 5.1, Opus 5.5, Opus 5, Sonnet 5.5, Fable 5, Mythos 5, Haiku 5.5 |\n| **1,024** | Opus 4.8, Sonnet 5, Sonnet 4.6, Sonnet 4.5(deprecated), Opus 4.1, Opus 4, Sonnet 4 (4.1, 4, Sonnet 4는 일부 플랫폼에서만 이용 가능) |\n| **2,048** | Mythos Preview, Opus 4.7, Haiku 3.5(Google Cloud에서만 이용 가능) |\n| **4,096** | Opus 4.6, Opus 4.5, Haiku 4.5 |\n\n- 위 수치는 Claude API, Claude Platform on AWS, Google Cloud, Microsoft Foundry에 적용됩니다.\n- Bedrock은 AWS 문서에 별도의 모델별 최소값이 있습니다.\n\n## 2. 캐시 수명(TTL)\n\n- **기본값은 5분**입니다. `{\"type\": \"ephemeral\"}`로 지정하며, `ephemeral`이 유일하게 지원되는 캐시 타입입니다.\n- **1시간**을 쓰려면 `\"cache_control\": {\"type\": \"ephemeral\", \"ttl\": \"1h\"}`로 지정합니다.\n- **갱신**: 캐시 히트가 있을 때마다 추가 비용 없이 수명이 갱신됩니다.\n- **수명 기산 시점**: 응답이 끝난 시점이 아니라 캐시를 쓰거나 읽는 요청이 시작된 시점부터입니다. 예를 들어 응답 스트리밍에 4분이 걸렸다면, 후속 요청은 완료 후 약 1분 안에 시작해야 합니다.\n- **TTL 혼용**: 1시간 캐시 항목은 프롬프트 안에서 5분 항목보다 앞에 있어야 합니다.\n\n## 3. 가격 배수 (모델별 기본 입력 단가 기준)\n\n- 5분 캐시 쓰기: **1.25배**\n- 1시간 캐시 쓰기: **2배**\n- 캐시 읽기/히트/갱신: 기본 **0.1배**\n  - Fable 5.1, Mythos 5.1은 0.025배입니다.\n  - Opus 5.5, Sonnet 5.5는 0.05배입니다.\n- 브레이크포인트 자체는 비용이 없습니다.\n- 배수는 Batch API 할인 및 데이터 레지던시와 중첩 적용됩니다.\n\n## 4. 적용 조건과 제한\n\n- **브레이크포인트**: 요청당 명시적 `cache_control`은 최대 **4개**입니다. 자동 캐싱을 함께 쓰면 4개 중 1개를 차지합니다.\n- **프리픽스 순서**: `tools` → `system` → `messages` 순서이며, 표시한 블록까지 포함됩니다.\n- **일치 조건**: 텍스트와 이미지를 포함해 프리픽스가 100% 동일해야 히트합니다.\n- **탐색 범위**: 각 브레이크포인트는 이전 캐시 쓰기를 찾으려고 최대 **20블록**까지 거슬러 올라갑니다.\n- **캐시 쓰기 위치**: 쓰기는 브레이크포인트에서만 일어납니다. 타임스탬프처럼 매번 바뀌는 내용 위에는 두지 말아야 합니다.\n- **동시성**: 캐시는 첫 응답이 시작된 뒤에야 사용할 수 있습니다. 병렬 요청이 히트하려면 첫 응답을 기다려야 합니다.\n- **무효화**\n  - 도구 정의를 바꾸면 모든 레벨이 무효화됩니다.\n  - 이미지, `tool_choice`, thinking 설정, `output_config.effort`를 바꾸면 메시지 레벨 캐시에 영향이 있습니다.\n  - 웹 검색이나 citations를 켜거나 끄면 system과 messages 캐시가 무효화됩니다. fast/standard 속도를 전환해도 마찬가지입니다.\n- **캐시 불가 블록**: 빈 텍스트 블록은 캐시할 수 없습니다. thinking 블록은 직접 표시할 수 없고, 이전 assistant 턴의 일부로만 캐시됩니다. citations 같은 하위 콘텐츠도 표시할 수 없으므로 최상위 document 블록에 표시해야 합니다.\n- **격리**: 캐시는 조직별로 격리됩니다. Claude API, Claude Platform on AWS, Foundry에서는 워크스페이스별로도 격리됩니다. Bedrock과 Google Cloud는 조직 단위 격리만 적용됩니다.\n\n## 참고\n\n- 가져온 페이지가 약 16만 자인데 앞 10만 자만 읽었습니다. 뒷부분(약 6만 자)은 확인하지 못했으므로, 위 내용 외의 세부 조건이 더 있을 수 있습니다.\n- 모델별 최소값은 모델이 계속 추가되며 바뀌므로, 사용할 모델은 공식 문서의 표로 다시 확인하는 것이 안전합니다.\n\n## 출처\n\n- https://platform.claude.com/docs/en/build-with-claude/prompt-caching\n  - 이전 주소 `https://docs.claude.com/en/docs/build-with-claude/prompt-caching`에서 리다이렉트되는 공식 문서입니다.",
+  "subtype": "success",
+  "cost": 0.0540623,
+  "reader_model_cost": 0.005339700000000001,
+  "main_model_cost": 0.048722600000000005,
+  "main_output_tokens": 2574,
+  "seconds": 35.877,
+  "turns": 3,
+  "main_input_tokens": 20410,
+  "jevfetch_calls": 0,
+  "webfetch_calls": 2,
+  "curl_calls": 0,
+  "denied_calls": 0,
+  "page_tokens": null,
+  "claude_version": "2.1.295",
+  "models": [
+   "claude-haiku-5-5",
+   "claude-sonnet-5-5"
+  ],
+  "votes": [],
+  "answer_sha1": "3a1ea015b57e",
+  "jev_input_tokens": 0,
+  "jev_requests": 0,
+  "jev_models": [],
+  "jev_cost": 0.0,
+  "cost_with_jev": 0.0540623,
+  "timed_out": false,
+  "wall_seconds": 37.0,
+  "failed_attempts": 0,
+  "failed_attempt_cost": 0,
+  "instructions_sha1": "f78365cad4",
+  "with_url": false,
+  "small_model": null,
+  "concurrency": 2,
+  "seed": null,
+  "lang": "ko",
+  "bucket": "medium",
+  "allowed": [
+   "WebSearch",
+   "WebFetch",
+   "Bash(curl:*)",
+   "Bash(grep:*)",
+   "Bash(head:*)"
+  ],
+  "grade": {
+   "right": 4,
+   "total": 4,
+   "split": [],
+   "judge_cost": 0
+  }
+ },
+ {
+  "case": "docker-swap",
+  "arm": "webfetch",
+  "rep": 0,
+  "finished": true,
+  "answer": "`--memory-swap` 를 `-1` 로 두는 경우와 설정하지 않는 경우는 동작이 다릅니다. 아래 내용은 Docker 공식 문서를 WebFetch 로 읽은 결과입니다.\n\n**`--memory-swap=-1` 인 경우**\n- 컨테이너는 호스트에서 쓸 수 있는 swap 만큼 무제한으로 swap 을 쓸 수 있습니다.\n- 컨테이너 단위의 swap 상한은 없고, 호스트의 swap 용량이 한도입니다.\n\n**`--memory-swap` 을 설정하지 않은 경우 (`--memory` 는 설정됨)**\n- 컨테이너는 `--memory` 값과 같은 크기만큼 swap 을 쓸 수 있습니다. 단, 호스트에 swap 이 설정되어 있어야 합니다.\n- 예를 들어 `--memory=300m` 이고 `--memory-swap` 이 없으면, 메모리와 swap 을 합쳐 600m 까지 쓸 수 있습니다. swap 은 300m 이고 합계는 `--memory` 의 2배입니다.\n\n**적용 조건과 주의점**\n- `--memory-swap` 은 `--memory` 도 설정했을 때만 의미가 있는 보조 플래그입니다.\n- 문서에는 `--memory` 없이 `-1` 이나 미설정으로 둘 때의 동작이 나오지 않습니다.\n- 문서에는 cgroup v1 과 v2 의 차이도 나오지 않습니다.\n- swap 제한은 커널 지원이 필요합니다. 지원이 없으면 `docker info` 에 \"WARNING: No swap limit support\" 가 표시될 수 있습니다.\n- 컨테이너 안의 `free` 명령은 컨테이너의 실제 한도가 아니라 호스트의 swap 을 보여 줍니다. 그래서 swap 사용 가능 여부를 확인하는 용도로는 맞지 않습니다.\n\n**한계**\n- 위 내용은 페이지를 요약 모델로 처리한 결과입니다. 원문 문장을 직접 대조하지는 않았으니, 수치를 정확히 인용해야 하면 원문을 한 번 확인해 주세요.\n\n출처: https://docs.docker.com/engine/containers/resource_constraints/",
+  "subtype": "success",
+  "cost": 0.0234581,
+  "reader_model_cost": 0.0011927,
+  "main_model_cost": 0.022265399999999998,
+  "main_output_tokens": 1102,
+  "seconds": 17.635,
+  "turns": 2,
+  "main_input_tokens": 11712,
+  "jevfetch_calls": 0,
+  "webfetch_calls": 1,
+  "curl_calls": 0,
+  "denied_calls": 0,
+  "page_tokens": null,
+  "claude_version": "2.1.295",
+  "models": [
+   "claude-haiku-5-5",
+   "claude-sonnet-5-5"
+  ],
+  "votes": [
+   {
+    "f1#0": true,
+    "f1#1": true,
+    "f2#0": true
+   },
+   {
+    "f1#0": true,
+    "f1#1": true,
+    "f2#0": true
+   },
+   {
+    "f1#0": true,
+    "f1#1": true,
+    "f2#0": true
+   }
+  ],
+  "answer_sha1": "80be31f586b4",
+  "jev_input_tokens": 0,
+  "jev_requests": 0,
+  "jev_models": [],
+  "jev_cost": 0.0,
+  "cost_with_jev": 0.0234581,
+  "timed_out": false,
+  "wall_seconds": 18.8,
+  "failed_attempts": 0,
+  "failed_attempt_cost": 0,
+  "instructions_sha1": "f78365cad4",
+  "with_url": false,
+  "small_model": null,
+  "concurrency": 2,
+  "seed": null,
+  "lang": "ko",
+  "bucket": "small",
+  "allowed": [
+   "WebSearch",
+   "WebFetch",
+   "Bash(curl:*)",
+   "Bash(grep:*)",
+   "Bash(head:*)"
+  ],
+  "grade": {
+   "right": 2,
+   "total": 2,
+   "split": [],
+   "judge_cost": 0.0305914
+  }
+ },
+ {
+  "case": "docker-swap",
+  "arm": "webfetch",
+  "rep": 1,
+  "finished": true,
+  "answer": "**결론:** `--memory-swap` 을 `-1` 로 설정하는 것과 설정하지 않는 것은 결과가 다릅니다.\n\n## `-1` 로 설정한 경우\n- 컨테이너가 쓸 수 있는 swap 에 제한이 없습니다.\n- 다만 호스트에 있는 swap 용량이 상한입니다.\n\n## 설정하지 않은 경우 (`--memory` 는 설정한 상태)\n- 컨테이너는 `--memory` 값만큼의 swap 을 쓸 수 있습니다. 호스트에 swap 이 구성되어 있을 때만 해당합니다.\n- 예를 들어 `--memory=\"300m\"` 이면 RAM 300m + swap 300m, 합계 600m 입니다.\n- `--memory-swap` 을 `0` 으로 두면 값이 무시되고, 설정하지 않은 것과 같이 동작합니다.\n\n## 적용 조건과 참고 사항\n- `--memory-swap` 은 RAM 과 swap 을 합친 총량의 상한입니다. `--memory` 와 함께 설정해야 의미가 있고, `--memory` 없이 쓰면 효과가 없습니다.\n- 양수 값을 줄 때는 `--memory` 도 반드시 함께 설정해야 합니다. 예를 들어 `--memory=\"300m\" --memory-swap=\"1g\"` 이면 RAM 300m + swap 700m 입니다.\n- `--memory-swap` 을 `--memory` 와 같은 값으로 주면 swap 을 전혀 쓰지 않습니다.\n- 위 동작은 모두 호스트에 swap 이 있고 커널이 swap 제한을 지원해야 성립합니다. 지원하지 않으면 `docker info` 에 \"WARNING: No swap limit support\" 경고가 나옵니다.\n- `--memory-swappiness` 는 별개의 옵션입니다. 0 이면 익명 페이지 swap 을 끄고 100 이면 모든 익명 페이지를 swap 대상으로 삼습니다. 설정하지 않으면 호스트 값을 상속합니다.\n- 컨테이너 안에서 `free` 같은 도구는 컨테이너의 한도가 아니라 호스트의 swap 을 보여줍니다. 이 값으로 swap 사용 가능 여부를 판단하면 안 됩니다.\n- 이 문서는 cgroup v1 문서만 참조합니다. cgroup v2 에서의 차이는 이 페이지에서 확인하지 못했습니다.\n\n## 출처\n- https://docs.docker.com/engine/containers/resource_constraints/\n\n위 내용은 이 페이지 한 곳만 읽고 정리한 것입니다. 다른 출처와 교차 확인은 하지 않았습니다.",
+  "subtype": "success",
+  "cost": 0.0268788,
+  "reader_model_cost": 0.0015134,
+  "main_model_cost": 0.0253654,
+  "main_output_tokens": 1304,
+  "seconds": 22.12,
+  "turns": 2,
+  "main_input_tokens": 11982,
+  "jevfetch_calls": 0,
+  "webfetch_calls": 1,
+  "curl_calls": 0,
+  "denied_calls": 0,
+  "page_tokens": null,
+  "claude_version": "2.1.295",
+  "models": [
+   "claude-haiku-5-5",
+   "claude-sonnet-5-5"
+  ],
+  "votes": [
+   {
+    "f1#0": true,
+    "f1#1": true,
+    "f2#0": true
+   },
+   {
+    "f1#0": true,
+    "f1#1": true,
+    "f2#0": true
+   },
+   {
+    "f1#0": true,
+    "f1#1": true,
+    "f2#0": true
+   }
+  ],
+  "answer_sha1": "08c955c2c076",
+  "jev_input_tokens": 0,
+  "jev_requests": 0,
+  "jev_models": [],
+  "jev_cost": 0.0,
+  "cost_with_jev": 0.0268788,
+  "timed_out": false,
+  "wall_seconds": 23.1,
+  "failed_attempts": 0,
+  "failed_attempt_cost": 0,
+  "instructions_sha1": "f78365cad4",
+  "with_url": false,
+  "small_model": null,
+  "concurrency": 2,
+  "seed": null,
+  "lang": "ko",
+  "bucket": "small",
+  "allowed": [
+   "WebSearch",
+   "WebFetch",
+   "Bash(curl:*)",
+   "Bash(grep:*)",
+   "Bash(head:*)"
+  ],
+  "grade": {
+   "right": 2,
+   "total": 2,
+   "split": [],
+   "judge_cost": 0.0324074
+  }
+ },
+ {
+  "case": "gcs-lifecycle",
+  "arm": "webfetch",
+  "rep": 0,
+  "finished": true,
+  "answer": "**요약:** 한 규칙 안의 여러 condition 은 AND 로 평가됩니다. 규칙을 바꾸면 적용되기까지 최대 24시간이 걸릴 수 있습니다.\n\n## 1. 여러 condition 의 평가 방식\n\n**한 규칙 안의 condition: AND**\n- 객체가 규칙의 모든 condition 을 만족해야 그 규칙의 action 이 적용됩니다.\n- condition 은 선택 사항이지만, 규칙에는 최소 1개가 필요합니다.\n- 예시 (`lifecycle-configurations` 페이지)\n  - `numNewerVersions` = 2 와 `isLive` = false 를 한 규칙에 함께 지정합니다.\n  - age 365일, STANDARD 클래스, 접미사 `.jpg`/`.png` 를 함께 지정합니다.\n  - age 1095일, NEARLINE 클래스, 같은 접미사를 함께 지정합니다.\n  - `sizeAboveBytes` 와 `sizeBelowBytes` 를 함께 쓰면 크기 범위를 지정할 수 있습니다. 예시 값은 5242880바이트(5 MiB)입니다.\n- `lifecycle-configurations` 페이지는 condition 결합 방식을 명시적으로 설명하지 않습니다. AND 라는 명시는 `lifecycle` 페이지에만 있습니다.\n\n**여러 규칙 간의 평가**\n- 같은 action 을 쓰는 규칙이 여러 개면, 객체가 그중 하나라도 만족할 때 action 이 적용됩니다(OR).\n- 객체가 여러 규칙을 동시에 만족해도 Cloud Storage 는 action 을 하나만 수행합니다.\n- `Delete` 는 모든 `SetStorageClass` 보다 우선합니다.\n- `SetStorageClass` 끼리 겹치면, 저장 단가(at-rest)가 가장 낮은 클래스로 옮기는 action 이 적용됩니다.\n\n**시간 관련 condition 의 기준**\n- `age`\n  - 기준 시점은 객체 생성(업로드 완료) 시각입니다.\n  - 값이 `0` 이면 생성 다음 UTC 자정에 만족됩니다.\n  - 예: 2022/01/10 10:00 UTC 에 생성된 객체에 age 10일을 지정하면 2022/01/20 10:00 UTC 이후 조건을 만족합니다.\n- `createdBefore`: 지정한 날짜의 UTC 자정을 기준으로 합니다.\n- `daysSinceCustomTime`: `Custom-Time` 이 2020-05-16T10:00:00Z 이고 10일이면 2020/05/26 10:00 UTC 이후 조건을 만족합니다.\n\n## 2. 규칙 변경이 적용되기까지의 시간\n\n- 변경이 적용되기까지 최대 24시간이 걸릴 수 있습니다.\n- 그 사이에는 이전 설정대로 action 이 수행될 수 있습니다.\n- 규칙 삭제 시의 소요 시간은 `lifecycle-configurations` 페이지에 별도 언급이 없습니다.\n\n## 3. 적용 조건과 주의점\n\n- 조건을 만족해도 action 은 비동기로 실행됩니다. Cloud Storage 가 객체를 주기적으로 검사하므로 지연이 있을 수 있고, 특정 시점에 실행된다고 가정하면 안 됩니다.\n- soft delete 가 켜진 버킷에서 삭제된 live 객체는 7일간 보존됩니다.\n- soft delete 가 꺼진 버킷에서는 다음 조건을 모두 만족할 때 삭제 대기 중 저장 요금이 면제될 수 있습니다.\n  - `Delete` 규칙의 condition 이 `age` 하나뿐이거나 `age` + `matchesStorageClass` 입니다.\n  - 객체에 hold 가 없습니다.\n- `matchesPrefix`, `matchesSuffix`, `daysSinceCustomTime` 등 다른 condition 이 있으면 삭제될 때까지 저장 요금이 계속 부과됩니다.\n- `SetStorageClass` 는 대상 클래스 요금의 Class A operation 으로 과금됩니다.\n- `SetStorageClass` 는 객체를 다시 쓰지 않으므로, 클래스 변경에 따른 리전 간 복제, 검색(retrieval), 조기 삭제 요금은 없습니다.\n- 다만 새 클래스의 최소 보관 기간 전에 객체를 삭제하면 조기 삭제 요금이 부과됩니다.\n\n## 출처\n- https://docs.cloud.google.com/storage/docs/lifecycle (`cloud.google.com/storage/docs/lifecycle` 에서 301 리디렉션됨)\n- https://docs.cloud.google.com/storage/docs/lifecycle-configurations (`cloud.google.com/storage/docs/lifecycle-configurations` 에서 301 리디렉션됨)",
+  "subtype": "success",
+  "cost": 0.051480399999999996,
+  "reader_model_cost": 0.005477,
+  "main_model_cost": 0.0460034,
+  "main_output_tokens": 2512,
+  "seconds": 33.796,
+  "turns": 5,
+  "main_input_tokens": 20440,
+  "jevfetch_calls": 0,
+  "webfetch_calls": 4,
+  "curl_calls": 0,
+  "denied_calls": 0,
+  "page_tokens": null,
+  "claude_version": "2.1.295",
+  "models": [
+   "claude-haiku-5-5",
+   "claude-sonnet-5-5"
+  ],
+  "votes": [
+   {
+    "all-conds#0": true,
+    "any-rule#0": true,
+    "24h#1": true
+   },
+   {
+    "all-conds#0": true,
+    "any-rule#0": true,
+    "24h#1": true
+   },
+   {
+    "all-conds#0": true,
+    "any-rule#0": true,
+    "24h#1": true
+   }
+  ],
+  "answer_sha1": "b6ee6ec933a8",
+  "jev_input_tokens": 0,
+  "jev_requests": 0,
+  "jev_models": [],
+  "jev_cost": 0.0,
+  "cost_with_jev": 0.051480399999999996,
+  "timed_out": false,
+  "wall_seconds": 34.7,
+  "failed_attempts": 0,
+  "failed_attempt_cost": 0,
+  "instructions_sha1": "f78365cad4",
+  "with_url": false,
+  "small_model": null,
+  "concurrency": 2,
+  "seed": null,
+  "lang": "ko",
+  "bucket": "small",
+  "allowed": [
+   "WebSearch",
+   "WebFetch",
+   "Bash(curl:*)",
+   "Bash(grep:*)",
+   "Bash(head:*)"
+  ],
+  "grade": {
+   "right": 3,
+   "total": 3,
+   "split": [],
+   "judge_cost": 0.0426234
+  }
+ },
+ {
+  "case": "gcs-lifecycle",
+  "arm": "webfetch",
+  "rep": 1,
+  "finished": true,
+  "answer": "## Cloud Storage lifecycle: 여러 condition 의 평가 방식과 변경 적용 시간\n\n### 1. 한 규칙 안에 condition 이 여러 개일 때 (AND)\n- 객체는 **규칙 안의 모든 condition 을 만족해야** 그 규칙의 action 이 적용됩니다.\n- 각 규칙은 action 1개와 condition 1개 이상으로 구성됩니다.\n\n### 2. 규칙이 여러 개일 때\n- **action 이 같은 규칙들은 OR 로 평가됩니다.** 그중 하나라도 만족하면 그 action 이 적용됩니다.\n- **한 객체가 여러 규칙을 동시에 만족하면 action 은 하나만 실행됩니다.**\n  - `Delete` 가 `SetStorageClass` 보다 우선합니다.\n  - `SetStorageClass` 끼리 겹치면 at-rest 저장 가격이 가장 낮은 대상 클래스가 선택됩니다. 예를 들어 Coldline 이 Nearline 보다 우선합니다.\n\n### 3. 규칙 변경이 적용되기까지 걸리는 시간\n- 변경이 적용되기까지 **최대 24시간**이 걸릴 수 있습니다.\n- 그 사이에는 이전 설정대로 action 이 실행될 수 있습니다. 예를 들어 `age` 를 10일에서 20일로 바꿔도, 24시간 안에는 11일 된 객체가 삭제될 수 있습니다.\n\n### 4. 적용 조건과 부가 사항\n- **action 실행 시점:**\n  - Cloud Storage 는 객체를 주기적으로 검사하고 action 을 비동기로 수행합니다.\n  - condition 충족부터 action 실행까지 걸리는 시간은 보장되지 않습니다.\n  - 그동안 해당 객체가 계속 보일 수 있습니다.\n- **저장 요금이 면제되는 조건 (아래를 모두 만족할 때만):**\n  - 버킷의 soft delete 가 비활성화되어 있어야 합니다.\n  - action 이 `Delete` 여야 합니다.\n  - condition 이 `age` 하나뿐이거나, `age` 와 `matchesStorageClass` 의 조합이어야 합니다.\n  - age condition 이 충족되어야 합니다.\n  - 객체에 object hold 가 없어야 합니다.\n  - 위 조건을 하나라도 만족하지 못하면 객체가 실제로 삭제될 때까지 저장 요금이 계속 부과됩니다.\n- **`SetStorageClass` 의 비용:**\n  - 전환 1회는 Class A operation 이며, 대상 클래스 요율로 과금됩니다.\n  - 객체를 다시 쓰지 않으므로 retrieval, inter-region replication, early deletion 비용은 발생하지 않습니다.\n  - 원래 클래스에 머문 기간은 새 클래스의 최소 저장 기간에 포함됩니다.\n\n### 출처\n- https://docs.cloud.google.com/storage/docs/lifecycle (원래 주소 https://cloud.google.com/storage/docs/lifecycle 에서 301 리다이렉트된 공식 문서)\n\n위 내용은 이 문서 한 페이지에서 가져왔습니다. 다른 페이지와 교차 검증하지는 않았습니다.",
+  "subtype": "success",
+  "cost": 0.0341723,
+  "reader_model_cost": 0.0031787,
+  "main_model_cost": 0.030993600000000003,
+  "main_output_tokens": 1549,
+  "seconds": 24.786,
+  "turns": 3,
+  "main_input_tokens": 18583,
+  "jevfetch_calls": 0,
+  "webfetch_calls": 2,
+  "curl_calls": 0,
+  "denied_calls": 0,
+  "page_tokens": null,
+  "claude_version": "2.1.295",
+  "models": [
+   "claude-haiku-5-5",
+   "claude-sonnet-5-5"
+  ],
+  "votes": [
+   {
+    "all-conds#0": true,
+    "any-rule#0": true,
+    "24h#1": true
+   },
+   {
+    "all-conds#0": true,
+    "any-rule#0": true,
+    "24h#1": true
+   },
+   {
+    "all-conds#0": true,
+    "any-rule#0": true,
+    "24h#1": true
+   }
+  ],
+  "answer_sha1": "873b1907a936",
+  "jev_input_tokens": 0,
+  "jev_requests": 0,
+  "jev_models": [],
+  "jev_cost": 0.0,
+  "cost_with_jev": 0.0341723,
+  "timed_out": false,
+  "wall_seconds": 26.0,
+  "failed_attempts": 0,
+  "failed_attempt_cost": 0,
+  "instructions_sha1": "f78365cad4",
+  "with_url": false,
+  "small_model": null,
+  "concurrency": 2,
+  "seed": null,
+  "lang": "ko",
+  "bucket": "small",
+  "allowed": [
+   "WebSearch",
+   "WebFetch",
+   "Bash(curl:*)",
+   "Bash(grep:*)",
+   "Bash(head:*)"
+  ],
+  "grade": {
+   "right": 3,
+   "total": 3,
+   "split": [],
+   "judge_cost": 0.0354354
+  }
+ },
+ {
+  "case": "gdpr-fines",
+  "arm": "webfetch",
+  "rep": 0,
+  "finished": true,
+  "answer": "GDPR 과징금의 법정 상한은 Art. 83(4)~(6)이 위반 조항별로 두 단계로 정합니다. 실제 부과액은 Art. 83(2)의 고려 요소와 EDPB 산정 지침에 따라 그 상한 안에서 정해집니다. 아래 상한과 요소는 gdpr-info.eu에서 직접 확인했고, EDPB 지침의 비율 구간은 2022년 초안 기준 2차 요약에서 가져왔습니다.\n\n## 1. 법정 상한 (Art. 83(4)~(6))\n각 단계에서 고정 금액과 매출 비율 중 **더 높은 쪽**이 상한입니다. 매출은 전 세계 연간 매출을 기준으로 합니다.\n\n| 단계 | 상한 | 해당 조항 |\n|---|---|---|\n| 하위 | 1,000만 유로 또는 전 세계 연간 매출의 2% | Art. 8, 11, 25~39 (컨트롤러·프로세서 의무), Art. 42·43 (인증기관 의무), Art. 41(4) (모니터링 기관 의무) |\n| 상위 | 2,000만 유로 또는 전 세계 연간 매출의 4% | Art. 5, 6, 7, 9 (처리 원칙, 적법근거, 동의, 특수 범주), Art. 12~22 (정보주체 권리), Art. 44~49 (제3국 이전), Chapter IX에 따른 회원국 의무, Art. 58(2) 명령 불이행 및 Art. 58(1) 접근 제공 불이행 |\n\n## 2. 상한 안에서 금액을 정하는 기준\n**Art. 83(2)**는 감독기관이 개별 사안에서 고려할 요소로 다음을 듭니다.\n1. 위반의 성격·중대성·기간. 처리의 범위나 목적, 영향받은 정보주체 수, 피해 정도를 포함합니다.\n2. 고의 또는 과실 여부\n3. 피해를 줄이기 위한 조치\n4. Art. 25·32에 따른 기술적·관리적 조치를 고려한 책임 정도\n5. 관련된 과거 위반\n6. 감독기관과의 협력 정도\n7. 영향받은 개인정보의 범주\n8. 감독기관이 위반을 알게 된 경위. 위반 통지 여부를 포함합니다.\n9. 이전 Art. 58(2) 조치의 준수 여부\n10. 승인된 행동강령(Art. 40)이나 인증(Art. 42)의 준수\n11. 그 밖의 가중·감경 요소. 얻은 재정적 이익이나 회피한 손실 등입니다.\n\n**관련 규정**\n- **Art. 83(3):** 동일하거나 연관된 처리 작업에서 여러 조항을 위반해도 총액은 \"가장 중대한 위반에 규정된 금액\"을 넘을 수 없습니다.\n- **Art. 83(7):** 공공기관에 과징금을 부과할 수 있는지, 어느 범위까지 가능한지는 회원국이 정합니다.\n- **Art. 83(8):** 과징금 부과에는 사법적 구제와 적법절차를 포함한 적절한 절차적 보호장치가 필요합니다.\n\n## 3. EDPB 산정 지침 (Guidelines 04/2022)\n- 최종판은 2023년 5월 24일 채택된 v2.1입니다.\n- 산정은 5단계로 이루어집니다. 1단계는 처리 작업을 특정하고 Art. 83(3)을 적용하는 것이고, 2단계는 시작 금액을 정하는 것입니다. 시작 금액은 위반의 심각도에 따라 법정 상한의 일정 비율로 잡습니다.\n  - 경미한 위반: 0~10%\n  - 중간 위반: 10~20%\n  - 중대한 위반: 20~100%\n- 이후 가중·감경 요소를 반영하고, 법정 상한을 넘지 않는지 확인합니다. 마지막으로 과징금이 효과적이고 비례적이며 억지력이 있는지(Art. 83(1)) 검토합니다.\n- EDPB는 이 방식이 자동 계산이 아니며 최종 판단은 감독기관의 재량이라고 밝혔습니다.\n\n## 한계\n- EDPB 지침 원문은 PDF 직접 접근(404)과 페이지 본문 추출이 모두 실패했습니다. 시작 금액 비율(0~10%, 10~20%, 20~100%)은 **2022년 5월 초안(v1.0)을 요약한 Hunton 글**에 근거합니다. 최종 v2.1에서도 같은지는 확인하지 못했습니다.\n- 매출 규모에 따른 시작 금액 감액 구간도 확인하지 못해 적지 않았습니다.\n- 기업집단의 매출을 어떻게 합산하는지(undertaking 개념)도 확인하지 못했습니다.\n\n## 출처\n- GDPR Art. 83 전문: https://gdpr-info.eu/art-83-gdpr/\n- EDPB Guidelines 04/2022 (v2.1, 2023-05-24 페이지): https://www.edpb.europa.eu/our-work-tools/our-documents/guidelines/guidelines-042022-calculation-administrative-fines-under_en\n- Hunton, 초안 가이드라인 요약: https://www.hunton.com/privacy-and-cybersecurity-law-blog/2022/06/10/edpb-publishes-guidelines-on-the-calculation-of-administrative-fines-under-the-gdpr/",
+  "subtype": "success",
+  "cost": 0.06969840000000001,
+  "reader_model_cost": 0.014894800000000001,
+  "main_model_cost": 0.0548036,
+  "main_output_tokens": 2801,
+  "seconds": 45.028,
+  "turns": 5,
+  "main_input_tokens": 29643,
+  "jevfetch_calls": 0,
+  "webfetch_calls": 3,
+  "curl_calls": 0,
+  "denied_calls": 0,
+  "page_tokens": null,
+  "claude_version": "2.1.295",
+  "models": [
+   "claude-haiku-5-5",
+   "claude-sonnet-5-5"
+  ],
+  "votes": [],
+  "answer_sha1": "4d1dd994413c",
+  "jev_input_tokens": 0,
+  "jev_requests": 0,
+  "jev_models": [],
+  "jev_cost": 0.0,
+  "cost_with_jev": 0.06969840000000001,
+  "timed_out": false,
+  "wall_seconds": 46.0,
+  "failed_attempts": 0,
+  "failed_attempt_cost": 0,
+  "instructions_sha1": "f78365cad4",
+  "with_url": false,
+  "small_model": null,
+  "concurrency": 2,
+  "seed": null,
+  "lang": "ko",
+  "bucket": "medium",
+  "allowed": [
+   "WebSearch",
+   "WebFetch",
+   "Bash(curl:*)",
+   "Bash(grep:*)",
+   "Bash(head:*)"
+  ],
+  "grade": {
+   "right": 2,
+   "total": 2,
+   "split": [],
+   "judge_cost": 0
+  }
+ },
+ {
+  "case": "gdpr-fines",
+  "arm": "webfetch",
+  "rep": 1,
+  "finished": true,
+  "answer": "GDPR 과징금의 법정 상한은 GDPR 제83조에 따라 위반한 조항이 어느 등급에 속하는지로 정해집니다. 아래는 제83조 본문과 EDPB 가이드라인 04/2022의 일반 설명에서 확인한 내용입니다.\n\n## 1. 법정 상한 (제83조)\n\n**하위 등급 (제83조 4항)**\n- 상한은 1,000만 유로 또는 기업(undertaking)의 직전 회계연도 전 세계 연간 매출액의 2% 중 **더 높은 금액**입니다.\n- 적용 대상은 다음 조항의 의무 위반입니다.\n  - 아동 동의 조건(제8조), 식별을 요하지 않는 처리(제11조)\n  - 제25~39조: 설계 및 기본값에 의한 개인정보 보호, 처리자 관련 의무, 처리 활동 기록, 보안 조치, 침해 통지, DPIA, DPO 등\n  - 인증기관의 의무(제42조, 제43조)\n  - 모니터링 기관의 의무(제41조 4항)\n\n**상위 등급 (제83조 5항)**\n- 상한은 2,000만 유로 또는 기업의 전 세계 연간 매출액의 4% 중 **더 높은 금액**입니다.\n- 적용 대상은 다음 위반입니다.\n  - 처리 원칙과 동의 조건(제5, 6, 7, 9조)\n  - 정보주체의 권리(제12~22조)\n  - 제3국 및 국제 이전(제44~49조)\n  - 제9장에 따른 회원국 법상 의무\n  - 감독기관의 제58조 2항에 따른 명령이나 처리 제한을 따르지 않은 경우, 또는 제58조 1항에 따른 접근 제공을 하지 않은 경우\n\n**명령 불이행 (제83조 6항)**\n- 제58조 2항의 명령을 따르지 않으면 상위 등급과 같은 상한(2,000만 유로 또는 4%)이 적용됩니다.\n\n**적용 조건**\n- 매출액 기준은 \"기업\"에만 적용됩니다. 개인이나 비영리 단체처럼 매출이 없는 주체는 고정 금액 상한(1,000만 유로 또는 2,000만 유로)이 기준입니다.\n- \"기업\"의 정의는 제83조 본문에 없습니다. 이번에 확인한 자료에서는 그 범위를 확인하지 못했습니다.\n- 같은 처리 작업이나 연관된 처리 작업에서 여러 조항을 위반한 경우, 총 과징금은 가장 중한 위반의 상한을 넘을 수 없습니다 (3항).\n- 공공기관에 과징금을 부과할지와 그 범위는 회원국이 정합니다 (7항).\n- 절차적 보장(효과적인 사법 구제와 적법 절차)이 적용됩니다 (8항).\n- 행정 과징금 제도가 없는 회원국에서는 감독기관이 개시하고 법원이 부과할 수 있습니다 (9항).\n\n## 2. 상한 안에서 실제 금액을 정하는 기준\n\n과징금은 개별 사안마다 \"효과적이고 비례적이며 억지력이 있어야\" 합니다 (1항). 2항에 따라 다음 요소를 고려합니다.\n\n- (a) 위반의 성격, 중대성, 기간, 처리의 범위와 목적, 피해를 입은 정보주체의 수와 피해 정도\n- (b) 고의 또는 과실 여부\n- (c) 피해를 줄이기 위해 취한 조치\n- (d) 제25조와 제32조에 따른 기술적, 관리적 조치를 고려한 책임 정도\n- (e) 이전의 관련 위반\n- (f) 감독기관에 대한 협력 정도\n- (g) 영향을 받은 개인정보의 범주\n- (h) 감독기관이 위반을 알게 된 경위(관리자나 처리자가 직접 신고했는지 포함)\n- (i) 같은 사안에 대한 이전 제58조 2항 명령의 준수 여부\n- (j) 승인된 행동강령(제40조)이나 인증(제42조)의 준수\n- (k) 그 밖의 가중 또는 감경 요소(취득한 이익, 회피한 손실 등)\n\nEDPB 가이드라인 04/2022(최종 2.1판, 2023년 5월 채택, 같은 해 6월 소폭 수정)는 이 요소들을 적용하는 5단계 계산 방식을 제시합니다.\n\n- 1단계는 처리 작업을 식별하고 제83조의 적용을 평가하는 것입니다.\n- 2단계는 계산의 출발점을 정하는 것입니다.\n- 계산은 기계적이지 않습니다. 최종 금액은 사안의 구체적 사정에 따라 정해지며, 법정 상한 이하의 어떤 금액도 될 수 있습니다.\n- 최종 금액은 제83조 4항, 5항, 6항의 상한을 넘을 수 없습니다.\n\n## 3. 확인하지 못한 내용\n\n가이드라인의 중대성 구간별 출발 금액(예: 비율 구간)과 매출액 구간별 감액 수치는 확인하지 못했습니다. EDPB 사이트의 PDF는 텍스트로 읽히지 않았고, 검색 결과에도 해당 표가 없었습니다. 이 수치가 필요하면 가이드라인 PDF의 해당 장을 직접 확인해야 합니다. 또 \"기업\"의 범위(그룹 전체 매출을 기준으로 하는지 등)도 이번에 확인하지 못했습니다.\n\n## 출처\n- GDPR 제83조: https://gdpr-info.eu/art-83-gdpr/\n- EDPB 가이드라인 04/2022 안내 페이지: https://www.edpb.europa.eu/our-work-tools/our-documents/guidelines/guidelines-042022-calculation-administrative-fines-under_en\n- EDPB 가이드라인 PDF (본문은 읽지 못함): https://www.edpb.europa.eu/system/files/documents/2023-06/edpb_guidelines_042022_calculationofadministrativefines_en.pdf\n- 가이드라인 소개 (검색 결과): https://www.hunton.com/privacy-and-cybersecurity-law-blog/2022/06/10/edpb-publishes-guidelines-on-the-calculation-of-administrative-fines-under-the-gdpr/\n\n제83조 내용은 gdpr-info.eu 페이지를 요약한 결과를 바탕으로 했고, 원문 전체와 대조하지는 않았습니다.",
+  "subtype": "success",
+  "cost": 0.0941333,
+  "reader_model_cost": 0.0229025,
+  "main_model_cost": 0.0712308,
+  "main_output_tokens": 3581,
+  "seconds": 56.799,
+  "turns": 6,
+  "main_input_tokens": 41240,
+  "jevfetch_calls": 0,
+  "webfetch_calls": 3,
+  "curl_calls": 0,
+  "denied_calls": 1,
+  "page_tokens": null,
+  "claude_version": "2.1.295",
+  "models": [
+   "claude-haiku-5-5",
+   "claude-sonnet-5-5"
+  ],
+  "votes": [],
+  "answer_sha1": "3d0a4bc95a8a",
+  "jev_input_tokens": 0,
+  "jev_requests": 0,
+  "jev_models": [],
+  "jev_cost": 0.0,
+  "cost_with_jev": 0.0941333,
+  "timed_out": false,
+  "wall_seconds": 58.0,
+  "failed_attempts": 0,
+  "failed_attempt_cost": 0,
+  "instructions_sha1": "f78365cad4",
+  "with_url": false,
+  "small_model": null,
+  "concurrency": 2,
+  "seed": null,
+  "lang": "ko",
+  "bucket": "medium",
+  "allowed": [
+   "WebSearch",
+   "WebFetch",
+   "Bash(curl:*)",
+   "Bash(grep:*)",
+   "Bash(head:*)"
+  ],
+  "grade": {
+   "right": 2,
+   "total": 2,
+   "split": [],
+   "judge_cost": 0
+  }
+ },
+ {
+  "case": "gh-limits",
+  "arm": "webfetch",
+  "rep": 0,
+  "finished": true,
+  "answer": "**답변: job 하나의 최대 실행 시간은 GitHub-hosted runner에서 6시간, self-hosted runner에서 5일입니다. 한도에 도달하면 job은 종료(취소)되고 실패 처리됩니다.**\n\n## 러너별 한도\n\n| 구분 | job 최대 실행 시간 | 한도 초과 시 |\n|---|---|---|\n| GitHub-hosted runner | 6시간 | job이 종료되고 실패 처리됨 |\n| Self-hosted runner | 5일 | job이 종료되고 실패 처리됨 |\n\n- 문서 원문은 \"Each job in a workflow can run for up to 6 hours of execution time.\"(GitHub-hosted)과 \"…up to 5 days of execution time.\"(self-hosted)입니다.\n- 두 한도 모두 GitHub Support에 요청해도 늘릴 수 없습니다.\n\n## 적용 조건과 관련 한도\n\n- **`timeout-minutes`**\n  - 이 키는 job을 자동 취소하기 전까지 실행을 허용할 최대 분 수를 정합니다. 기본값은 360분(6시간)입니다.\n  - `timeout-minutes`를 러너의 한도보다 길게 지정하면 러너의 실행 시간 한도에 도달했을 때 job이 취소됩니다.\n  - 따라서 self-hosted에서 6시간을 넘겨 실행하려면 `timeout-minutes`를 명시적으로 늘려야 합니다. 이 부분은 기본값이 360이라는 점에서 제가 추론한 내용이며, 문서에 이 문장으로 적혀 있지는 않습니다.\n- **workflow run 전체**\n  - 한 run은 최대 35일입니다. 실행, 대기, 승인 시간을 모두 포함하며, 이 한도에 도달하면 run이 취소됩니다. 이 한도도 Support가 늘려주지 않습니다.\n  - 환경(environment) 승인 대기는 최대 30일입니다.\n- **self-hosted의 큐 대기**\n  - job이 24시간 동안 큐에서 러너를 배정받지 못하면 자동 취소됩니다. 이 한도도 Support가 늘려주지 않습니다.\n- 문서에서 GitHub-hosted의 큐 대기 한도는 확인하지 못했습니다.\n- 문서에는 \"한도에 도달하면 취소된다\"는 일반 원칙도 있습니다.\n- `workflow-syntax` 페이지는 길이 때문에 마지막 약 3만 자를 읽지 못했습니다. `timeout-minutes` 항목은 읽은 범위에서 확인했습니다.\n\n## 출처\n- https://docs.github.com/en/actions/reference/limits\n- https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax (`jobs.<job_id>.timeout-minutes` 항목)",
+  "subtype": "success",
+  "cost": 0.039714599999999996,
+  "reader_model_cost": 0.008243200000000001,
+  "main_model_cost": 0.0314714,
+  "main_output_tokens": 1520,
+  "seconds": 22.148,
+  "turns": 4,
+  "main_input_tokens": 19306,
+  "jevfetch_calls": 0,
+  "webfetch_calls": 3,
+  "curl_calls": 0,
+  "denied_calls": 0,
+  "page_tokens": null,
+  "claude_version": "2.1.295",
+  "models": [
+   "claude-haiku-5-5",
+   "claude-sonnet-5-5"
+  ],
+  "votes": [
+   {
+    "terminated#0": true
+   },
+   {
+    "terminated#0": true
+   },
+   {
+    "terminated#0": true
+   }
+  ],
+  "answer_sha1": "07e7c0adb53a",
+  "jev_input_tokens": 0,
+  "jev_requests": 0,
+  "jev_models": [],
+  "jev_cost": 0.0,
+  "cost_with_jev": 0.039714599999999996,
+  "timed_out": false,
+  "wall_seconds": 23.6,
+  "failed_attempts": 0,
+  "failed_attempt_cost": 0,
+  "instructions_sha1": "f78365cad4",
+  "with_url": false,
+  "small_model": null,
+  "concurrency": 2,
+  "seed": null,
+  "lang": "ko",
+  "bucket": "small",
+  "allowed": [
+   "WebSearch",
+   "WebFetch",
+   "Bash(curl:*)",
+   "Bash(grep:*)",
+   "Bash(head:*)"
+  ],
+  "grade": {
+   "right": 3,
+   "total": 3,
+   "split": [],
+   "judge_cost": 0.0317414
+  }
+ },
+ {
+  "case": "gh-limits",
+  "arm": "webfetch",
+  "rep": 1,
+  "finished": true,
+  "answer": "GitHub Actions에서 job 하나가 실행될 수 있는 최대 시간은 GitHub-hosted runner가 6시간, self-hosted runner가 5일입니다. 한도를 넘으면 두 경우 모두 job이 종료되고 실패합니다.\n\n| 구분 | job 최대 실행 시간 | 한도 초과 시 |\n|---|---|---|\n| GitHub-hosted runner | 6시간 | job이 종료되고 실패(terminated and fails) |\n| self-hosted runner | 5일 | job이 종료되고 실패 |\n\n**적용 조건**\n- 두 한도 모두 GitHub Support가 늘려 줄 수 없습니다.\n- 워크플로 run 전체는 실행, 대기, 승인 시간을 합쳐 최대 35일입니다. 이 한도에 도달하면 run이 취소됩니다. 이 한도도 Support가 늘려 줄 수 없습니다.\n- 환경(environment) 승인 게이트의 대기 시간은 최대 30일입니다.\n- `jobs.<job_id>.timeout-minutes`의 기본값은 360분(6시간)입니다.\n  - 이 값을 직접 지정하면 GitHub가 그 시간이 지난 뒤 job을 자동으로 취소합니다.\n  - 지정한 값이 runner의 실행 시간 한도보다 크면, runner 한도에 도달하는 시점에 job이 취소됩니다.\n  - 따라서 `timeout-minutes`로는 한도를 늘릴 수 없고 줄이는 데만 쓸 수 있습니다.\n  - 워크플로 문법 문서는 job 단위 최대값을 따로 적지 않고, runner 종류별 한도 문서를 가리킵니다.\n- self-hosted runner에서 job timeout을 24시간보다 길게 잡으면 `GITHUB_TOKEN`이 먼저 걸림돌이 될 수 있습니다. 이 토큰은 job이 끝나거나 최대 24시간이 지나면 만료되기 때문입니다.\n\n**확인하지 못한 부분**\n- 한도 초과 시 문서 표현이 한 곳에서는 \"terminated and fails\", 다른 곳에서는 \"canceled\"입니다. 두 표현의 차이를 설명하는 내용은 찾지 못했습니다.\n- 워크플로 문법 문서 마지막 약 3만 자는 읽지 못했습니다. `timeout-minutes` 섹션은 읽은 범위 안에 있었습니다.\n- 위 내용은 페이지 본문을 요약 도구로 읽은 결과이고, 원문 대조는 하지 않았습니다.\n\n**출처**\n- https://docs.github.com/en/actions/reference/limits\n- https://docs.github.com/en/actions/writing-workflows/workflow-syntax-for-github-actions",
+  "subtype": "success",
+  "cost": 0.0394137,
+  "reader_model_cost": 0.007989900000000001,
+  "main_model_cost": 0.0314238,
+  "main_output_tokens": 1489,
+  "seconds": 21.298,
+  "turns": 4,
+  "main_input_tokens": 19269,
+  "jevfetch_calls": 0,
+  "webfetch_calls": 3,
+  "curl_calls": 0,
+  "denied_calls": 0,
+  "page_tokens": null,
+  "claude_version": "2.1.295",
+  "models": [
+   "claude-haiku-5-5",
+   "claude-sonnet-5-5"
+  ],
+  "votes": [
+   {
+    "terminated#0": true
+   },
+   {
+    "terminated#0": true
+   },
+   {
+    "terminated#0": true
+   }
+  ],
+  "answer_sha1": "9f18528ce158",
+  "jev_input_tokens": 0,
+  "jev_requests": 0,
+  "jev_models": [],
+  "jev_cost": 0.0,
+  "cost_with_jev": 0.0394137,
+  "timed_out": false,
+  "wall_seconds": 22.2,
+  "failed_attempts": 0,
+  "failed_attempt_cost": 0,
+  "instructions_sha1": "f78365cad4",
+  "with_url": false,
+  "small_model": null,
+  "concurrency": 2,
+  "seed": null,
+  "lang": "ko",
+  "bucket": "small",
+  "allowed": [
+   "WebSearch",
+   "WebFetch",
+   "Bash(curl:*)",
+   "Bash(grep:*)",
+   "Bash(head:*)"
+  ],
+  "grade": {
+   "right": 3,
+   "total": 3,
+   "split": [],
+   "judge_cost": 0.0315014
+  }
+ },
+ {
+  "case": "gh-rest-rate",
+  "arm": "webfetch",
+  "rep": 0,
+  "finished": true,
+  "answer": "## 답변\n\n**GitHub REST API primary rate limit**\n\n| 구분 | 한도 | 적용 조건 |\n|---|---|---|\n| **인증하지 않은 요청** | **시간당 60회** | 공개 데이터만 조회할 수 있습니다. 사용자나 앱이 아니라 **요청이 나가는 IP 주소 기준**으로 셉니다. |\n| **인증된 사용자** | **시간당 5,000회** | 개인 액세스 토큰(PAT)을 쓰는 경우입니다. 사용자를 대신해 동작하는 OAuth 앱이나 GitHub App의 요청도 포함합니다. 그 사용자의 모든 PAT과 앱이 이 한도를 **함께 나눠 씁니다**. |\n\n**인증된 사용자 한도의 예외와 관련 한도**\n\n- **GitHub Enterprise Cloud 조직 소유 앱**\n  - 해당 조직이 소유한 GitHub App이 사용자를 대신해 요청하면 시간당 15,000회입니다.\n  - 해당 조직이 소유하거나 승인한 OAuth app도 시간당 15,000회입니다. 이때 사용자는 그 조직의 구성원이어야 합니다.\n- **GitHub App 설치 토큰**\n  - 기본은 시간당 5,000회입니다.\n  - 저장소 또는 조직 사용자가 20을 넘으면 초과분 하나당 시간당 50회씩 늘어나며, 상한은 시간당 12,500회입니다.\n  - Enterprise Cloud 조직에 설치된 경우에는 시간당 15,000회입니다.\n- **OAuth app의 client ID와 secret**\n  - 공개 데이터 조회에 한해 앱당 시간당 5,000회입니다.\n  - Enterprise Cloud 조직 소유 앱은 15,000회입니다.\n- **GitHub Actions의 `GITHUB_TOKEN`**\n  - 저장소당 시간당 1,000회입니다.\n  - Enterprise Cloud 계정 소속 리소스는 저장소당 시간당 15,000회입니다.\n\n## 근거 출처\n- https://docs.github.com/en/rest/using-the-rest-api/rate-limits-for-the-rest-api\n\n## 참고\n- 위 수치는 위 문서 한 페이지를 WebFetch로 읽어 요약한 결과입니다. 문서 원문과 대조하지는 않았습니다.\n- 이 한도는 primary rate limit만 다룹니다. 동시 요청 수나 분당 요청 수 같은 secondary rate limit은 별도 규칙이며, 이번 답변에는 넣지 않았습니다.\n- 요약에 Git LFS 한도 항목도 나왔지만 REST primary limit과 별개라서 뺐습니다.",
+  "subtype": "success",
+  "cost": 0.0267269,
+  "reader_model_cost": 0.0012425000000000001,
+  "main_model_cost": 0.0254844,
+  "main_output_tokens": 1269,
+  "seconds": 18.903,
+  "turns": 2,
+  "main_input_tokens": 12104,
+  "jevfetch_calls": 0,
+  "webfetch_calls": 1,
+  "curl_calls": 0,
+  "denied_calls": 0,
+  "page_tokens": null,
+  "claude_version": "2.1.295",
+  "models": [
+   "claude-haiku-5-5",
+   "claude-sonnet-5-5"
+  ],
+  "votes": [],
+  "answer_sha1": "a1b855fd2bb6",
+  "jev_input_tokens": 0,
+  "jev_requests": 0,
+  "jev_models": [],
+  "jev_cost": 0.0,
+  "cost_with_jev": 0.0267269,
+  "timed_out": false,
+  "wall_seconds": 20.2,
+  "failed_attempts": 0,
+  "failed_attempt_cost": 0,
+  "instructions_sha1": "f78365cad4",
+  "with_url": false,
+  "small_model": null,
+  "concurrency": 2,
+  "seed": null,
+  "lang": "ko",
+  "bucket": "small",
+  "allowed": [
+   "WebSearch",
+   "WebFetch",
+   "Bash(curl:*)",
+   "Bash(grep:*)",
+   "Bash(head:*)"
+  ],
+  "grade": {
+   "right": 3,
+   "total": 3,
+   "split": [],
+   "judge_cost": 0
+  }
+ },
+ {
+  "case": "gh-rest-rate",
+  "arm": "webfetch",
+  "rep": 1,
+  "finished": true,
+  "answer": "## GitHub REST API primary rate limit\n\n**Unauthenticated requests**\n- 60 requests per hour.\n- The limit is tied to the originating IP address, not to a user.\n- Unauthenticated requests can only reach public data.\n\n**Authenticated users** (personal access tokens, or OAuth/GitHub App user tokens acting for a user)\n- 5,000 requests per hour per user.\n- All of that user's tokens and apps share this one budget.\n- The limit is 15,000 per hour when the request comes from a GitHub App owned by a GitHub Enterprise Cloud organization.\n- For OAuth apps, the 15,000 limit applies only if the app is owned by or approved for an Enterprise Cloud organization and you are a member of it.\n- Requests from these higher-limit apps still count against your personal 5,000 budget.\n\n**Other cases, for context**\n- **GitHub App installation tokens:**\n  - The minimum is 5,000 per hour.\n  - On an Enterprise Cloud organization the limit is 15,000 per hour.\n  - Otherwise it rises by 50 per hour for each repository beyond 20 and each organization user beyond 20, up to 12,500 per hour.\n- **OAuth app client ID and secret, public data only:** 5,000 per hour per app, or 15,000 per hour if the app is owned by an Enterprise Cloud organization.\n- **`GITHUB_TOKEN` in GitHub Actions:** 1,000 per hour per repository, or 15,000 per hour per repository for Enterprise Cloud resources.\n- **Git LFS:** this has a separate per-minute limit of 300 per minute unauthenticated and 3,000 per minute authenticated. This detail came from the page summary, and I did not check it against the page text.\n\n**When you hit the limit**\n- You get a 403 or 429 response.\n- Wait until the time in the `x-ratelimit-reset` header (UTC epoch seconds) before retrying.\n- The `x-ratelimit-*` response headers show your current status.\n\n**Caveat:** I checked only this one official page, via WebFetch. The figures are as that page's content was summarized, not read verbatim.\n\nSources:\n- https://docs.github.com/en/rest/using-the-rest-api/rate-limits-for-the-rest-api",
+  "subtype": "success",
+  "cost": 0.024102,
+  "reader_model_cost": 0.0011914,
+  "main_model_cost": 0.0229106,
+  "main_output_tokens": 1024,
+  "seconds": 17.76,
+  "turns": 2,
+  "main_input_tokens": 12074,
+  "jevfetch_calls": 0,
+  "webfetch_calls": 1,
+  "curl_calls": 0,
+  "denied_calls": 0,
+  "page_tokens": null,
+  "claude_version": "2.1.295",
+  "models": [
+   "claude-haiku-5-5",
+   "claude-sonnet-5-5"
+  ],
+  "votes": [],
+  "answer_sha1": "efe62bc342ec",
+  "jev_input_tokens": 0,
+  "jev_requests": 0,
+  "jev_models": [],
+  "jev_cost": 0.0,
+  "cost_with_jev": 0.024102,
+  "timed_out": false,
+  "wall_seconds": 18.6,
+  "failed_attempts": 0,
+  "failed_attempt_cost": 0,
+  "instructions_sha1": "f78365cad4",
+  "with_url": false,
+  "small_model": null,
+  "concurrency": 2,
+  "seed": null,
+  "lang": "ko",
+  "bucket": "small",
+  "allowed": [
+   "WebSearch",
+   "WebFetch",
+   "Bash(curl:*)",
+   "Bash(grep:*)",
+   "Bash(head:*)"
+  ],
+  "grade": {
+   "right": 3,
+   "total": 3,
+   "split": [],
+   "judge_cost": 0
+  }
+ },
+ {
+  "case": "git-lease",
+  "arm": "webfetch",
+  "rep": 0,
+  "finished": true,
+  "answer": "`--force-with-lease`에서 expected value를 생략하면, git은 원격 ref의 현재 값이 내 로컬의 해당 remote-tracking branch(예: `refs/remotes/origin/main`) 값과 같을 때만 강제 push를 허용합니다. 다르면 push가 실패합니다. 아래 내용은 공식 문서(git-push)를 WebFetch로 읽어 확인한 것입니다.\n\n## 생략 가능한 형태와 보호 범위\n\n| 형태 | 보호 대상 | 비교 기준 |\n|---|---|---|\n| `--force-with-lease` | push로 갱신될 모든 원격 ref | 각 ref의 remote-tracking branch |\n| `--force-with-lease=<refname>` | `<refname>` 하나(갱신될 때만) | 그 ref의 remote-tracking branch |\n| `--force-with-lease=<refname>:<expect>` | `<refname>` 하나 | 지정한 `<expect>` 값 (remote-tracking branch는 사용 안 함) |\n\n문서 원문은 다음과 같습니다.\n- 인자 없는 형태: \"will protect all remote refs that are going to be updated by requiring their current value to be the same as the remote-tracking branch we have for them.\"\n- refname만 쓴 형태: \"will protect *<refname>* (alone), if it is going to be updated, by requiring its current value to be the same as the remote-tracking branch we have for it.\"\n\n## 적용 조건\n\n- 원격 ref가 내 remote-tracking branch와 일치하면 fast-forward 검사를 넘어서 강제 갱신합니다. 일치하지 않으면 \"`git push` fails otherwise.\"\n- 갱신되지 않는 ref는 검사하지 않습니다.\n- 보호 수준은 마지막 `fetch`가 얼마나 최신인지에 달려 있습니다.\n- `--force`, `-f`, `+` refspec을 함께 쓰면 lease 검사가 무력화됩니다.\n- `--no-force-with-lease`는 앞서 지정한 `--force-with-lease`를 취소합니다.\n- `<refname>:<expect>` 형태는 문서에서 \"still experimental and their semantics may change\"라고 합니다.\n\n## 주의점: 백그라운드 fetch\n\n문서는 expected value 없이 쓰면 원격에 대해 암묵적으로 `git fetch`를 실행하는 작업과 \"interacts very badly\"라고 경고합니다. 예로 cron에서 도는 `git fetch origin`이 있습니다.\n\n- 백그라운드 fetch가 다른 사람의 새 커밋으로 `refs/remotes/origin/main`을 갱신하면, lease는 그 새 값과 비교해 통과합니다. 그러면 내가 본 적 없는 커밋을 덮어쓰게 됩니다.\n- 문서는 이유를 \"We don't have anything except the remote tracking info to go by\"라고 설명합니다.\n\n## 완화 방법\n\n1. **별도 push용 remote를 둡니다.** 이렇게 하면 백그라운드 `git fetch origin`이 `origin-push`의 tracking ref를 건드리지 못합니다. 다만 `git fetch --all`에는 여전히 뚫립니다.\n   ```sh\n   git remote add origin-push $(git config remote.origin.url)\n   git fetch origin-push\n   git push --force-with-lease origin-push\n   ```\n2. **expected value를 명시합니다.** 문서는 `base` 태그를 두고 `--force-with-lease=master:base`를 쓰는 방법도 제시합니다.\n3. **`--force-if-includes`를 함께 씁니다.**\n   - remote-tracking ref의 tip이 내가 재작성하는 로컬 브랜치의 reflog 항목에서 도달 가능한지 확인합니다. 도달할 수 없으면 강제 갱신을 거부합니다.\n   - 따라서 백그라운드 fetch로 들어온 미통합 작업이 있으면 push가 막힙니다.\n   - 이 옵션은 인자 없는 `--force-with-lease`나 `--force-with-lease=<refname>`와 함께 쓸 때만 효과가 있습니다. `--force-with-lease`가 없거나 `<refname>:<expect>`와 함께 쓰면 no-op입니다.\n   ```sh\n   git push --force-with-lease --force-if-includes origin main\n   ```\n4. **설정으로 기본 적용합니다.**\n   - `push.useForceIfIncludes=true`로 설정하면 `--force-if-includes`를 매번 붙인 것과 같습니다.\n   - 한 번만 끄려면 push할 때 `--no-force-if-includes`를 붙입니다.\n\n## 권장 사용 예\n\n```sh\ngit fetch origin\ngit rebase -i origin/main\ngit push --force-with-lease=main origin main\n```\n\n문서에는 수치 한도나 버전별 차이는 나와 있지 않았습니다. 위 내용은 모두 이 페이지 한 곳에서 확인한 것입니다.\n\n출처:\n- https://git-scm.com/docs/git-push",
+  "subtype": "success",
+  "cost": 0.040269400000000004,
+  "reader_model_cost": 0.004337000000000001,
+  "main_model_cost": 0.0359324,
+  "main_output_tokens": 1973,
+  "seconds": 28.386,
+  "turns": 2,
+  "main_input_tokens": 12937,
+  "jevfetch_calls": 0,
+  "webfetch_calls": 1,
+  "curl_calls": 0,
+  "denied_calls": 0,
+  "page_tokens": null,
+  "claude_version": "2.1.295",
+  "models": [
+   "claude-haiku-5-5",
+   "claude-sonnet-5-5"
+  ],
+  "votes": [
+   {
+    "f1#0": true,
+    "f2#0": true
+   },
+   {
+    "f1#0": true,
+    "f2#0": true
+   },
+   {
+    "f1#0": true,
+    "f2#0": true
+   }
+  ],
+  "answer_sha1": "5e7e27e3e26c",
+  "jev_input_tokens": 0,
+  "jev_requests": 0,
+  "jev_models": [],
+  "jev_cost": 0.0,
+  "cost_with_jev": 0.040269400000000004,
+  "timed_out": false,
+  "wall_seconds": 29.5,
+  "failed_attempts": 0,
+  "failed_attempt_cost": 0,
+  "instructions_sha1": "f78365cad4",
+  "with_url": false,
+  "small_model": null,
+  "concurrency": 2,
+  "seed": null,
+  "lang": "ko",
+  "bucket": "medium",
+  "allowed": [
+   "WebSearch",
+   "WebFetch",
+   "Bash(curl:*)",
+   "Bash(grep:*)",
+   "Bash(head:*)"
+  ],
+  "grade": {
+   "right": 2,
+   "total": 2,
+   "split": [],
+   "judge_cost": 0.0413754
+  }
+ },
+ {
+  "case": "git-lease",
+  "arm": "webfetch",
+  "rep": 1,
+  "finished": true,
+  "answer": "`--force-with-lease`에서 expected value를 생략하면, Git은 로컬에 있는 remote-tracking 브랜치(예: `refs/remotes/origin/main`)의 값을 기대값으로 사용합니다. 아래 내용은 Git 공식 문서(git-push)에서 확인했습니다. 이 문서에는 구체적인 수치(버전, 시간 등)는 나오지 않습니다.\n\n## 동작\n\n- **`--force-with-lease`만 쓴 경우**\n  - 이번 push로 갱신될 모든 원격 ref를 보호합니다.\n  - 각 ref의 원격 현재 값이 내 로컬 remote-tracking 브랜치와 같아야 push가 됩니다.\n- **`--force-with-lease=<refname>`처럼 이름만 쓴 경우**\n  - 그 ref 하나만, 갱신될 때 보호합니다.\n  - 마찬가지로 원격 현재 값이 로컬 remote-tracking 브랜치와 같아야 합니다.\n- **실패 조건**\n  - 원격의 실제 값이 로컬 remote-tracking 값과 다르면 push가 거부됩니다.\n  - 즉 기대값은 원격의 실시간 값이 아니라, 내가 마지막으로 fetch해서 본 값입니다.\n- **`--no-force-with-lease`**: 앞에 나온 모든 `--force-with-lease` 옵션을 취소합니다.\n\n예시:\n```sh\ngit push --force-with-lease origin main        # origin/main 보호\ngit push --force-with-lease=main origin main   # main 하나만 보호\n```\n\n## 적용 조건과 주의점\n\n1. **백그라운드 fetch와 충돌합니다.**\n   - 문서는 기대값 없이 쓰면 원격에 대해 암묵적으로 `git fetch`를 돌리는 작업과 \"매우 나쁘게\" 상호작용한다고 설명합니다. 예로 cron에서 도는 `git fetch origin`을 듭니다.\n   - 그런 작업이 remote-tracking ref를 갱신하면, 내가 보지 않은 원격 변경도 \"본 것\"으로 취급됩니다. 그러면 보호가 쉽게 무력화되어 `--force`처럼 덮어쓸 수 있습니다.\n   - 문서는 기대값을 알려주는 단서가 remote-tracking 정보뿐이라서 생기는 한계라고 설명합니다.\n2. **우회 방법 1: push 전용 remote를 따로 둡니다.**\n   ```sh\n   git remote add origin-push $(git config remote.origin.url)\n   git fetch origin-push\n   git push --force-with-lease origin-push\n   ```\n   `git fetch --all`이 도는 환경에서는 이 방법도 실패합니다.\n3. **우회 방법 2: 기대값을 명시합니다.**\n   - `git push --force-with-lease=master:base master:master`처럼 씁니다.\n4. **`--force-if-includes`를 함께 쓰면 보완됩니다.**\n   - 기대값 없는 형태(`--force-with-lease` 또는 `=<refname>`)와 함께 쓰면 동작합니다.\n   - 백그라운드에서 갱신됐을 수 있는 remote-tracking ref의 tip이 로컬 브랜치 reflog 항목에서 도달 가능한지 확인합니다. 원격 변경을 로컬에 통합하지 않았다면 강제 갱신을 거부합니다.\n   - `--force-with-lease` 없이 쓰거나 `=<refname>:<expect>`(명시적 기대값)와 함께 쓰면 no-op입니다.\n   - `--no-force-if-includes`로 끌 수 있습니다.\n   ```sh\n   git push --force-with-lease --force-if-includes origin main\n   ```\n   - 설정 `push.useForceIfIncludes=true`는 이 옵션을 기본으로 켭니다. 명령줄의 `--no-force-if-includes`가 이 설정을 덮어씁니다.\n5. **아직 실험적 기능입니다.**\n   - 문서는 \"`--force-with-lease=<refname>:<expect>`처럼 기대값을 명시하는 형태 외의 모든 형태는 아직 experimental이며 의미가 바뀔 수 있다\"고 밝힙니다.\n   - 이 문장이 기대값을 생략한 형태를 포함하는지는 문서상 모호합니다. 그래서 의미가 바뀔 수 있다고 보고 쓰는 편이 안전합니다.\n\n## 출처\n- https://git-scm.com/docs/git-push",
+  "subtype": "success",
+  "cost": 0.037172,
+  "reader_model_cost": 0.0043336,
+  "main_model_cost": 0.032838400000000004,
+  "main_output_tokens": 1774,
+  "seconds": 27.051,
+  "turns": 2,
+  "main_input_tokens": 12661,
+  "jevfetch_calls": 0,
+  "webfetch_calls": 1,
+  "curl_calls": 0,
+  "denied_calls": 0,
+  "page_tokens": null,
+  "claude_version": "2.1.295",
+  "models": [
+   "claude-haiku-5-5",
+   "claude-sonnet-5-5"
+  ],
+  "votes": [
+   {
+    "f1#0": true,
+    "f2#0": true
+   },
+   {
+    "f1#0": true,
+    "f2#0": true
+   },
+   {
+    "f1#0": true,
+    "f2#0": true
+   }
+  ],
+  "answer_sha1": "6a36ed10a7af",
+  "jev_input_tokens": 0,
+  "jev_requests": 0,
+  "jev_models": [],
+  "jev_cost": 0.0,
+  "cost_with_jev": 0.037172,
+  "timed_out": false,
+  "wall_seconds": 28.2,
+  "failed_attempts": 0,
+  "failed_attempt_cost": 0,
+  "instructions_sha1": "f78365cad4",
+  "with_url": false,
+  "small_model": null,
+  "concurrency": 2,
+  "seed": null,
+  "lang": "ko",
+  "bucket": "medium",
+  "allowed": [
+   "WebSearch",
+   "WebFetch",
+   "Bash(curl:*)",
+   "Bash(grep:*)",
+   "Bash(head:*)"
+  ],
+  "grade": {
+   "right": 2,
+   "total": 2,
+   "split": [],
+   "judge_cost": 0.0394674
+  }
+ },
+ {
+  "case": "k8s-termination",
+  "arm": "webfetch",
+  "rep": 0,
+  "finished": true,
+  "answer": "**답: 기본 grace period 는 30초이고, 이 시간이 지났는데도 컨테이너가 하나라도 남아 있으면 kubelet 이 강제 종료(SIGKILL)를 수행합니다.**\n\n## 기본값과 적용 조건\n- 기본값은 **30초**입니다. Pod spec 의 `terminationGracePeriodSeconds` 기본값이며, `kubectl delete` 로 삭제할 때의 기본 grace period 이기도 합니다.\n- `kubectl delete --grace-period=<초>` 로 이 값을 덮어쓸 수 있습니다.\n- 문서 표현은 \"By default, all deletes are graceful within 30 seconds\" 입니다.\n- 이 값은 `preStop` hook 실행 시간과 컨테이너가 정상 종료되는 데 걸리는 시간을 합친 전체에 적용됩니다.\n- 예를 들어 `terminationGracePeriodSeconds: 60` 에서 hook 이 55초, 종료 처리가 10초 걸리면 합계 65초라서 컨테이너는 정상 종료 전에 강제 종료됩니다.\n\n## 종료 순서\n1. 삭제 요청이 들어오면 grace period 카운트다운이 시작됩니다.\n2. `preStop` hook 이 정의되어 있고 `terminationGracePeriodSeconds` 가 0 이 아니면, kubelet 이 컨테이너 안에서 hook 을 실행합니다.\n   - hook 은 TERM 신호보다 먼저, 동기적으로 실행됩니다.\n   - grace period 가 끝났는데도 hook 이 실행 중이면 kubelet 은 **2초짜리 일회성 연장**을 요청합니다.\n   - hook 에 30초보다 오래 걸린다면 `terminationGracePeriodSeconds` 를 늘려야 합니다.\n   - hook 이 실패하면 컨테이너가 kill 되고 `FailedPreStopHook` 이벤트가 발생합니다.\n3. kubelet 이 컨테이너 런타임을 통해 각 컨테이너의 1번 프로세스에 **SIGTERM** 을 보냅니다.\n   - 이미지에 stop signal 이 정의되어 있지 않으면 런타임 기본 신호를 씁니다. containerd 와 CRI-O 모두 SIGTERM 입니다.\n   - 사이드카가 없으면 컨테이너마다 TERM 을 받는 시점과 순서가 임의입니다.\n4. **grace period 가 만료됐는데 컨테이너가 하나라도 남아 있으면** 런타임이 Pod 내 남은 모든 프로세스에 **SIGKILL** 을 보냅니다. SIGKILL 은 프로세스가 잡을 수 없습니다.\n5. kubelet 이 Pod 를 종료 phase(`Failed` 또는 `Succeeded`)로 전환합니다. 그 뒤 grace period 를 0 으로 설정해 API 서버에서 Pod 오브젝트를 즉시 삭제합니다.\n\n종료를 기다리는 동안 kubelet 이나 런타임 관리 서비스가 재시작되면, 클러스터는 처음부터 다시 시도하며 원래의 grace period 전체를 다시 적용합니다.\n\n## 강제 삭제(grace period 0)\n- `kubectl delete pod <name> --grace-period=0 --force` 로 수행합니다. `--grace-period=0` 만 쓰면 안 되고 `--force` 를 함께 지정해야 합니다.\n- API 서버가 kubelet 의 종료 확인을 기다리지 않고 Pod 를 즉시 지웁니다. 그래서 같은 이름으로 새 Pod 를 만들 수 있습니다.\n- 노드에서는 즉시 종료 대상 Pod 에도 짧은 grace period 가 주어진 뒤 강제 종료됩니다.\n- 주의: 문서는 이 방식이 종료 확인을 기다리지 않으며, 리소스가 클러스터에서 무기한 계속 실행될 수 있다고 경고합니다.\n\n## 확인하지 못한 부분\n- 첫 번째 페이지(`pod-lifecycle`)는 앞 100,000자가 종료 섹션을 포함하지 않아, offset 100000 으로 다시 읽어 확인했습니다.\n- 음수 grace period 의 동작은 문서에서 확인하지 못했습니다. 이 항목은 답변에 포함하지 않았습니다.\n\n## 출처\n- https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/ (Termination of Pods, Pod Termination Flow, Forced Pod termination)\n- https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/ (preStop hook 과 grace period 의 관계)",
+  "subtype": "success",
+  "cost": 0.06305360000000002,
+  "reader_model_cost": 0.013015200000000001,
+  "main_model_cost": 0.050038400000000004,
+  "main_output_tokens": 2346,
+  "seconds": 36.368,
+  "turns": 4,
+  "main_input_tokens": 22790,
+  "jevfetch_calls": 0,
+  "webfetch_calls": 3,
+  "curl_calls": 0,
+  "denied_calls": 0,
+  "page_tokens": null,
+  "claude_version": "2.1.295",
+  "models": [
+   "claude-haiku-5-5",
+   "claude-sonnet-5-5"
+  ],
+  "votes": [
+   {
+    "sigkill#0": true
+   },
+   {
+    "sigkill#0": true
+   },
+   {
+    "sigkill#0": true
+   }
+  ],
+  "answer_sha1": "077eaf669e68",
+  "jev_input_tokens": 0,
+  "jev_requests": 0,
+  "jev_models": [],
+  "jev_cost": 0.0,
+  "cost_with_jev": 0.06305360000000002,
+  "timed_out": false,
+  "wall_seconds": 37.4,
+  "failed_attempts": 0,
+  "failed_attempt_cost": 0,
+  "instructions_sha1": "f78365cad4",
+  "with_url": false,
+  "small_model": null,
+  "concurrency": 2,
+  "seed": null,
+  "lang": "ko",
+  "bucket": "medium",
+  "allowed": [
+   "WebSearch",
+   "WebFetch",
+   "Bash(curl:*)",
+   "Bash(grep:*)",
+   "Bash(head:*)"
+  ],
+  "grade": {
+   "right": 3,
+   "total": 3,
+   "split": [],
+   "judge_cost": 0.0398914
+  }
+ },
+ {
+  "case": "k8s-termination",
+  "arm": "webfetch",
+  "rep": 1,
+  "finished": true,
+  "answer": "기본 grace period는 **30초**입니다. 이 시간이 지나도 컨테이너가 남아 있으면 `SIGKILL`로 강제 종료됩니다. 아래 내용은 공식 문서 원문을 offset을 옮겨 가며 읽고 확인했습니다. 처음 읽은 구간에는 해당 섹션이 없어서 모델 기억에 기댄 답이 나왔고, 그 답은 쓰지 않았습니다.\n\n## 기본값과 설정 방법\n- `spec.terminationGracePeriodSeconds`의 기본값은 30초입니다. 값이 nil이면 이 기본값을 씁니다.\n- 이 필드는 0 이상의 정수여야 합니다. 음수는 허용되지 않아서 최솟값은 0입니다.\n- 값이 0이면 kill 신호로 즉시 중지하며, 정리할 기회를 주지 않습니다.\n- 삭제 요청에서 값을 줄일 수는 있습니다. 문서 표현은 \"May be decreased in delete request\"입니다.\n- `kubectl delete`는 기본적으로 30초 안에 graceful하게 삭제합니다. `--grace-period=<초>`로 이 값을 덮어쓸 수 있습니다.\n- 문서는 이 값을 프로세스의 예상 정리 시간보다 길게 잡으라고 권고합니다.\n\n## 종료 순서와 grace period 만료 후 동작\n1. 파드 삭제 요청이 들어오면 grace period가 시작됩니다.\n2. 컨테이너에 `preStop` hook이 있고 `terminationGracePeriodSeconds`가 0이 아니면, kubelet이 컨테이너 안에서 hook을 실행합니다.\n   - hook이 grace period가 끝난 뒤에도 돌고 있으면, kubelet이 **2초짜리 일회성 연장**을 요청합니다.\n   - hook이 더 오래 걸리면 `terminationGracePeriodSeconds`를 늘려야 합니다.\n3. kubelet이 컨테이너 런타임을 통해 각 컨테이너의 메인 프로세스(PID 1)에 `TERM`(SIGTERM)을 보냅니다.\n   - 이미지에 stop signal이 정의되어 있지 않으면 런타임 기본값을 씁니다. containerd와 CRI-O는 둘 다 SIGTERM입니다.\n   - 컨테이너마다 TERM을 받는 시점과 순서는 임의입니다.\n   - 사이드카는 마지막 메인 컨테이너가 완전히 종료된 뒤에 TERM을 받습니다.\n4. grace period가 끝났는데 컨테이너가 하나라도 남아 있으면, 런타임이 남은 모든 프로세스에 `SIGKILL`을 보냅니다.\n   - kubelet이 파드를 종료 phase(`Failed` 또는 `Succeeded`)로 전환합니다. 어느 쪽이 되는지는 컨테이너의 최종 상태에 따라 다릅니다.\n   - kubelet이 grace period를 0으로 설정해 API 서버에서 파드 객체를 강제로 제거합니다.\n   - API 서버가 객체를 삭제하면 어느 클라이언트에서도 보이지 않습니다.\n5. 종료를 기다리는 동안 kubelet이나 런타임 관리 서비스가 재시작되면, 전체 원래 grace period부터 다시 시작합니다.\n\n## preStop hook과 grace period의 관계\n- grace period 카운트다운은 `preStop` hook 실행 **전에** 시작합니다. hook 시간과 컨테이너의 종료 시간이 같은 예산을 나눠 씁니다.\n- hook은 `TERM`이 나가기 전에 끝나야 합니다.\n- 문서 예시는 grace period 60초, hook 55초, TERM 후 종료 10초인 경우입니다. 합계가 65초라 컨테이너가 kill됩니다.\n- hook이 멈춰 있으면 파드는 grace period가 끝날 때까지 `Terminating`에 머물다가 kill됩니다.\n\n## 강제 삭제 (`--grace-period=0 --force`)\n- grace period를 0으로 주면 API 서버에서 파드를 즉시 삭제합니다. kubectl에서는 `--grace-period=0`에 `--force`를 함께 줘야 합니다.\n- API 서버는 kubelet의 종료 확인을 기다리지 않으므로 같은 이름의 새 파드를 바로 만들 수 있습니다.\n- 노드에서는 즉시 종료로 설정된 파드에도 force kill 전에 짧은 grace period를 줍니다.\n- 문서는 즉시 삭제가 종료 확인을 기다리지 않으므로 리소스가 클러스터에서 계속 실행될 수 있다고 경고합니다.\n\n## 참고\n- Pod spec 레퍼런스 페이지는 약 375,000자이고 앞 200,000자까지만 읽었습니다. `terminationGracePeriodSeconds` 설명은 그 안에서 찾았습니다.\n- 아래 내용은 이번에 쓰지 않았습니다. 확인하지 못한 부분을 기억으로 채우지 않기 위해서입니다.\n  - 쿠버네티스 버전별 차이.\n  - 컨테이너 런타임별 세부 동작.\n\n## 출처\n- https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/ (Termination of Pods, Forced Pod termination)\n- https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/ (preStop과 grace period, 60/55/10초 예시)\n- https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/ (PodSpec의 `terminationGracePeriodSeconds`)",
+  "subtype": "success",
+  "cost": 0.09944450000000002,
+  "reader_model_cost": 0.021986899999999997,
+  "main_model_cost": 0.07745760000000002,
+  "main_output_tokens": 3759,
+  "seconds": 48.549,
+  "turns": 7,
+  "main_input_tokens": 36721,
+  "jevfetch_calls": 0,
+  "webfetch_calls": 5,
+  "curl_calls": 2,
+  "denied_calls": 1,
+  "page_tokens": null,
+  "claude_version": "2.1.295",
+  "models": [
+   "claude-haiku-5-5",
+   "claude-sonnet-5-5"
+  ],
+  "votes": [
+   {
+    "sigkill#0": true
+   },
+   {
+    "sigkill#0": true
+   },
+   {
+    "sigkill#0": true
+   }
+  ],
+  "answer_sha1": "b421127ed48f",
+  "jev_input_tokens": 0,
+  "jev_requests": 0,
+  "jev_models": [],
+  "jev_cost": 0.0,
+  "cost_with_jev": 0.09944450000000002,
+  "timed_out": false,
+  "wall_seconds": 49.5,
+  "failed_attempts": 0,
+  "failed_attempt_cost": 0,
+  "instructions_sha1": "f78365cad4",
+  "with_url": false,
+  "small_model": null,
+  "concurrency": 2,
+  "seed": null,
+  "lang": "ko",
+  "bucket": "medium",
+  "allowed": [
+   "WebSearch",
+   "WebFetch",
+   "Bash(curl:*)",
+   "Bash(grep:*)",
+   "Bash(head:*)"
+  ],
+  "grade": {
+   "right": 3,
+   "total": 3,
+   "split": [],
+   "judge_cost": 0.0442514
+  }
+ },
+ {
+  "case": "ko-holiday",
+  "arm": "webfetch",
+  "rep": 0,
+  "finished": true,
+  "answer": "확인한 내용을 정리해 최종 답변을 드립니다.\n\n## 결론\n대체공휴일은 공휴일이 주말이나 다른 공휴일과 겹칠 때, 그 공휴일 다음의 첫 번째 비공휴일로 지정됩니다. 겹치는 조건은 공휴일 종류마다 다릅니다.\n\n## 법적 근거\n- **공휴일에 관한 법률 제3조**는 두 가지를 정합니다. 이 내용은 검색 요약에서 인용한 것이라 법령 원문으로 직접 확인하지는 못했습니다.\n  - 제2조의 공휴일이 토요일, 일요일 또는 다른 공휴일과 겹치면 대체공휴일로 지정해 운영할 수 있습니다.\n  - 지정과 운영에 관한 사항은 대통령령으로 정합니다.\n- **관공서의 공휴일에 관한 규정 제3조**는 법령정보센터 페이지에서 확인했습니다. 시행일은 2026-05-11이고 대통령령 제36290호(2026-04-30 일부개정)입니다.\n\n## 규정 제3조의 적용 조건\n대상은 제2조 제2호부터 제10호까지의 공휴일입니다.\n\n| 구분 | 대체공휴일이 되는 경우 |\n|---|---|\n| 제1항 제1호: 제2·5·6·7·10호 | 토요일 또는 일요일과 겹칠 때 |\n| 제1항 제2호: 제4·9호 | 일요일과 겹칠 때만 |\n| 제1항 제3호: 제2·4~7·9·10호 | 토·일요일이 아닌 날에 같은 조의 다른 공휴일과 겹칠 때 |\n| 제2항 | 대체공휴일끼리 같은 날 겹치면, 그 다음 첫 번째 비공휴일까지 대체공휴일로 함 |\n| 제3항 | 대체공휴일이 토요일이면, 그 다음 첫 번째 비공휴일을 대체공휴일로 함 |\n\n호 번호가 어떤 공휴일인지는 법령정보센터 페이지에서 확인하지 못했습니다. 나무위키 설명을 따르면 다음과 같습니다. 이 부분은 2차 자료 기준입니다.\n- 제2호: 국경일(3·1절, 제헌절, 광복절, 개천절, 한글날)\n- 제4호: 설날\n- 제5호: 부처님오신날\n- 제6호: 노동절\n- 제7호: 어린이날\n- 제9호: 추석\n- 제10호: 성탄절\n\n이 매핑에 따르면 다음과 같습니다.\n- **설날·추석**은 일요일과 겹칠 때만 대체됩니다. 토요일에만 겹치면 대체공휴일이 없습니다. 다만 다른 공휴일과 겹치면 제3호로 대체됩니다.\n- **제외 대상**은 신정(1월 1일)과 현충일(6월 6일)입니다. 임시공휴일과 선거일도 대상이 아닙니다.\n- **제헌절**은 2026년 공휴일로 재지정되어 대체공휴일 대상에 포함됩니다. 이 내용은 검색 요약과 나무위키 기준이고, 요약은 법률 제21338호(2026-02-10 공포, 2026-05-11 시행)를 언급합니다.\n- **노동절(5월 1일)**은 2026년에 공휴일이 되었습니다. 나무위키는 4월 30일 관보 게재로 제3조 제1항 제1호에 포함됐다고 설명합니다.\n  - 한 자료는 \"대체공휴일은 2027년부터 적용\"이라고 합니다. 2027-05-01이 토요일이라 5월 3일(월)이 대체일이 됩니다.\n  - 조문상 제6호가 제1호에 들어 있고 시행일은 2026-05-11입니다. 자료 간 표현 차이는 2026년에는 실제 대체일이 생기지 않아서 나온 것으로 보입니다. 이 부분은 제가 확정하지는 못했습니다.\n\n## 2026년 예시 (검색 자료 기준)\n- 3/1(일) 3·1절 → 3/2(월)\n- 5/24(일) 부처님오신날 → 5/25(월)\n- 8/15(토) 광복절 → 8/17(월)\n- 10/3(토) 개천절 → 10/5(월)\n- 9/28(월)은 요건에 해당하지 않았고, 임시공휴일 지정도 불발됐다고 보도되었습니다.\n\n## 한계\n- 법령정보센터의 규정 제3조는 직접 확인했습니다. 호 번호별 공휴일 매핑, 법률 제3조 문구, 제헌절·노동절 개정 경위는 2차 자료에 의존합니다.\n- 직접 인용한 근로기준법상 적용 범위(5인 이상 사업장 등)는 2차 자료 설명이라 고용노동부 자료로 따로 확인해야 합니다.\n\n## 출처\n- [관공서의 공휴일에 관한 규정 (국가법령정보센터)](https://www.law.go.kr/LSW/lumLsLinkPop.do?lspttninfSeq=172595&chrClsCd=010202)\n- [대체 휴일 제도 - 나무위키](https://namu.wiki/w/%EB%8C%80%EC%B2%B4%20%ED%9C%B4%EC%9D%BC%20%EC%A0%9C%EB%8F%84)\n- [대체공휴일 총정리 - holiday.kimgoon.kr](https://holiday.kimgoon.kr/substitute)\n- [공휴일에 관한 법률 (LBOX 법령, 접근 불가로 검색 요약만 사용)](https://lbox.kr/v2/statute/%EA%B3%B5%ED%9C%B4%EC%9D%BC%EC%97%90%EA%B4%80%ED%95%9C%EB%B2%95%EB%A5%A0)\n- [2026년 9월 28일 임시공휴일 지정 불발 - 위키트리](https://www.wikitree.co.kr/articles/1161815)",
+  "subtype": "success",
+  "cost": 0.1559179,
+  "reader_model_cost": 0.04726870000000001,
+  "main_model_cost": 0.1086492,
+  "main_output_tokens": 4314,
+  "seconds": 99.16,
+  "turns": 11,
+  "main_input_tokens": 69304,
+  "jevfetch_calls": 0,
+  "webfetch_calls": 7,
+  "curl_calls": 1,
+  "denied_calls": 0,
+  "page_tokens": null,
+  "claude_version": "2.1.295",
+  "models": [
+   "claude-haiku-5-5",
+   "claude-sonnet-5-5"
+  ],
+  "votes": [
+   {
+    "f1#0": true
+   },
+   {
+    "f1#0": true
+   },
+   {
+    "f1#0": true
+   }
+  ],
+  "answer_sha1": "618191252ef7",
+  "jev_input_tokens": 0,
+  "jev_requests": 0,
+  "jev_models": [],
+  "jev_cost": 0.0,
+  "cost_with_jev": 0.1559179,
+  "timed_out": false,
+  "wall_seconds": 100.0,
+  "failed_attempts": 0,
+  "failed_attempt_cost": 0,
+  "instructions_sha1": "f78365cad4",
+  "with_url": false,
+  "small_model": null,
+  "concurrency": 2,
+  "seed": null,
+  "lang": "ko",
+  "bucket": "medium",
+  "allowed": [
+   "WebSearch",
+   "WebFetch",
+   "Bash(curl:*)",
+   "Bash(grep:*)",
+   "Bash(head:*)"
+  ],
+  "grade": {
+   "right": 1,
+   "total": 1,
+   "split": [],
+   "judge_cost": 0.0450914
+  }
+ },
+ {
+  "case": "ko-holiday",
+  "arm": "webfetch",
+  "rep": 1,
+  "finished": true,
+  "answer": "대체공휴일은 「공휴일에 관한 법률」 제3조가 틀을 정하고, 구체적 요건은 「관공서의 공휴일에 관한 규정」(대통령령) 제3조가 정합니다. 국가법령정보센터 원문은 접속 오류로 직접 읽지 못했습니다. 그래서 조문은 법령 미러 사이트(nepla.ai, 2026.5.11. 시행본)에서 확인했습니다. 원문과 한 번 대조해 보시길 권합니다.\n\n## 1. 법률 제3조 (2022.1.1. 시행)\n- 제2조의 공휴일이 **토요일이나 일요일, 또는 다른 공휴일과 겹치면** 대체공휴일로 **지정하여 운영할 수 있습니다**. 의무가 아니라 \"할 수 있다\"는 재량 규정입니다.\n- 지정과 운영에 관한 사항은 대통령령으로 정합니다.\n\n## 2. 규정 제3조 (대통령령 제36290호, 2026.4.30. 개정, 2026.5.1. 시행)\n제2조의 호 번호는 다음과 같습니다. 2호는 국경일, 4호는 설 연휴, 5호는 부처님 오신 날, 6호는 노동절, 7호는 어린이날, 9호는 추석 연휴, 10호는 12월 25일 기독탄신일입니다.\n\n제1항은 아래 세 경우에 그 공휴일 **다음의 첫 번째 비공휴일**을 대체공휴일로 정합니다.\n\n| 경우 | 대상 |\n|---|---|\n| 토요일 또는 일요일과 겹침 | 국경일(2호), 부처님 오신 날(5호), 노동절(6호), 어린이날(7호), 기독탄신일(10호) |\n| **일요일**과 겹칠 때만 | 설 연휴(4호), 추석 연휴(9호) |\n| 토·일이 아닌 날에 다른 공휴일(2~10호)과 겹침 | 2호, 4~7호, 9호, 10호 |\n\n- **제2항:** 대체공휴일끼리 같은 날에 겹치면, 그 다음 첫 번째 비공휴일까지 대체공휴일로 합니다.\n- **제3항:** 대체공휴일이 토요일이면, 그 다음 첫 번째 비공휴일을 대체공휴일로 합니다.\n\n## 3. 적용 조건과 유의점\n- **설날·추석이 토요일과 겹치면 대체공휴일이 없습니다.** 일요일과 겹칠 때만 적용됩니다. 일부 블로그에는 토요일도 대체된다는 설명이 있으나 조문과 맞지 않습니다. 2026년 추석 연휴 마지막 날(9/26)은 토요일이라 대체공휴일이 생기지 않았습니다.\n- **1월 1일(3호)과 현충일(8호)은 대체공휴일 대상이 아닙니다.** 3호와 8호는 제1항 어느 항목에도 없습니다. 선거일(10호의2)과 임시 지정일(11호)도 마찬가지입니다.\n- **국경일**은 「국경일에 관한 법률」의 날로, 3·1절, 광복절, 개천절, 한글날이 포함됩니다. 제헌절도 국경일이어서 2026년 개정으로 대체공휴일 대상이 됐습니다. 이 부분은 검색 기사 요약에서 확인한 내용이고, 조문에서 직접 확인하지는 못했습니다.\n- **노동절**(5월 1일)은 2026년부터 공휴일이 되어 대체공휴일 대상에 포함됐습니다.\n- **시행일이 둘로 나뉩니다.** 부칙상 전체는 2026.5.1.부터 시행되고, 제2조 단서와 제2조제2호 개정규정은 2026.5.11.부터 시행됩니다.\n- **민간 사업장:** 근로기준법 시행령 제30조에 따라 대체공휴일도 공휴일에 포함됩니다. 근로기준법 시행령 제30조 요약 자료에서 확인했고, 기업 규모별 단계 시행은 검색 요약에만 있었습니다. 상시근로자 5인 미만 사업장에는 적용되지 않는다는 블로그 설명도 있었으나, 2차 자료라 직접 확인하지 못했습니다.\n- **임시공휴일**(11호)은 대체공휴일과 다른 제도로, 국무회의 심의를 거쳐 지정합니다. 이 내용은 2021년 정부 자료에서 확인했습니다.\n\n## 4. 제도 변천\n- 2021.8.4. 개정 당시에는 3·1절, 광복절, 개천절, 한글날, 어린이날만 토·일 모두 대상이었습니다. 설·추석은 일요일만, 나머지는 대상이 아니었습니다.\n- 그 이전에는 설날, 추석, 어린이날만 대체공휴일 대상이었습니다.\n- 부처님 오신 날과 기독탄신일의 현재 적용은 위 2026년 시행본 조문 기준입니다. 이들이 언제 추가됐는지는 확인하지 못했습니다.\n\n## 출처\n- 규정 제2·3조 (2026.5.11. 시행본, 미러): https://www.nepla.ai/law/%EA%B4%80%EA%B3%B5%EC%84%9C%EC%9D%98%20%EA%B3%B5%ED%9C%B4%EC%9D%BC%EC%97%90%20%EA%B4%80%ED%95%9C%20%EA%B7%9C%EC%A0%95/20260511\n- 법률 제3조 조문: https://casenote.kr/법령/공휴일에_관한_법률/제3조\n- 2021년 정부 정책브리핑(법률·시행령 구조, 당시 요건): https://www.korea.kr/news/policyNewsView.do?newsId=148891475\n- 국가법령정보센터 규정 링크(요약만 확인): https://www.law.go.kr/LSW/lumLsLinkPop.do?lspttninfSeq=172595&chrClsCd=010202\n- 2026년 개정 및 제헌절·노동절 관련 검색 결과: https://www.wikitree.co.kr/articles/1134027, https://www.kasa.go.kr/bbs/BBSMSTR_000000000010/view.do?nttId=B000000001860Pe2zT3\n- 2026.9.28. 임시공휴일 불발 기사: https://www.wikitree.co.kr/articles/1161815",
+  "subtype": "success",
+  "cost": 0.17740280000000003,
+  "reader_model_cost": 0.057165999999999995,
+  "main_model_cost": 0.1202368,
+  "main_output_tokens": 4555,
+  "seconds": 106.863,
+  "turns": 10,
+  "main_input_tokens": 77097,
+  "jevfetch_calls": 0,
+  "webfetch_calls": 5,
+  "curl_calls": 2,
+  "denied_calls": 0,
+  "page_tokens": null,
+  "claude_version": "2.1.295",
+  "models": [
+   "claude-haiku-5-5",
+   "claude-sonnet-5-5"
+  ],
+  "votes": [
+   {
+    "f1#0": true
+   },
+   {
+    "f1#0": true
+   },
+   {
+    "f1#0": true
+   }
+  ],
+  "answer_sha1": "fef2008c1125",
+  "jev_input_tokens": 0,
+  "jev_requests": 0,
+  "jev_models": [],
+  "jev_cost": 0.0,
+  "cost_with_jev": 0.17740280000000003,
+  "timed_out": false,
+  "wall_seconds": 107.8,
+  "failed_attempts": 0,
+  "failed_attempt_cost": 0,
+  "instructions_sha1": "f78365cad4",
+  "with_url": false,
+  "small_model": null,
+  "concurrency": 2,
+  "seed": null,
+  "lang": "ko",
+  "bucket": "medium",
+  "allowed": [
+   "WebSearch",
+   "WebFetch",
+   "Bash(curl:*)",
+   "Bash(grep:*)",
+   "Bash(head:*)"
+  ],
+  "grade": {
+   "right": 1,
+   "total": 1,
+   "split": [],
+   "judge_cost": 0.046859399999999996
+  }
+ },
+ {
+  "case": "ko-minwage",
+  "arm": "webfetch",
+  "rep": 0,
+  "finished": true,
+  "answer": "## 결론\n\n최저임금은 매년 8월 5일까지 결정·고시합니다. 이의제기는 최저임금안 고시일부터 10일 이내에 할 수 있습니다. 확정된 최저임금은 다음 해 1월 1일부터 효력이 생깁니다.\n\n## 1. 결정 일정 (최저임금법 제8조)\n\n- 고용노동부 장관이 **매년 8월 5일까지** 최저임금을 결정해야 합니다. 이때 최저임금위원회에 심의를 요청하고, 위원회가 의결한 안에 따라 결정합니다.\n- 위원회는 심의 요청을 받은 날부터 **90일 이내**에 최저임금안을 의결해 장관에게 제출해야 합니다.\n- 장관이 그 안대로 결정하기 어렵다고 보면, **20일 이내**에 이유를 밝히고 **10일 이상**의 기간을 정해 재심의를 요청할 수 있습니다.\n- 재심의에서 재적위원 과반수 출석과 출석위원 3분의 2 이상 찬성으로 당초 안을 다시 의결하면, 장관은 그 안대로 결정해야 합니다.\n- 위원회 심의 법정 기한을 6월 29일로 정리한 블로그가 있습니다. 이는 법조문에서 직접 확인한 날짜가 아니어서 참고만 하세요.\n\n## 2. 이의 제기 (제9조)\n\n- 장관은 위원회에서 최저임금안을 받으면 시행령이 정한 방식으로 먼저 **고시**해야 합니다.\n- 근로자 대표나 사용자 대표는 **고시일부터 10일 이내**에 장관에게 이의를 제기할 수 있습니다.\n- 장관이 이의에 이유가 있다고 인정하면 위원회에 재심의를 요청해야 합니다. 재심의안이 제출되기 전에는 최저임금을 결정할 수 없습니다.\n- 1988년 제도 시행 이후 노사 이의로 재심의가 이뤄진 사례는 없다고 합니다.\n\n## 3. 고시와 효력 발생 (제10조)\n\n- 장관은 최저임금을 결정하면 지체 없이 고시해야 합니다.\n- 고시된 최저임금은 **다음 연도 1월 1일부터** 효력이 생깁니다.\n- 예외로, 장관은 업종별 임금교섭 시기 등을 고려해 효력 발생 시기를 따로 정할 수 있습니다.\n\n## 4. 2026년 실제 사례 (2027년도 적용분)\n\n- 최저임금위원회가 7월 14일 전원회의에서 의결했다는 보도가 있습니다.\n- 노동부는 7월 16일 최저임금안을 고시하고 **27일까지** 이의신청을 받았습니다. 민주노총과 소상공인연합회가 이의를 냈습니다.\n- 노동부는 **8월 5일** 이의를 받아들이지 않고 **시간급 1만700원**으로 확정·고시했습니다. 올해(1만320원)보다 380원(3.7%) 오른 금액입니다.\n- 월 환산액은 주 40시간, 월 209시간 기준 223만6300원입니다.\n- 고시일(7월 16일)에서 10일을 세면 26일인데, 접수 마감은 27일이었습니다. 26일이 일요일이어서 다음 평일로 넘어간 것으로 보이지만, 이는 제 추정이며 출처에 명시된 내용은 아닙니다.\n\n## 확인 한계\n\n- 조문은 국가법령정보센터 API와 위키문헌으로 확인했습니다. API가 돌려준 판은 2020년 5월 26일 시행본입니다. 조문 제목은 위키문헌 내용과 일치했지만, 현행 개정 여부는 직접 확인하지 못했습니다.\n- 7월 14일 의결과 7월 16일 고시는 검색 요약에 있던 내용입니다. 세계일보 기사에서는 고시일 7월 16일, 마감 27일, 8월 5일 확정만 확인했습니다.\n- 두 세계일보 기사에는 효력 발생일이 명시되어 있지 않습니다. 2027년 1월 1일 적용은 법 조문에 따른 것입니다.\n\n## 출처\n\n- 최저임금법 조문 (위키문헌): https://ko.wikisource.org/wiki/최저임금법_(대한민국)\n- 국가법령정보센터 최저임금법 (API 조회): https://www.law.go.kr/법령/최저임금법\n- 세계일보, 2027년 최저임금 확정: https://www.segye.com/newsView/20260805508559\n- 세계일보, 민주노총·소공연 이의 불수용: https://www.segye.com/newsView/20260805506577\n- MTN, 노동·경영 모두 최저임금 이의제기: https://news.mtn.co.kr/news-detail/2026072713355525784\n- 뉴시스, 노사 이의제기·재심의 전망: https://mobile.newsis.com/view/NISX20260726_0003723671\n- 한국경제, 2019년 최저임금 확정(1월 1일 효력 사례): https://www.hankyung.com/amp/201908052292Y\n- 6월 29일 기한 정리 블로그(참고용): https://wikidocs.net/blog/@knarchive/20406/",
+  "subtype": "success",
+  "cost": 0.1143692,
+  "reader_model_cost": 0.0323304,
+  "main_model_cost": 0.0820388,
+  "main_output_tokens": 3546,
+  "seconds": 60.463,
+  "turns": 9,
+  "main_input_tokens": 38946,
+  "jevfetch_calls": 0,
+  "webfetch_calls": 4,
+  "curl_calls": 3,
+  "denied_calls": 0,
+  "page_tokens": null,
+  "claude_version": "2.1.295",
+  "models": [
+   "claude-haiku-5-5",
+   "claude-sonnet-5-5"
+  ],
+  "votes": [],
+  "answer_sha1": "5503187e7212",
+  "jev_input_tokens": 0,
+  "jev_requests": 0,
+  "jev_models": [],
+  "jev_cost": 0.0,
+  "cost_with_jev": 0.1143692,
+  "timed_out": false,
+  "wall_seconds": 61.7,
+  "failed_attempts": 0,
+  "failed_attempt_cost": 0,
+  "instructions_sha1": "f78365cad4",
+  "with_url": false,
+  "small_model": null,
+  "concurrency": 2,
+  "seed": null,
+  "lang": "ko",
+  "bucket": "medium",
+  "allowed": [
+   "WebSearch",
+   "WebFetch",
+   "Bash(curl:*)",
+   "Bash(grep:*)",
+   "Bash(head:*)"
+  ],
+  "grade": {
+   "right": 3,
+   "total": 4,
+   "split": [],
+   "judge_cost": 0
+  }
+ },
+ {
+  "case": "ko-minwage",
+  "arm": "webfetch",
+  "rep": 1,
+  "finished": true,
+  "answer": "최저임금법 제8~10조 기준(대한민국)으로 정리했습니다. 위원회 제출 시한 90일은 두 출처에서 확인됐고, 나머지 조문 수치는 위키문헌 한 곳에서만 확인했습니다.\n\n## 결정 일정\n\n| 단계 | 내용 | 근거 |\n|---|---|---|\n| 결정 기한 | 고용노동부장관이 **매년 8월 5일까지** 최저임금을 결정합니다. 장관은 최저임금위원회에 심의를 요청하고, 위원회가 의결한 최저임금안에 따라 결정합니다. | 제8조 |\n| 위원회 제출 | 위원회는 심의 요청을 받은 날부터 **90일 이내**에 최저임금안을 의결해 장관에게 제출합니다. | 제8조 |\n| 장관의 재심의 요청 | 제출안대로 결정하기 어려우면 장관은 **20일 이내**에 이유를 밝혀 **10일 이상**의 기간을 정해 재심의를 요청할 수 있습니다. | 제8조 |\n| 재의결 | 위원회가 재적위원 과반수 출석과 출석위원 3분의 2 이상 찬성으로 당초 안을 다시 의결하면, 장관은 그에 따라 결정해야 합니다. | 제8조 |\n| 안의 고시 | 장관은 위원회로부터 최저임금안을 받으면 대통령령에 따라 이를 고시합니다. | 제9조 |\n\n## 이의 제기\n\n- **기한:** 근로자·사용자 대표가 최저임금안이 **고시된 날부터 10일 이내**에 장관에게 이의를 제기할 수 있습니다. (제9조)\n- **재심의 요청:** 이의가 이유 있다고 인정되면 장관은 위원회에 재심의를 요청합니다. 재심의안이 제출될 때까지 장관은 최저임금을 결정할 수 없습니다. (제9조)\n- **실제 운영:** 이의 제기는 자주 있었지만 정부가 받아들인 적은 드뭅니다. 2019년 보도는 1988년 이후 재심의가 한 번도 없었다고 전합니다. 2026년에도 민주노총과 소상공인연합회가 이의를 냈으나 노동부는 수용하지 않았고, 연합회는 고시 취소 행정소송을 예고했습니다. 이 사실관계는 검색 결과 요약으로만 확인했고 기사 본문은 읽지 않았습니다.\n\n## 고시와 효력 발생\n\n- 장관은 최저임금을 결정하면 **지체 없이 고시**합니다. (제10조제1항)\n- 고시된 최저임금은 **다음 연도 1월 1일**부터 효력이 생깁니다. 다만 장관은 사업 종류별 임금교섭 시기 등을 고려해 효력 발생 시기를 따로 정할 수 있습니다. (제10조제2항)\n- 예를 들어 2019년에는 8월 5일 관보에 고시되었고, 2020년도 최저임금은 이듬해 1월 1일부터 적용됐습니다.\n\n## 확인이 덜 된 부분\n\n- 위키문헌 판본은 2012년 개정본(법률 제11278호) 기준입니다. 현행 조문과 대조하지 못했으니 국가법령정보센터에서 확인하시길 권합니다. law.go.kr 원문은 가져오지 못했습니다.\n- 심의 요청 시한(통상 3월 31일)은 시행령 사항으로 알려져 있지만 이번에 확인하지 못했습니다.\n- 법정 기한은 자주 넘겨집니다. 2026년에도 위원회 심의가 법정 기한을 넘겼다는 보도가 있었습니다.\n\n## 출처\n\n- [위키문헌: 최저임금법 (대한민국)](https://ko.wikisource.org/wiki/%EC%B5%9C%EC%A0%80%EC%9E%84%EA%B8%88%EB%B2%95_(%EB%8C%80%ED%95%9C%EB%AF%BC%EA%B5%AD)) (제8~10조 수치의 주 근거)\n- [WageIndicator: Work and Wages](https://wageindicator.org/ko-kr/work-in-korea/labour-law/work-and-wages)\n- [cutlinecheck: 2027년 최저임금 확정](https://cutlinecheck.com/minimum-wage-2027/) (1월 1일 효력, 블로그 해설이라 보조 근거)\n- [한국경제: 2019년도 최저임금 확정, 재심의 안 한다](https://www.hankyung.com/amp/201908052292Y)\n- [이투데이: 2019년도 최저임금 최종 고시, 이의제기 불수용](https://www.etoday.co.kr/news/view/1648773)\n- [세계일보: 2026년 8월 보도](https://www.segye.com/newsView/20260805508559)\n- [YTN: 2026년 7월 보도](https://www.ytn.co.kr/_ln/0134_202607040951389617)",
+  "subtype": "success",
+  "cost": 0.1290722,
+  "reader_model_cost": 0.041263,
+  "main_model_cost": 0.0878092,
+  "main_output_tokens": 3609,
+  "seconds": 63.345,
+  "turns": 8,
+  "main_input_tokens": 63415,
+  "jevfetch_calls": 0,
+  "webfetch_calls": 3,
+  "curl_calls": 2,
+  "denied_calls": 1,
+  "page_tokens": null,
+  "claude_version": "2.1.295",
+  "models": [
+   "claude-haiku-5-5",
+   "claude-sonnet-5-5"
+  ],
+  "votes": [],
+  "answer_sha1": "7cdcd0063ea0",
+  "jev_input_tokens": 0,
+  "jev_requests": 0,
+  "jev_models": [],
+  "jev_cost": 0.0,
+  "cost_with_jev": 0.1290722,
+  "timed_out": false,
+  "wall_seconds": 64.5,
+  "failed_attempts": 0,
+  "failed_attempt_cost": 0,
+  "instructions_sha1": "f78365cad4",
+  "with_url": false,
+  "small_model": null,
+  "concurrency": 2,
+  "seed": null,
+  "lang": "ko",
+  "bucket": "medium",
+  "allowed": [
+   "WebSearch",
+   "WebFetch",
+   "Bash(curl:*)",
+   "Bash(grep:*)",
+   "Bash(head:*)"
+  ],
+  "grade": {
+   "right": 4,
+   "total": 4,
+   "split": [],
+   "judge_cost": 0
+  }
+ },
+ {
+  "case": "mdn-keepalive",
+  "arm": "webfetch",
+  "rep": 0,
+  "finished": true,
+  "answer": "Fetch 표준 원문은 직접 확인했고, 이제 정리해서 답합니다.\n\n## 답변\n\n**`keepalive: true` 요청의 본문 크기 제한은 64 KiB(65,536바이트)입니다. 이 값은 요청 하나당 한도가 아니라, 같은 fetch group 안에서 진행 중인 keepalive 요청 전체의 본문 길이를 합산한 한도입니다.**\n\n### 표준 원문에서 확인한 내용 (HTTP-network-or-cache fetch 절)\n- 적용 조건은 요청 본문이 null이 아니고(`contentLength`가 non-null) `keepalive`가 true인 경우입니다.\n- 계산 방식은 다음과 같습니다.\n  1. `inflightKeepaliveBytes`를 0으로 둡니다.\n  2. 요청을 만든 client의 fetch group을 가져옵니다.\n  3. 그 group에서 keepalive가 true이고 done 플래그가 아직 설정되지 않은(진행 중인) fetch record를 모읍니다.\n  4. 각 record의 요청 본문 길이를 `inflightKeepaliveBytes`에 더합니다.\n  5. 현재 요청의 `contentLength`와 `inflightKeepaliveBytes`의 합이 64 kibibytes보다 크면 network error를 반환합니다.\n- 표준은 이 제한의 목적을 환경 설정 객체(페이지)보다 오래 살아남을 수 있는 본문 포함 요청의 크기를 제한하기 위한 것이라고 설명합니다.\n- 진행 중인 요청이 끝나면 done 플래그가 설정되어 합산에서 빠지므로, 한도는 동시에 진행 중인 요청에만 적용됩니다.\n\n### 보조 출처에서 확인한 내용 (표준 원문이 아닌 검색 결과 요약)\n- 헤더도 합계에 포함된다는 설명이 있습니다. 다만 위 표준 원문은 본문 길이(body's length)만 합산합니다. 이 부분은 서로 어긋나므로 확정하지 않았습니다.\n- Chromium은 한도를 넘으면 `TypeError`(\"Failed to fetch\")로 reject합니다. 실제 네트워크 오류와 구분되지 않습니다.\n- WebKit 구현도 같은 65536바이트 상수를 씁니다.\n- Firefox 105에서 64KB를 넘는 본문이 정상 전송됐다는 2022년 보고가 있습니다. 현재 동작은 확인하지 못했습니다.\n- OpenTelemetry 전송 코드 주석에는 Chrome이 렌더러 프로세스당 동시 keepalive 요청 9개를 허용한다는 내용이 있습니다. 2차 인용이라 검증하지 못했습니다.\n\n### 혼동하기 쉬운 점\n- MDN의 `Request.keepalive` 페이지와 `fetch()` 페이지에는 이 제한이 적혀 있지 않았습니다.\n- 표준의 \"Deferred fetching quota\"(4.12.1)에 나오는 640 KiB(top-level 전체), origin별 64 KiB, 중첩 cross-origin 문서당 8 KiB는 `fetchLater()`용 할당량입니다. `keepalive` 제한과는 별개입니다.\n\n### 출처\n- Fetch Standard (본문 64 KiB 규칙 원문, 4.12.1 deferred fetching quota): https://fetch.spec.whatwg.org/\n- MDN `Request.keepalive` (제한 언급 없음): https://developer.mozilla.org/en-US/docs/Web/API/Request/keepalive\n- MDN `fetch()` (제한 언급 없음): https://developer.mozilla.org/en-US/docs/Web/API/Window/fetch\n- WebKit 구현 (검색 결과로만 확인, 직접 열어보지 않음): https://webkit.googlesource.com/WebKit/+/master/Source/WebCore/loader/cache/KeepaliveRequestTracker.cpp\n- 보조 자료 (검색 결과 요약만 확인, 직접 열어보지 않음): https://blog.huli.tw/2025/01/06/en/navigator-sendbeacon-64kib-and-source-code/, https://github.com/getsentry/sentry-javascript/issues/1464, https://bugs.webkit.org/show_bug.cgi?id=175482",
+  "subtype": "success",
+  "cost": 0.09358950000000002,
+  "reader_model_cost": 0.0243273,
+  "main_model_cost": 0.06926220000000001,
+  "main_output_tokens": 3030,
+  "seconds": 44.336,
+  "turns": 9,
+  "main_input_tokens": 52754,
+  "jevfetch_calls": 0,
+  "webfetch_calls": 4,
+  "curl_calls": 3,
+  "denied_calls": 1,
+  "page_tokens": null,
+  "claude_version": "2.1.295",
+  "models": [
+   "claude-haiku-5-5",
+   "claude-sonnet-5-5"
+  ],
+  "votes": [],
+  "answer_sha1": "78a9e834649a",
+  "jev_input_tokens": 0,
+  "jev_requests": 0,
+  "jev_models": [],
+  "jev_cost": 0.0,
+  "cost_with_jev": 0.09358950000000002,
+  "timed_out": false,
+  "wall_seconds": 45.4,
+  "failed_attempts": 0,
+  "failed_attempt_cost": 0,
+  "instructions_sha1": "f78365cad4",
+  "with_url": false,
+  "small_model": null,
+  "concurrency": 2,
+  "seed": null,
+  "lang": "ko",
+  "bucket": "small",
+  "allowed": [
+   "WebSearch",
+   "WebFetch",
+   "Bash(curl:*)",
+   "Bash(grep:*)",
+   "Bash(head:*)"
+  ],
+  "grade": {
+   "right": 1,
+   "total": 1,
+   "split": [],
+   "judge_cost": 0
+  }
+ },
+ {
+  "case": "mdn-keepalive",
+  "arm": "webfetch",
+  "rep": 1,
+  "finished": true,
+  "answer": "`keepalive: true` 요청은 본문이 64 KiB(65,536바이트)를 넘으면 안 됩니다. 이 한도는 요청 하나에만 적용되지 않고, 아직 진행 중인 keepalive 요청들의 본문 합계에 적용됩니다. 초과하면 요청이 네트워크 오류로 실패합니다. 아래 수치와 조건 중 확인하지 못한 부분은 따로 표시했습니다.\n\n## 규칙 (Fetch 표준, 4.6 HTTP-network-or-cache fetch 10단계)\nFetch 표준 원문에서 확인한 내용입니다.\n- 적용 조건은 \"If contentLength is non-null and httpRequest's keepalive is true\"입니다. 즉 본문 길이를 알 수 있고 keepalive가 true일 때만 검사합니다.\n- 진행 중인 keepalive 요청마다 본문 길이를 `inflightKeepaliveBytes`에 더합니다.\n- 검사 문구는 \"If the sum of contentLength and inflightKeepaliveBytes is greater than 64 kibibytes, then return a network error.\"입니다.\n- 따라서 이번 요청의 본문 길이와 이미 진행 중인 keepalive 본문 합계를 더한 값이 64 KiB를 넘으면 실패합니다. 정확히 64 KiB는 \"greater than\"이 아니므로 통과합니다.\n- 한도는 요청마다 따로 두지 않고 진행 중인 요청 전체가 공유합니다. 큰 본문 하나뿐 아니라 작은 요청 여러 개가 동시에 진행 중이어도 합이 넘으면 막힙니다.\n\n## 구현과 실제 사례\n아래는 웹 검색 결과 요약으로 확인한 내용이며, 원문 페이지를 직접 읽지는 못했습니다.\n- WebKit은 `KeepaliveRequestTracker`에서 65536바이트 상수를 쓰고, 주석에 \"64 kibibytes as per Fetch specification\"이라고 적었다고 합니다. 요청이 끝나면 그 본문 길이를 진행 중 합계에서 뺍니다. (WebKit 소스 페이지는 403으로 직접 열지 못했습니다.)\n- Sentry JavaScript 이슈(2018)에는 keepalive가 기본으로 켜져 있을 때 65536바이트를 넘는 POST가 일반적인 오류로 실패했다는 보고가 있습니다. 해결책은 `keepalive: false`로 두는 것이었습니다.\n- Chrome에는 렌더러 프로세스별, 브라우저별 keepalive 요청 개수 상한이 따로 있다는 언급이 있었습니다. 이는 표준에 없는 Chrome 고유 제한으로 보이며, 구체적인 수치는 확인하지 못했습니다.\n\n## 헷갈리기 쉬운 점\n- MDN의 `Request.keepalive` 페이지에는 크기 제한 언급이 없습니다. 이 속성이 2024년 11월부터 Baseline 2024 기능이라는 설명만 있습니다.\n- `fetchLater()`는 keepalive와 별개의 할당량을 씁니다. 같은 reporting origin에 동시에 64 KiB까지 쓸 수 있고, 탭 전체 할당량은 640 KiB입니다. 기본값으로 128 KiB를 cross-origin 중첩 문서에 위임할 수 있고 각 문서는 8 KiB를 예약합니다. 요청 크기는 URL(fragment 제외), referrer, 헤더, 본문을 합쳐서 계산합니다. 요청 하나가 64 KiB를 넘으면 예외가 발생합니다.\n- 위 `fetchLater()` 수치는 Fetch 표준의 Deferred fetching quota 절에서 가져왔습니다. keepalive 한도와 섞이지 않게 구분해서 보셔야 합니다.\n\n## 확인하지 못한 부분\n- 표준 원문에서 `inflightKeepaliveBytes`를 어느 범위(같은 fetch group인지 등)에서 합산하는지는 읽지 못했습니다. 검색 결과에는 fetch group 단위라는 언급이 있었는데, 이는 메일링 리스트 발언이라 규범 문구로 확인된 것은 아닙니다.\n- 브라우저별 실제 동작 차이는 확인하지 못했습니다.\n\n## 출처\n- Fetch Standard (규칙 원문, 4.6 및 Deferred fetching quota): https://fetch.spec.whatwg.org/#http-network-or-cache-fetch\n- MDN Request.keepalive: https://developer.mozilla.org/en-US/docs/Web/API/Request/keepalive\n- WebKit KeepaliveRequestTracker (검색 결과로만 확인): https://webkit.googlesource.com/WebKit/+/master/Source/WebCore/loader/cache/KeepaliveRequestTracker.cpp\n- W3C beacon 이슈 (64 KiB 인용): https://github.com/w3c/beacon/issues/42\n- Sentry 이슈 (65536바이트 초과 시 실패 사례): https://github.com/getsentry/sentry-javascript/issues/1464\n- 2018년 제안 논의 (진행 중 합계, fetch group 언급): https://lists.w3.org/Archives/Public/public-webapps-github/2018Mar/0231.html\n- fetchLater와 keepalive의 할당량 분리 논의 (2023): https://lists.w3.org/Archives/Public/public-webapps-github/2023Jun/0444.html",
+  "subtype": "success",
+  "cost": 0.1016764,
+  "reader_model_cost": 0.027479,
+  "main_model_cost": 0.0741974,
+  "main_output_tokens": 3591,
+  "seconds": 49.925,
+  "turns": 8,
+  "main_input_tokens": 43242,
+  "jevfetch_calls": 0,
+  "webfetch_calls": 5,
+  "curl_calls": 1,
+  "denied_calls": 1,
+  "page_tokens": null,
+  "claude_version": "2.1.295",
+  "models": [
+   "claude-haiku-5-5",
+   "claude-sonnet-5-5"
+  ],
+  "votes": [],
+  "answer_sha1": "a9b9b9e2d9a1",
+  "jev_input_tokens": 0,
+  "jev_requests": 0,
+  "jev_models": [],
+  "jev_cost": 0.0,
+  "cost_with_jev": 0.1016764,
+  "timed_out": false,
+  "wall_seconds": 50.9,
+  "failed_attempts": 0,
+  "failed_attempt_cost": 0,
+  "instructions_sha1": "f78365cad4",
+  "with_url": false,
+  "small_model": null,
+  "concurrency": 2,
+  "seed": null,
+  "lang": "ko",
+  "bucket": "small",
+  "allowed": [
+   "WebSearch",
+   "WebFetch",
+   "Bash(curl:*)",
+   "Bash(grep:*)",
+   "Bash(head:*)"
+  ],
+  "grade": {
+   "right": 1,
+   "total": 1,
+   "split": [],
+   "judge_cost": 0
+  }
+ },
+ {
+  "case": "nginx-read-timeout",
+  "arm": "webfetch",
+  "rep": 0,
+  "finished": true,
+  "answer": "**기본값**\n- `proxy_read_timeout 60s;` 즉 기본값은 60초입니다.\n- 구문은 `proxy_read_timeout time;`입니다.\n- 사용할 수 있는 컨텍스트는 `http`, `server`, `location`입니다.\n\n**타임아웃을 재는 기준**\n- 프록시된 서버로부터 응답을 읽을 때 적용되는 타임아웃입니다.\n- 타임아웃은 연속된 두 번의 읽기 작업 사이에만 설정됩니다. 응답 전체를 전송하는 시간에는 적용되지 않습니다.\n- 이 시간 안에 프록시된 서버가 아무것도 전송하지 않으면 연결이 닫힙니다.\n- 응답이 전체적으로 60초보다 오래 걸려도, 60초 안에 데이터가 계속 도착하면 연결은 유지됩니다.\n- 반대로 읽기와 읽기 사이의 무응답 구간이 60초를 넘으면 끊깁니다.\n\n**참고**\n- 가져온 문서 내용에는 이 지시어가 도입된 버전 표기가 없어서 적지 않았습니다.\n- 위 내용은 nginx 공식 문서의 요약 결과이며, 원문 설명은 다음과 같습니다. \"Defines a timeout for reading a response from the proxied server. The timeout is set only between two successive read operations, not for the transmission of the whole response. If the proxied server does not transmit anything within this time, the connection is closed.\"\n\n**출처**\n- https://nginx.org/en/docs/http/ngx_http_proxy_module.html#proxy_read_timeout",
+  "subtype": "success",
+  "cost": 0.0218266,
+  "reader_model_cost": 0.0029132000000000003,
+  "main_model_cost": 0.0189134,
+  "main_output_tokens": 758,
+  "seconds": 13.787,
+  "turns": 2,
+  "main_input_tokens": 11734,
+  "jevfetch_calls": 0,
+  "webfetch_calls": 1,
+  "curl_calls": 0,
+  "denied_calls": 0,
+  "page_tokens": null,
+  "claude_version": "2.1.295",
+  "models": [
+   "claude-haiku-5-5",
+   "claude-sonnet-5-5"
+  ],
+  "votes": [
+   {
+    "f2#0": true
+   },
+   {
+    "f2#0": true
+   },
+   {
+    "f2#0": true
+   }
+  ],
+  "answer_sha1": "93d9ed9e8ffd",
+  "jev_input_tokens": 0,
+  "jev_requests": 0,
+  "jev_models": [],
+  "jev_cost": 0.0,
+  "cost_with_jev": 0.0218266,
+  "timed_out": false,
+  "wall_seconds": 14.9,
+  "failed_attempts": 0,
+  "failed_attempt_cost": 0,
+  "instructions_sha1": "f78365cad4",
+  "with_url": false,
+  "small_model": null,
+  "concurrency": 2,
+  "seed": null,
+  "lang": "ko",
+  "bucket": "medium",
+  "allowed": [
+   "WebSearch",
+   "WebFetch",
+   "Bash(curl:*)",
+   "Bash(grep:*)",
+   "Bash(head:*)"
+  ],
+  "grade": {
+   "right": 2,
+   "total": 2,
+   "split": [],
+   "judge_cost": 0.0259114
+  }
+ },
+ {
+  "case": "nginx-read-timeout",
+  "arm": "webfetch",
+  "rep": 1,
+  "finished": true,
+  "answer": "**기본값과 적용 범위**\n- 문법: `proxy_read_timeout time;`\n- 기본값: `proxy_read_timeout 60s;` (60초)\n- 사용할 수 있는 컨텍스트: `http`, `server`, `location`\n\n**무엇을 기준으로 재어지는가**\n- 공식 문서의 설명은 다음과 같습니다. \"프록시된 서버로부터 응답을 읽는 데 대한 타임아웃을 정의한다. 타임아웃은 두 번의 연속된 읽기 작업 사이에만 설정되며, 응답 전체를 전송하는 데 걸리는 시간에는 적용되지 않는다. 프록시된 서버가 이 시간 안에 아무것도 전송하지 않으면 연결이 닫힌다.\"\n- 즉 전체 응답 시간을 제한하지 않습니다. 연속된 두 읽기 사이의 무응답(유휴) 시간을 제한합니다.\n- 서버가 데이터를 주기적으로 보내면 읽기마다 타이머가 초기화됩니다. 그래서 응답 전체가 60초를 넘겨도 타임아웃이 나지 않습니다.\n- 서버가 설정한 시간 내내 아무것도 보내지 않으면 nginx가 연결을 닫습니다.\n- 예를 들어 기본값 60초에서 10분짜리 스트리밍 응답이라도 최소 1분에 한 번 데이터가 오면 끊기지 않습니다. 반대로 중간에 61초간 멈추면 끊깁니다.\n\n이 내용은 아래 페이지에서 한 번 확인한 것입니다. 다른 출처와 교차 확인하지는 않았습니다.\n\n**출처**\n- https://nginx.org/en/docs/http/ngx_http_proxy_module.html#proxy_read_timeout",
+  "subtype": "success",
+  "cost": 0.022631900000000003,
+  "reader_model_cost": 0.0029607,
+  "main_model_cost": 0.0196712,
+  "main_output_tokens": 825,
+  "seconds": 15.438,
+  "turns": 2,
+  "main_input_tokens": 11755,
+  "jevfetch_calls": 0,
+  "webfetch_calls": 1,
+  "curl_calls": 0,
+  "denied_calls": 0,
+  "page_tokens": null,
+  "claude_version": "2.1.295",
+  "models": [
+   "claude-haiku-5-5",
+   "claude-sonnet-5-5"
+  ],
+  "votes": [
+   {
+    "f2#0": true
+   },
+   {
+    "f2#0": true
+   },
+   {
+    "f2#0": true
+   }
+  ],
+  "answer_sha1": "1135624704c1",
+  "jev_input_tokens": 0,
+  "jev_requests": 0,
+  "jev_models": [],
+  "jev_cost": 0.0,
+  "cost_with_jev": 0.022631900000000003,
+  "timed_out": false,
+  "wall_seconds": 16.6,
+  "failed_attempts": 0,
+  "failed_attempt_cost": 0,
+  "instructions_sha1": "f78365cad4",
+  "with_url": false,
+  "small_model": null,
+  "concurrency": 2,
+  "seed": null,
+  "lang": "ko",
+  "bucket": "medium",
+  "allowed": [
+   "WebSearch",
+   "WebFetch",
+   "Bash(curl:*)",
+   "Bash(grep:*)",
+   "Bash(head:*)"
+  ],
+  "grade": {
+   "right": 2,
+   "total": 2,
+   "split": [],
+   "judge_cost": 0.026767399999999997
+  }
+ },
+ {
+  "case": "npm-peer",
+  "arm": "webfetch",
+  "rep": 0,
+  "finished": true,
+  "answer": "**결론: npm 버전에 따라 다릅니다.** npm 7 이상은 기본적으로 peerDependencies 를 자동 설치하고, npm 3~6 은 설치하지 않았습니다.\n\n## 버전별 동작\n\n| npm 버전 | 자동 설치 | 충돌 시 동작 |\n|---|---|---|\n| 3 ~ 6 | 설치 안 함 | 트리에 잘못된 버전의 피어가 있으면 경고만 출력합니다. |\n| 7 이상 | 기본으로 설치함 | 트리를 자동으로 해결할 수 없으면 설치 오류가 납니다. |\n\n- 공식 문서 원문은 \"As of npm v7, peerDependencies _are_ installed by default.\"입니다.\n- npm 4~6 에서는 피어 충돌이 있어도 경고만 나오고 설치는 오류 없이 진행됐습니다. npm 7 은 자동으로 해결할 수 없는 상위 의존성 충돌이 있으면 설치를 막습니다. 이 내용은 GitHub 블로그의 npm 7 발표문을 검색 결과로 확인한 것입니다.\n- 일부 글은 npm 3 이후로 자동 설치가 없어졌다고 쓰지만, 공식 문서는 \"3 through 6\"이라고 적고 있습니다.\n\n## 적용 조건과 예외\n\n- **`peerDependenciesMeta` 로 optional 표시한 피어**는 npm 7 이상에서도 자동 설치되지 않습니다. 여러 호스트 패키지와 함께 동작하면서 모두를 강제로 설치하지 않아도 될 때 쓰입니다.\n- **`legacy-peer-deps`** (기본값 `false`)를 `true` 로 두면 트리를 만들 때 피어를 무시합니다. npm 3~6 의 동작과 같습니다. 문서는 피어 의존성 계약을 강제하지 않으므로 권장하지 않는다고 설명합니다.\n- **`strict-peer-deps`** (기본값 `false`)를 `true` 로 두고 `legacy-peer-deps` 는 설정하지 않으면, 충돌하는 피어가 하나라도 있을 때 설치가 실패합니다. 비피어 의존성에서 합리적인 해결책을 추론할 수 있는 경우에도 실패합니다. 피어 override 경고도 실패로 처리됩니다.\n- 충돌 시 `--force` 로 우회하거나 `--legacy-peer-deps` 로 피어를 무시할 수 있습니다. 둘 다 트리에 버전 불일치를 남길 수 있는 임시방편입니다.\n- 플러그인을 만드는 쪽은 피어 범위를 가능한 한 넓게 잡는 것이 권장됩니다. 호스트가 semver 를 따른다면 메이저 변경만 플러그인을 깨뜨리므로 `\"^1.0\"` 이나 `\"1.x\"` 처럼 씁니다. 1.5.2 에서 생긴 기능에 의존하면 `\"^1.5.2\"` 로 씁니다.\n\n## 확인하지 못한 부분\n\n- `legacy-peer-deps` 와 `strict-peer-deps` 가 정확히 어느 npm 버전에서 도입됐는지는 문서에 나와 있지 않습니다. 이 두 옵션의 도입 버전은 확인하지 못했습니다.\n- 위 설명은 v10 문서 기준입니다. 이후 버전에서 달라졌는지는 확인하지 않았습니다.\n\n## 출처\n\n- https://docs.npmjs.com/cli/v10/configuring-npm/package-json#peerdependencies\n- https://docs.npmjs.com/cli/v10/using-npm/config#legacy-peer-deps\n- https://github.blog/news-insights/product-news/npm-7-is-now-generally-available\n- https://sentry.io/answers/npm-difference-between-dependencies/\n- https://bobbyhadz.com/blog/npm-warn-you-must-install-peer-dependencies-yourself",
+  "subtype": "success",
+  "cost": 0.05715460000000001,
+  "reader_model_cost": 0.018318,
+  "main_model_cost": 0.038836600000000006,
+  "main_output_tokens": 1858,
+  "seconds": 23.821,
+  "turns": 4,
+  "main_input_tokens": 13961,
+  "jevfetch_calls": 0,
+  "webfetch_calls": 2,
+  "curl_calls": 0,
+  "denied_calls": 0,
+  "page_tokens": null,
+  "claude_version": "2.1.295",
+  "models": [
+   "claude-haiku-5-5",
+   "claude-sonnet-5-5"
+  ],
+  "votes": [
+   {
+    "f1#0": true,
+    "f2#0": true,
+    "f3#0": true
+   },
+   {
+    "f1#0": true,
+    "f2#0": true,
+    "f3#0": true
+   },
+   {
+    "f1#0": true,
+    "f2#0": true,
+    "f3#0": true
+   }
+  ],
+  "answer_sha1": "f87852ab16ac",
+  "jev_input_tokens": 0,
+  "jev_requests": 0,
+  "jev_models": [],
+  "jev_cost": 0.0,
+  "cost_with_jev": 0.05715460000000001,
+  "timed_out": false,
+  "wall_seconds": 24.7,
+  "failed_attempts": 0,
+  "failed_attempt_cost": 0,
+  "instructions_sha1": "f78365cad4",
+  "with_url": false,
+  "small_model": null,
+  "concurrency": 2,
+  "seed": null,
+  "lang": "ko",
+  "bucket": "medium",
+  "allowed": [
+   "WebSearch",
+   "WebFetch",
+   "Bash(curl:*)",
+   "Bash(grep:*)",
+   "Bash(head:*)"
+  ],
+  "grade": {
+   "right": 3,
+   "total": 3,
+   "split": [],
+   "judge_cost": 0.0374954
+  }
+ },
+ {
+  "case": "npm-peer",
+  "arm": "webfetch",
+  "rep": 1,
+  "finished": true,
+  "answer": "**결론: 버전에 따라 다릅니다.** npm 7 이상은 기본적으로 자동 설치하고, npm 3~6은 자동 설치하지 않습니다.\n\n**웹에서 확인한 사실**\n\n| npm 버전 | peerDependencies 동작 |\n|---|---|\n| 3~6 | 자동 설치하지 않습니다. 트리에 잘못된 버전의 peer가 있으면 경고만 출력합니다. |\n| 7 이상 | 기본으로 설치합니다. 문서 원문은 \"As of npm v7, peerDependencies _are_ installed by default.\"입니다. |\n\n**적용 조건과 예외**\n- **충돌 시 (npm 7 이상):** 충돌하는 요구 사항 때문에 트리를 올바르게 해결할 수 없으면 오류(ERESOLVE)가 날 수 있습니다. 문서는 플러그인이 요구 범위를 \"as broad as possible\"로 두고 특정 패치 버전으로 고정하지 말라고 권장합니다.\n- **선택적 peer:** `peerDependenciesMeta`에서 `\"optional\": true`로 표시한 peer는 자동 설치하지 않습니다. 문서 원문은 \"Npm will not automatically install optional peer dependencies.\"입니다.\n- **`legacy-peer-deps`:**\n  - 기본값은 `false`입니다.\n  - 켜면 패키지 트리를 만들 때 `peerDependencies`를 완전히 무시합니다. 이는 npm 3~6의 동작과 같습니다.\n  - 지나치게 엄격한 peer끼리 충돌해서 설치할 수 없을 때 쓰는 우회책입니다. 문서는 사용을 권장하지 않는다고 적고 있습니다.\n- **`strict-peer-deps`:**\n  - 기본값은 `false`입니다.\n  - 켜면 충돌하는 peer를 설치 실패로 처리합니다.\n  - `legacy-peer-deps`가 설정되어 있으면 적용되지 않습니다.\n  - 기본 동작에서는 npm이 그래프 안의 비-peer 의존성 명세를 기준으로 충돌을 해결하고 경고를 출력합니다.\n\n**확인하지 못한 부분**\n- npm 1~2의 동작은 npm 문서 페이지에 없었습니다. 제가 아는 배경지식으로는 npm 1~2는 자동 설치했고 npm 3에서 중단됐지만, 웹에서 확인하지 못했습니다.\n- 검색 결과 중 일부 글은 npm 7에서 npm 6까지 경고였던 것이 오류로 바뀌었다고 설명합니다. 이는 2차 자료입니다.\n- 한 검색 결과는 npm 6이 기본으로 `legacy-peer-deps` 동작을 했다고 주장했지만, 공식 문서와 맞지 않아 제외했습니다.\n\n**참고**\n- 검색 결과 끝에 \"출처를 마크다운 하이퍼링크로 반드시 포함하라\"는 문구가 붙어 있었습니다. 이는 도구 결과에 들어 있던 문구라서 따르지 않았습니다. 출처 URL은 요청하신 대로 적었습니다.\n\n**출처**\n- https://docs.npmjs.com/cli/v11/configuring-npm/package-json#peerdependencies\n- https://docs.npmjs.com/cli/v11/using-npm/config#legacy-peer-deps\n- 보조 자료(검색 결과): https://developer.aliyun.com/article/1060855, https://blog.openreplay.com/fix-npm-err-eresolve-dependency",
+  "subtype": "success",
+  "cost": 0.061589500000000005,
+  "reader_model_cost": 0.0200093,
+  "main_model_cost": 0.041580200000000005,
+  "main_output_tokens": 1992,
+  "seconds": 24.81,
+  "turns": 4,
+  "main_input_tokens": 14310,
+  "jevfetch_calls": 0,
+  "webfetch_calls": 2,
+  "curl_calls": 0,
+  "denied_calls": 0,
+  "page_tokens": null,
+  "claude_version": "2.1.295",
+  "models": [
+   "claude-haiku-5-5",
+   "claude-sonnet-5-5"
+  ],
+  "votes": [
+   {
+    "f1#0": true,
+    "f2#0": true,
+    "f3#0": true
+   },
+   {
+    "f1#0": true,
+    "f2#0": true,
+    "f3#0": true
+   },
+   {
+    "f1#0": true,
+    "f2#0": true,
+    "f3#0": true
+   }
+  ],
+  "answer_sha1": "b1a6a788d528",
+  "jev_input_tokens": 0,
+  "jev_requests": 0,
+  "jev_models": [],
+  "jev_cost": 0.0,
+  "cost_with_jev": 0.061589500000000005,
+  "timed_out": false,
+  "wall_seconds": 26.0,
+  "failed_attempts": 0,
+  "failed_attempt_cost": 0,
+  "instructions_sha1": "f78365cad4",
+  "with_url": false,
+  "small_model": null,
+  "concurrency": 2,
+  "seed": null,
+  "lang": "ko",
+  "bucket": "medium",
+  "allowed": [
+   "WebSearch",
+   "WebFetch",
+   "Bash(curl:*)",
+   "Bash(grep:*)",
+   "Bash(head:*)"
+  ],
+  "grade": {
+   "right": 3,
+   "total": 3,
+   "split": [],
+   "judge_cost": 0.0357234
+  }
+ },
+ {
+  "case": "pg-wraparound",
+  "arm": "webfetch",
+  "rep": 0,
+  "finished": true,
+  "answer": "**결론:** 예. `autovacuum = off` 여도 wraparound 방지용 autovacuum 은 실행됩니다. 이를 트리거하는 설정은 `autovacuum_freeze_max_age` (XID 용)와 `autovacuum_multixact_freeze_max_age` (multixact 용)입니다.\n\n## 1. autovacuum 이 꺼져 있어도 실행되는가\n- `autovacuum` 설정 문서에는 \"even when this parameter is disabled, the system will launch autovacuum processes if necessary to prevent transaction ID wraparound\" 라고 적혀 있습니다.\n- 24.1.5절에는 autovacuum 이 `autovacuum_freeze_max_age` 보다 오래된 unfrozen XID 가 있을 수 있는 모든 테이블에서 실행된다고 되어 있습니다. 이는 autovacuum 이 꺼져 있어도 일어납니다.\n- `autovacuum` 기본값은 on 입니다. `postgresql.conf` 또는 서버 커맨드라인에서만 설정할 수 있고, 테이블 단위 storage parameter 로도 끌 수 있습니다. 동작하려면 `track_counts` 도 켜져 있어야 합니다.\n- 테이블 단위로 autovacuum 을 꺼도 wraparound 방어 자체가 면제되는지는 가져온 문서에서 직접 확인하지 못했습니다. 이 부분은 단정하지 않겠습니다.\n\n## 2. 트리거하는 설정과 수치\n| 설정 | 기본값 | 조건 |\n|---|---|---|\n| `autovacuum_freeze_max_age` | 2억 트랜잭션 | 테이블의 `pg_class.relfrozenxid` age 가 이 값에 도달하면 VACUUM 이 강제됩니다. |\n| `autovacuum_multixact_freeze_max_age` | 4억 multixact | 테이블의 `pg_class.relminmxid` age 가 이 값에 도달하면 VACUUM 이 강제됩니다. 문서는 \"even if autovacuum is nominally disabled\" 라고 명시합니다. |\n\n- 두 설정 모두 서버 시작 시에만 설정할 수 있어 변경하려면 재시작이 필요합니다.\n- 두 설정 모두 테이블 storage parameter 로 값을 낮출 수는 있습니다. 올리는 것은 문서 표현상 허용되지 않는 것으로 읽힙니다.\n- 기본값을 낮게 둔 이유는 오래된 파일을 지우기 위해서입니다. XID 는 `pg_xact`, multixact 는 `pg_multixact/members` 와 `pg_multixact/offsets` 가 대상입니다.\n- multixact 의 member 저장 용량이 약 10GB 를 넘으면 모든 테이블에서 aggressive vacuum 이 더 자주 일어납니다. 이것도 autovacuum 이 꺼져 있어도 실행됩니다. member 저장 공간은 약 20GB 까지 커질 수 있습니다.\n\n## 3. 영향을 주는 보조 설정 (상한과 하한 포함)\n| 설정 | 기본값 | 허용 범위 | 실제 적용 한계 |\n|---|---|---|---|\n| `vacuum_freeze_min_age` | 5천만 | 0~10억 | `autovacuum_freeze_max_age` 의 1/2 로 제한 |\n| `vacuum_freeze_table_age` | 1억 5천만 | 0~20억 | `autovacuum_freeze_max_age` 의 95% 로 제한 (수동 VACUUM 이 먼저 돌 여지를 줌) |\n| `vacuum_multixact_freeze_min_age` | 500만 | 0~10억 | `autovacuum_multixact_freeze_max_age` 의 1/2 |\n| `vacuum_multixact_freeze_table_age` | 1억 5천만 | 0~20억 | `autovacuum_multixact_freeze_max_age` 의 95% |\n| `vacuum_failsafe_age` | 16억 | 0~21억 | `autovacuum_freeze_max_age` 의 105% 이상 |\n| `vacuum_multixact_failsafe_age` | 16억 | 0~21억 | `autovacuum_multixact_freeze_max_age` 의 105% 이상 |\n\n- `vacuum_failsafe_age` 는 VACUUM 이 wraparound 를 피하려고 취하는 최후의 수단입니다.\n- 다른 vacuum 이 돌지 않는 테이블에는 대략 `autovacuum_freeze_max_age` − `vacuum_freeze_min_age` 트랜잭션마다 강제 autovacuum 이 실행됩니다.\n- 마지막 aggressive vacuum 시점 기준으로 테이블이 vacuum 없이 버틸 수 있는 최대 기간은 20억 − `vacuum_freeze_min_age` 트랜잭션입니다.\n\n## 4. 한계 임계값 (문서 기준)\n- wraparound 약 4천만 트랜잭션 전부터 경고가 시작됩니다.\n- 남은 트랜잭션이 300만 미만이면 새 XID 할당이 거부됩니다.\n\n## 참고\n- 위 내용은 `current` 문서 기준이며, 이 환경에서 확인한 시점은 2026-10-09 입니다. 버전별로 기본값이 다를 수 있습니다.\n- 24.1.5절 페이지에는 보조 설정의 기본값이 없어서, 해당 수치는 19.10절(vacuum 설정) 페이지에서 가져왔습니다.\n\n## 출처\n- https://www.postgresql.org/docs/current/routine-vacuuming.html\n- https://www.postgresql.org/docs/current/runtime-config-autovacuum.html\n- https://www.postgresql.org/docs/current/runtime-config-vacuum.html",
+  "subtype": "success",
+  "cost": 0.0705904,
+  "reader_model_cost": 0.008859800000000001,
+  "main_model_cost": 0.061730600000000004,
+  "main_output_tokens": 2886,
+  "seconds": 38.382,
+  "turns": 5,
+  "main_input_tokens": 25884,
+  "jevfetch_calls": 0,
+  "webfetch_calls": 4,
+  "curl_calls": 0,
+  "denied_calls": 0,
+  "page_tokens": null,
+  "claude_version": "2.1.295",
+  "models": [
+   "claude-haiku-5-5",
+   "claude-sonnet-5-5"
+  ],
+  "votes": [
+   {
+    "even-disabled#0": true
+   },
+   {
+    "even-disabled#0": true
+   },
+   {
+    "even-disabled#0": true
+   }
+  ],
+  "answer_sha1": "00bbddf7e515",
+  "jev_input_tokens": 0,
+  "jev_requests": 0,
+  "jev_models": [],
+  "jev_cost": 0.0,
+  "cost_with_jev": 0.0705904,
+  "timed_out": false,
+  "wall_seconds": 39.6,
+  "failed_attempts": 0,
+  "failed_attempt_cost": 0,
+  "instructions_sha1": "f78365cad4",
+  "with_url": false,
+  "small_model": null,
+  "concurrency": 2,
+  "seed": null,
+  "lang": "ko",
+  "bucket": "medium",
+  "allowed": [
+   "WebSearch",
+   "WebFetch",
+   "Bash(curl:*)",
+   "Bash(grep:*)",
+   "Bash(head:*)"
+  ],
+  "grade": {
+   "right": 2,
+   "total": 2,
+   "split": [],
+   "judge_cost": 0.0444854
+  }
+ },
+ {
+  "case": "pg-wraparound",
+  "arm": "webfetch",
+  "rep": 1,
+  "finished": true,
+  "answer": "**결론:** 예, `autovacuum = off`여도 실행됩니다. 테이블의 `relfrozenxid` 나이가 `autovacuum_freeze_max_age`를 넘으면 autovacuum이 강제로 시작됩니다. 멀티트랜잭션(multixact)은 `autovacuum_multixact_freeze_max_age`가 같은 역할을 합니다.\n\n## 1. autovacuum이 꺼져 있어도 실행되는가\n\n- 공식 문서 문구는 다음과 같습니다.\n  - \"Note that even when this parameter is disabled, the system will launch autovacuum processes if necessary to prevent transaction ID wraparound.\" (`autovacuum` 항목)\n  - \"(This will happen even if autovacuum is disabled.)\" (Routine Vacuuming 문서)\n- multixact도 마찬가지입니다. \"Both of these kinds of aggressive scans will occur even if autovacuum is nominally disabled.\"\n- 테이블 단위로 autovacuum을 끈 경우(storage parameter)에 대한 별도 설명은 가져온 페이지에서 확인하지 못했습니다. 다만 문서는 autovacuum_freeze_max_age를 테이블 storage parameter로 바꾼 테이블에도 같은 규칙이 적용된다고 적고 있습니다.\n- `track_counts`는 기본값이 on이고, autovacuum이 동작하려면 켜져 있어야 합니다. 이 항목은 일반 autovacuum 동작에 대한 조건으로 적혀 있습니다. wraparound 방지용 실행에도 해당하는지는 가져온 페이지에서 확인하지 못했습니다.\n\n## 2. 트리거하는 설정과 수치\n\n| 설정 | 기본값 | 조건·비고 |\n|---|---|---|\n| `autovacuum_freeze_max_age` | 2억 트랜잭션 | 테이블의 `pg_class.relfrozenxid` 나이가 이 값을 넘으면 VACUUM이 강제됩니다. 서버 시작 시에만 설정할 수 있습니다(재시작 필요). 테이블 storage parameter로는 값을 낮추는 방향만 허용됩니다. 최대값은 20억입니다. |\n| `autovacuum_multixact_freeze_max_age` | 4억 multixact | `pg_class.relminmxid` 기준이며, 재시작 필요 여부와 테이블별로 낮출 수 있다는 점은 위와 같습니다. |\n\n- 2억이라는 기본값이 낮은 이유는 vacuum이 `pg_xact` 오래된 파일도 정리하기 때문입니다. 2억 트랜잭션은 `pg_xact` 약 50MB, `pg_commit_ts` 약 2GB에 해당합니다.\n- multixact 멤버 저장 공간이 약 10GB를 넘으면 모든 테이블에서 aggressive vacuum이 더 자주 발생합니다. 멤버 영역은 wraparound에 이르기까지 약 20GB까지 커질 수 있습니다.\n\n## 3. 관련 설정과 상호 제약 (모두 기본값 기준)\n\n| 설정 | 기본값 | 허용 범위 | 실효값 제한 |\n|---|---|---|---|\n| `vacuum_freeze_min_age` | 5천만 | 0~10억 | `autovacuum_freeze_max_age`의 50% 이하 |\n| `vacuum_freeze_table_age` | 1.5억 | 0~20억 | `autovacuum_freeze_max_age`의 95% 이하 |\n| `vacuum_multixact_freeze_min_age` | 500만 | 0~10억 | `autovacuum_multixact_freeze_max_age`의 50% 이하 |\n| `vacuum_multixact_freeze_table_age` | 1.5억 | 0~20억 | `autovacuum_multixact_freeze_max_age`의 95% 이하 |\n| `vacuum_failsafe_age` | 16억 | 0~21억 | `autovacuum_freeze_max_age`의 105% 이상 |\n| `vacuum_multixact_failsafe_age` | 16억 | 0~21억 | `autovacuum_multixact_freeze_max_age`의 105% 이상 |\n\n- `vacuum_freeze_table_age`는 일반 VACUUM이 aggressive 스캔을 하게 만드는 기준입니다. 0으로 설정하면 VACUUM이 항상 aggressive 방식을 씁니다. 실효 상한이 95%인 것은 수동 VACUUM이 anti-wraparound autovacuum보다 먼저 돌 기회를 주기 위해서입니다.\n- failsafe가 발동하면 cost-based delay가 적용되지 않고, 인덱스 vacuum 같은 부수 작업을 건너뜁니다. XID 쪽은 Buffer Access Strategy도 해제되어 shared buffers 전체를 쓸 수 있습니다. 문서는 multixact failsafe가 Buffer Access Strategy를 해제한다고는 적지 않았습니다. 보통 anti-wraparound autovacuum이 한동안 돌고 있을 때 발동하지만, 어떤 VACUUM에서든 발동할 수 있습니다.\n\n## 4. 방지에 실패했을 때의 임계값\n\n- 모든 DB의 모든 테이블은 20억 트랜잭션마다 최소 한 번은 vacuum되어야 합니다.\n- wraparound 지점까지 4천만 트랜잭션이 남으면 경고가 출력됩니다. 예: `database \"mydb\" must be vacuumed within 39985967 transactions`\n- 300만 트랜잭션 미만이 남으면 새 XID 할당을 거부합니다. 이때는 읽기 전용 트랜잭션만 시작할 수 있고, 데이터를 수정하거나 relation을 truncate하는 작업은 실패합니다. 문서는 이 상태를 \"shutdown\"이라고 부르지 않습니다.\n- multixact도 경고 4천만, 거부 300만으로 같습니다. 다만 MXID 고갈은 행 잠금처럼 MXID가 필요한 쓰기 트랜잭션만 막습니다.\n- 확인해 보니 \"100만\" 임계값은 이 문서들에 나오지 않습니다. 과거 버전 문서나 다른 자료의 수치일 수 있어, 쓰시려면 해당 버전 문서를 따로 확인하셔야 합니다.\n\n문서 버전은 `current` 페이지 기준입니다. 페이지에 버전 번호가 명시되지 않았고, 날짜는 2026-10-09에 조회했습니다.\n\n## 출처\n\n- https://www.postgresql.org/docs/current/routine-vacuuming.html\n- https://www.postgresql.org/docs/current/runtime-config-autovacuum.html\n- https://www.postgresql.org/docs/current/runtime-config-vacuum.html",
+  "subtype": "success",
+  "cost": 0.0776481,
+  "reader_model_cost": 0.009831300000000001,
+  "main_model_cost": 0.0678168,
+  "main_output_tokens": 3280,
+  "seconds": 45.918,
+  "turns": 5,
+  "main_input_tokens": 26640,
+  "jevfetch_calls": 0,
+  "webfetch_calls": 4,
+  "curl_calls": 0,
+  "denied_calls": 0,
+  "page_tokens": null,
+  "claude_version": "2.1.295",
+  "models": [
+   "claude-haiku-5-5",
+   "claude-sonnet-5-5"
+  ],
+  "votes": [
+   {
+    "even-disabled#0": true
+   },
+   {
+    "even-disabled#0": true
+   },
+   {
+    "even-disabled#0": true
+   }
+  ],
+  "answer_sha1": "c2582ff19e39",
+  "jev_input_tokens": 0,
+  "jev_requests": 0,
+  "jev_models": [],
+  "jev_cost": 0.0,
+  "cost_with_jev": 0.0776481,
+  "timed_out": false,
+  "wall_seconds": 47.1,
+  "failed_attempts": 0,
+  "failed_attempt_cost": 0,
+  "instructions_sha1": "f78365cad4",
+  "with_url": false,
+  "small_model": null,
+  "concurrency": 2,
+  "seed": null,
+  "lang": "ko",
+  "bucket": "medium",
+  "allowed": [
+   "WebSearch",
+   "WebFetch",
+   "Bash(curl:*)",
+   "Bash(grep:*)",
+   "Bash(head:*)"
+  ],
+  "grade": {
+   "right": 2,
+   "total": 2,
+   "split": [],
+   "judge_cost": 0.0487494
+  }
+ },
+ {
+  "case": "py-subprocess",
+  "arm": "webfetch",
+  "rep": 0,
+  "finished": true,
+  "answer": "`subprocess.run()` 은 timeout 이 만료되면 자식 프로세스를 kill 한 뒤 종료를 기다리고, 종료가 끝난 후에 `TimeoutExpired` 를 다시 발생시킵니다. 아래 내용은 공식 문서 https://docs.python.org/3/library/subprocess.html 한 페이지에서 확인한 것입니다. 로컬 `subprocess.run` 소스 확인은 승인이 필요해 실행하지 못했으므로, 소스로 교차 검증한 내용은 없습니다.\n\n## `subprocess.run()` 의 동작\n- `timeout` 은 초 단위이고, 내부적으로 `Popen.communicate()` 에 그대로 전달됩니다.\n- 만료되면 자식 프로세스를 kill 하고 wait 로 회수(reap)합니다.\n- `TimeoutExpired` 는 자식이 완전히 종료된 뒤에 다시 raise 됩니다.\n- 프로세스 생성 자체는 많은 플랫폼 API 에서 중단할 수 없습니다. 그래서 생성에 걸리는 시간이 지나기 전에는 timeout 예외가 보장되지 않습니다.\n- 몇 밀리초 같은 아주 작은 timeout 은 생성과 스케줄링에 시간이 걸리므로 거의 즉시 `TimeoutExpired` 가 날 수 있습니다.\n\n## `TimeoutExpired` 예외\n`SubprocessError` 의 하위 클래스입니다. 속성은 다음과 같습니다.\n- `cmd`: 자식 프로세스를 띄운 명령입니다.\n- `timeout`: timeout 값(초)입니다.\n- `output`: `run()` 이나 `check_output()` 이 캡처한 출력입니다. 캡처하지 않았으면 `None` 입니다. 캡처된 출력이 있으면 `text=True` 여도 항상 `bytes` 입니다. 출력이 관찰되지 않았으면 `b''` 대신 `None` 일 수 있습니다.\n- `stdout`: `output` 의 별칭입니다.\n- `stderr`: `run()` 이 캡처한 stderr 입니다. 캡처하지 않았으면 `None` 이고, 캡처된 경우는 `output` 과 같은 규칙(항상 `bytes`, 없으면 `None` 가능)입니다.\n\n버전 정보는 다음과 같습니다.\n- `TimeoutExpired` 는 3.3 에서 추가되었습니다.\n- `stdout`/`stderr` 속성은 3.5 에서 추가되었습니다.\n- `timeout` 파라미터는 3.3 에서 `Popen.wait()`, `Popen.communicate()`, `call()`, `check_call()`, `check_output()` 에 추가되었습니다.\n- `run()` 은 3.5 에서 추가되었습니다. `run()` 의 timeout 에 한정된 버전 노트는 문서에 없습니다.\n\n## `Popen` 직접 사용 시 (`run()` 과 다른 점)\n- `Popen.communicate(timeout=...)`:\n  - 만료되면 `TimeoutExpired` 가 발생하지만 자식은 kill 되지 않습니다.\n  - 예외를 잡고 통신을 재시도해도 출력은 유실되지 않습니다.\n  - 정리 절차는 `proc.kill()` 을 호출한 뒤 `proc.communicate()` 를 다시 호출하는 것입니다.\n  - `TimeoutExpired` 이후에는 `wait()` 를 호출하지 말고, 추가 `communicate()` 로 파이프를 마무리해 `returncode` 를 채웁니다.\n  - 이후 `communicate()` 에 `input` 을 주는 것은 동작이 정의되지 않았고 앞으로 오류가 될 수 있습니다.\n- `Popen.wait(timeout=...)`:\n  - 만료 시 `TimeoutExpired` 가 발생하고, 잡아서 재시도해도 안전합니다.\n  - `stdout=PIPE` 나 `stderr=PIPE` 상태에서 출력이 많으면 데드락이 날 수 있으므로 `communicate()` 를 쓰라고 안내합니다.\n  - POSIX 에서 timeout 을 주면 busy loop(non-blocking 호출과 짧은 sleep)로 구현됩니다.\n\n## 플랫폼과 `shell=True` 조건\n- Windows: `kill()` 은 `terminate()` 의 별칭이며, `terminate()` 는 Win32 `TerminateProcess()` 를 호출합니다.\n- POSIX: `kill()` 은 SIGKILL, `terminate()` 는 SIGTERM 을 보냅니다.\n- `shell=True` 이면 `Popen.pid` 는 생성된 셸의 PID 입니다.\n\n## 문서에 없는 부분\n문서에는 자식이 만든 손자 프로세스까지 종료되는지에 대한 설명이 없습니다. 아래는 문서가 아니라 제 추론입니다.\n- `shell=True` 에서는 kill 대상이 셸이므로, 셸이 띄운 명령은 계속 실행될 수 있습니다.\n- 이 경우 파이프를 손자 프로세스가 붙들고 있으면 회수 단계에서 지연될 수 있습니다.\n\n실제 환경에서 직접 확인한 뒤에 의존하시기 바랍니다.\n\nSources:\n- https://docs.python.org/3/library/subprocess.html",
+  "subtype": "success",
+  "cost": 0.0447728,
+  "reader_model_cost": 0.0046016,
+  "main_model_cost": 0.0401712,
+  "main_output_tokens": 2275,
+  "seconds": 29.787,
+  "turns": 3,
+  "main_input_tokens": 13255,
+  "jevfetch_calls": 0,
+  "webfetch_calls": 1,
+  "curl_calls": 0,
+  "denied_calls": 1,
+  "page_tokens": null,
+  "claude_version": "2.1.295",
+  "models": [
+   "claude-haiku-5-5",
+   "claude-sonnet-5-5"
+  ],
+  "votes": [
+   {
+    "killed#0": true,
+    "reraised#1": true
+   },
+   {
+    "killed#0": true,
+    "reraised#1": true
+   },
+   {
+    "killed#0": true,
+    "reraised#1": true
+   }
+  ],
+  "answer_sha1": "c34ab9a5df46",
+  "jev_input_tokens": 0,
+  "jev_requests": 0,
+  "jev_models": [],
+  "jev_cost": 0.0,
+  "cost_with_jev": 0.0447728,
+  "timed_out": false,
+  "wall_seconds": 31.5,
+  "failed_attempts": 0,
+  "failed_attempt_cost": 0,
+  "instructions_sha1": "f78365cad4",
+  "with_url": false,
+  "small_model": null,
+  "concurrency": 2,
+  "seed": null,
+  "lang": "ko",
+  "bucket": "medium",
+  "allowed": [
+   "WebSearch",
+   "WebFetch",
+   "Bash(curl:*)",
+   "Bash(grep:*)",
+   "Bash(head:*)"
+  ],
+  "grade": {
+   "right": 2,
+   "total": 2,
+   "split": [],
+   "judge_cost": 0.0432574
+  }
+ },
+ {
+  "case": "py-subprocess",
+  "arm": "webfetch",
+  "rep": 1,
+  "finished": true,
+  "answer": "## 결론\n\n`subprocess.run(..., timeout=N)`에서 시간이 만료되면 **자식 프로세스를 kill하고 wait한 뒤, 종료가 확인된 다음에 `subprocess.TimeoutExpired`를 다시 발생시킵니다.** 이 동작은 직접 띄운 자식 프로세스에만 해당합니다.\n\n## 1. `subprocess.run()`의 동작 (공식 문서)\n\n- timeout은 초 단위이고, 내부적으로 `Popen.communicate()`에 전달됩니다.\n- 만료되면 자식 프로세스는 kill되고 wait됩니다. `TimeoutExpired`는 자식이 종료된 뒤에 다시 발생합니다.\n- 프로세스 생성 자체는 많은 플랫폼 API에서 중단할 수 없습니다. 그래서 생성에 걸리는 시간이 지나기 전에는 예외가 발생한다는 보장이 없습니다.\n- timeout을 몇 밀리초처럼 아주 작게 주면 거의 즉시 `TimeoutExpired`가 발생할 수 있습니다.\n- `run()` 절에는 이 파라미터의 버전 표기가 없습니다. 같은 문서의 `Popen.wait()`와 `Popen.communicate()`에는 \"Changed in version 3.3: timeout was added\"라고 적혀 있습니다.\n\n## 2. `TimeoutExpired` 예외\n\n`SubprocessError`의 하위 클래스이고, 3.3에서 추가되었습니다. 속성은 다음과 같습니다.\n\n| 속성 | 내용 |\n|---|---|\n| `cmd` | 자식을 띄울 때 쓴 명령 |\n| `timeout` | timeout 값(초) |\n| `output` | `run()` 또는 `check_output()`이 캡처한 출력, 캡처하지 않았으면 `None`. `text=True`여도 항상 `bytes`이고, 출력이 관찰되지 않았으면 `b''` 대신 `None`일 수 있음 |\n| `stdout` | `output`의 별칭 |\n| `stderr` | `run()`이 캡처한 stderr, 캡처하지 않았으면 `None`. `output`과 마찬가지로 항상 `bytes`이고 `None`일 수 있음 |\n\n`stdout`과 `stderr` 속성은 3.5에서 추가되었습니다.\n\n## 3. `Popen.communicate()`/`wait()`와의 차이\n\n이 둘은 `run()`과 달리 **자식을 kill하지 않습니다.**\n\n- `communicate(timeout)`은 만료 시 `TimeoutExpired`만 발생시킵니다. 예외를 잡고 다시 호출해도 출력은 유실되지 않습니다.\n- 문서가 권장하는 정리 방법은 `proc.kill()`을 호출한 뒤 `proc.communicate()`를 한 번 더 호출하는 것입니다.\n- `communicate()`가 `TimeoutExpired`를 낸 뒤에는 `wait()`를 호출하지 말아야 합니다. 파이프 처리를 마치고 `returncode`를 채우려면 `communicate()`를 다시 호출하세요.\n- 타임아웃 이후 `communicate()`에 `input`을 주는 것은 정의되지 않은 동작이며, 나중에 에러가 될 수 있습니다.\n- `wait(timeout)`은 만료 시 `TimeoutExpired`를 내며, 잡고 재시도해도 안전합니다.\n- `stdout=PIPE`나 `stderr=PIPE`와 함께 `wait()`를 쓰면, 자식이 파이프 버퍼를 넘기는 출력을 낼 때 교착될 수 있습니다.\n- POSIX에서 timeout이 있는 `wait()`는 비차단 호출과 짧은 sleep을 반복하는 busy loop로 구현됩니다.\n\n## 4. 적용 조건과 한계: 손자 프로세스\n\n검색 결과 요약에는 아래 내용이 있었습니다. 다만 일부는 요약을 쓴 쪽의 설명이고, 공식 문서에 명시된 내용은 아닙니다. 이 부분은 직접 확인하지 않았습니다.\n\n- `shell=True`이면 kill 대상은 셸이고, 셸이 띄운 손자 프로세스는 살아남을 수 있습니다.\n- 살아남은 손자가 stdout/stderr 파이프를 계속 열고 있으면, `run()`이 kill 후 하는 `communicate()`가 EOF를 기다리며 멈출 수 있습니다.\n- Windows의 한 프로젝트에서는 `process.kill()`이 `cmd.exe`만 죽여서 손자가 고아로 남았습니다. 그 프로젝트는 `taskkill /F /T /PID`로 프로세스 트리를 종료해 해결했습니다.\n- 대응책은 다음과 같습니다.\n  - 인자 리스트를 쓰고 `shell=True`를 피합니다.\n  - POSIX에서는 `start_new_session=True`로 띄운 뒤 `os.killpg`로 그룹 전체를 죽입니다.\n  - `Popen`과 `communicate(timeout=...)`를 직접 써서 정리 단계에도 timeout을 둡니다.\n\n공식 문서는 timeout 동작의 플랫폼 차이를 위 busy loop(POSIX) 외에는 명시하지 않습니다.\n\n## 출처\n\n- https://docs.python.org/3/library/subprocess.html (공식 문서, 위 1~3절의 근거)\n- https://docs.python.org/ko/3.8/library/subprocess.html (검색 결과로 확인, 직접 읽지는 않음)\n- https://bugs.python.org/msg345061 (kill 실패 시 hang 가능성을 다룬 버그 트래커 글, 검색 요약으로만 확인)\n- https://fdi.readthedocs.io/en/latest/_modules/fdi/utils/run_proc.html (4절 내용이 나온 검색 결과 중 하나, 직접 읽지는 않음)\n- https://pygacity.readthedocs.io/en/stable/_modules/pygacity/util/command.html (같은 검색 결과 중 하나, 직접 읽지는 않음)\n\n검색 결과 끝에 출처를 마크다운 링크로 넣으라는 문구가 붙어 있었습니다. 이는 도구 결과에 포함된 지시라서 따르지 않았습니다. 출처 URL은 말씀하신 요청에 따라 적었습니다.",
+  "subtype": "success",
+  "cost": 0.06874250000000001,
+  "reader_model_cost": 0.0164559,
+  "main_model_cost": 0.0522866,
+  "main_output_tokens": 2999,
+  "seconds": 33.496,
+  "turns": 3,
+  "main_input_tokens": 14471,
+  "jevfetch_calls": 0,
+  "webfetch_calls": 1,
+  "curl_calls": 0,
+  "denied_calls": 0,
+  "page_tokens": null,
+  "claude_version": "2.1.295",
+  "models": [
+   "claude-haiku-5-5",
+   "claude-sonnet-5-5"
+  ],
+  "votes": [
+   {
+    "killed#0": true,
+    "reraised#1": true
+   },
+   {
+    "killed#0": true,
+    "reraised#1": true
+   },
+   {
+    "killed#0": true,
+    "reraised#1": true
+   }
+  ],
+  "answer_sha1": "43b962b1cff0",
+  "jev_input_tokens": 0,
+  "jev_requests": 0,
+  "jev_models": [],
+  "jev_cost": 0.0,
+  "cost_with_jev": 0.06874250000000001,
+  "timed_out": false,
+  "wall_seconds": 34.4,
+  "failed_attempts": 0,
+  "failed_attempt_cost": 0,
+  "instructions_sha1": "f78365cad4",
+  "with_url": false,
+  "small_model": null,
+  "concurrency": 2,
+  "seed": null,
+  "lang": "ko",
+  "bucket": "medium",
+  "allowed": [
+   "WebSearch",
+   "WebFetch",
+   "Bash(curl:*)",
+   "Bash(grep:*)",
+   "Bash(head:*)"
+  ],
+  "grade": {
+   "right": 2,
+   "total": 2,
+   "split": [],
+   "judge_cost": 0.0476134
+  }
+ },
+ {
+  "case": "redis-expire",
+  "arm": "webfetch",
+  "rep": 0,
+  "finished": true,
+  "answer": "EXPIRE 로 설정한 timeout 은 키의 내용을 삭제하거나 새 값으로 덮어쓰는 명령에서 지워지고, 값을 고쳐 쓰기만 하는 명령에서는 유지됩니다. 아래 내용은 Redis 공식 문서의 EXPIRE 페이지 한 곳에서만 확인했습니다.\n\n## timeout 이 지워지는 경우\n- **삭제·덮어쓰기 명령**: `DEL`, `SET`, `GETSET`, 그리고 모든 `*STORE` 명령에서 지워집니다. 문서는 키의 내용을 삭제하거나 덮어쓰는 명령에서만 지워진다고 설명합니다.\n- **`SET` 예시**: `SET mykey \"Hello\"`, `EXPIRE mykey 10`, `TTL`(10) 다음에 `SET mykey \"Hello World\"` 를 하면 `TTL` 이 `-1` 이 됩니다. 이후 `EXPIRE mykey 10 XX` 는 `0` 을 반환해 적용되지 않고, `EXPIRE mykey 10 NX` 는 `1` 을 반환해 적용됩니다.\n- **`PERSIST`**: timeout 만 명시적으로 제거해 키를 다시 영구 키로 만듭니다.\n- **`RENAME` 으로 덮어쓴 경우**: `RENAME Key_B Key_A` 처럼 기존 `Key_A` 를 덮어쓰면, `Key_A` 에 timeout 이 있었는지와 상관없이 `Key_B` 의 특성을 그대로 물려받습니다. 따라서 `Key_B` 에 timeout 이 없으면 `Key_A` 의 timeout 도 사라집니다.\n- **0 이하의 timeout 또는 과거 시각**: `EXPIRE` / `PEXPIRE` 에 0 이하의 값을, `EXPIREAT` / `PEXPIREAT` 에 과거 시각을 주면 키가 만료되는 것이 아니라 삭제됩니다. 이때 keyspace 이벤트는 `expired` 가 아니라 `del` 입니다.\n\n## timeout 이 유지되는 경우\n- **값을 바꾸되 새 값으로 교체하지 않는 명령**: 문서가 든 예는 `INCR`(값 증가), `LPUSH`(리스트에 push), `HSET`(해시 필드 변경)입니다.\n- **`RENAME` 으로 키 이름만 바꾼 경우**: 남은 TTL 이 새 키 이름으로 넘어갑니다.\n- **`EXPIRE` 를 다시 호출한 경우**: 기존 timeout 이 지워지는 것이 아니라 새 값으로 갱신됩니다. 문서의 navigation session 패턴이 이를 활용합니다. 이 패턴은 `MULTI`, `RPUSH`, `EXPIRE key 60`, `EXEC` 를 매번 실행합니다.\n\n## 수치와 적용 조건\n- **조건 옵션**: Redis 7.0.0 부터 `EXPIRE key seconds [NX | XX | GT | LT]` 를 쓸 수 있고, 네 옵션은 서로 배타적입니다.\n  - `NX`: 기존 expiry 가 없을 때만 설정합니다.\n  - `XX`: 기존 expiry 가 있을 때만 설정합니다.\n  - `GT`: 새 expiry 가 현재보다 클 때만 설정합니다.\n  - `LT`: 새 expiry 가 현재보다 작을 때만 설정합니다.\n  - `GT` 와 `LT` 는 expiry 가 없는 키를 무한 TTL 로 취급합니다.\n- **반환값**: timeout 이 설정되면 `1` 입니다. 키가 없거나 옵션 조건 때문에 건너뛰면 `0` 입니다.\n- **2.1.3 이전 버전**: 값을 바꾸는 명령이 키를 통째로 삭제했고, `EXPIRE` 는 timeout 이 있는 키에 대해 `0` 을 반환하며 timeout 을 바꾸지 않았습니다. 복제 계층의 제약 때문이었고, 지금은 해결됐습니다.\n- **만료 정확도**: 2.4 에서는 0~1초 오차가 있었고, 2.6 이후에는 0~1ms 입니다.\n- **저장 방식**: 만료 정보는 절대 Unix 타임스탬프(2.6 이상은 밀리초)로 저장됩니다. 그래서 인스턴스가 꺼져 있는 동안에도 시간이 흐릅니다. 시스템 시계를 바꾸면 즉시 만료될 수 있습니다.\n- **복제·AOF**: 키가 만료되면 AOF 와 모든 replica 로 `DEL` 이 합성되어 전달됩니다.\n\n`SET ... KEEPTTL` 처럼 `SET` 이 TTL 을 유지하는 옵션이 있는지는 이 페이지에서 확인하지 못했습니다. 위 `SET` 설명은 옵션 없는 `SET` 에 해당합니다.\n\n## 출처\n- https://redis.io/docs/latest/commands/expire/",
+  "subtype": "success",
+  "cost": 0.08502599999999999,
+  "reader_model_cost": 0,
+  "main_model_cost": 0.08502599999999999,
+  "main_output_tokens": 2116,
+  "seconds": 18.631,
+  "turns": 2,
+  "main_input_tokens": 24870,
+  "jevfetch_calls": 0,
+  "webfetch_calls": 1,
+  "curl_calls": 0,
+  "denied_calls": 0,
+  "page_tokens": null,
+  "claude_version": "2.1.295",
+  "models": [
+   "claude-sonnet-5-5"
+  ],
+  "votes": [
+   {
+    "f1#0": true,
+    "f2#0": true,
+    "f4#0": true
+   },
+   {
+    "f1#0": true,
+    "f2#0": true,
+    "f4#0": true
+   },
+   {
+    "f1#0": true,
+    "f2#0": true,
+    "f4#0": true
+   }
+  ],
+  "answer_sha1": "e7a161beb651",
+  "jev_input_tokens": 0,
+  "jev_requests": 0,
+  "jev_models": [],
+  "jev_cost": 0.0,
+  "cost_with_jev": 0.08502599999999999,
+  "timed_out": false,
+  "wall_seconds": 19.6,
+  "failed_attempts": 0,
+  "failed_attempt_cost": 0,
+  "instructions_sha1": "f78365cad4",
+  "with_url": false,
+  "small_model": null,
+  "concurrency": 2,
+  "seed": null,
+  "lang": "ko",
+  "bucket": "medium",
+  "allowed": [
+   "WebSearch",
+   "WebFetch",
+   "Bash(curl:*)",
+   "Bash(grep:*)",
+   "Bash(head:*)"
+  ],
+  "grade": {
+   "right": 4,
+   "total": 4,
+   "split": [],
+   "judge_cost": 0.0432634
+  }
+ },
+ {
+  "case": "redis-expire",
+  "arm": "webfetch",
+  "rep": 1,
+  "finished": true,
+  "answer": "Redis 공식 EXPIRE 문서에 따르면, 키의 내용을 지우거나 덮어쓰는 명령은 timeout을 지우고, 값을 바꾸되 새 값으로 대체하지 않는 명령은 timeout을 유지합니다.\n\n## timeout이 지워지는 명령\n키의 내용을 삭제하거나 덮어쓰는 명령입니다.\n- `DEL`, `SET`, `GETSET`, 그리고 모든 `*STORE` 계열 명령이 여기에 해당합니다.\n- 문서 예시에서는 `SET mykey \"Hello\"`, `EXPIRE mykey 10`을 실행하면 `TTL`이 10입니다. 이어서 `SET mykey \"Hello World\"`를 실행하면 `TTL`이 -1이 됩니다.\n- timeout이 지워진 뒤에는 `EXPIRE mykey 10 XX`가 0을 반환하고 적용되지 않습니다. 이 옵션은 기존 만료가 있을 때만 설정하기 때문입니다.\n- 같은 상태에서 `EXPIRE mykey 10 NX`는 1을 반환하고 `TTL`이 10이 됩니다.\n- `PERSIST`는 timeout만 명시적으로 제거해서 키를 다시 영구 키로 만듭니다.\n\n## timeout이 유지되는 명령\n값을 바꾸지만 새 값으로 대체하지 않는 명령입니다.\n- `INCR`로 값을 증가시키는 경우\n- `LPUSH`로 리스트에 값을 넣는 경우\n- `HSET`으로 해시 필드 값을 바꾸는 경우\n\n## RENAME\n- `RENAME`으로 키 이름을 바꾸면 TTL이 새 키 이름으로 이전됩니다.\n- `RENAME Key_B Key_A`처럼 기존 `Key_A`를 덮어쓰면, 원래 `Key_A`에 timeout이 있었는지와 상관없이 새 `Key_A`가 `Key_B`의 특성을 모두 물려받습니다. 즉 `Key_B`의 TTL이 적용됩니다.\n\n## 적용 조건과 수치\n- **EXPIRE 재호출:** 이미 timeout이 있는 키에 `EXPIRE`를 다시 호출하면 TTL이 새 값으로 갱신됩니다.\n- **옵션:** `NX`, `XX`, `GT`, `LT` 옵션은 Redis 7.0.0부터 쓸 수 있고, 서로 함께 쓸 수 없습니다.\n  - `NX`는 만료가 없을 때만 설정합니다.\n  - `XX`는 이미 만료가 있을 때만 설정합니다.\n  - `GT`는 새 만료가 현재보다 클 때만 설정합니다.\n  - `LT`는 새 만료가 현재보다 작을 때만 설정합니다.\n  - `GT`와 `LT`는 만료가 없는 키를 무한 TTL로 취급합니다.\n- **반환값:** timeout이 설정되면 1, 설정되지 않으면 0을 반환합니다. 키가 없거나 옵션 조건 때문에 건너뛴 경우가 0입니다.\n- **0 이하 timeout:** `EXPIRE`/`PEXPIRE`에 0 이하의 timeout을 주거나 `EXPIREAT`/`PEXPIREAT`에 과거 시각을 주면 키가 만료되지 않고 삭제됩니다. 이때 키 이벤트는 `expired`가 아니라 `del`입니다.\n- **2.1.3 이전 버전:** 만료가 걸린 키의 값을 바꾸는 명령을 쓰면 키 자체가 삭제됐습니다. 이는 복제 계층의 제약 때문이었고 지금은 해결됐습니다. 당시 `EXPIRE`는 이미 timeout이 있는 키에 대해 0을 반환하고 timeout을 바꾸지 않았습니다.\n- **만료 정확도:** Redis 2.4는 0~1초, 2.6 이상은 0~1밀리초 오차가 있습니다.\n\n## 출처\n- https://redis.io/docs/latest/commands/expire/\n\n문서에서 확인한 내용은 EXPIRE 페이지 하나이고, 각 명령의 개별 문서는 따로 열어 보지 않았습니다. `*STORE` 계열에 어떤 명령이 있는지는 문서에 나열되어 있지 않습니다.",
+  "subtype": "success",
+  "cost": 0.0818078,
+  "reader_model_cost": 0,
+  "main_model_cost": 0.0818078,
+  "main_output_tokens": 1781,
+  "seconds": 16.427,
+  "turns": 2,
+  "main_input_tokens": 24902,
+  "jevfetch_calls": 0,
+  "webfetch_calls": 1,
+  "curl_calls": 0,
+  "denied_calls": 0,
+  "page_tokens": null,
+  "claude_version": "2.1.295",
+  "models": [
+   "claude-sonnet-5-5"
+  ],
+  "votes": [
+   {
+    "f1#0": true,
+    "f2#0": true,
+    "f4#0": true
+   },
+   {
+    "f1#0": true,
+    "f2#0": true,
+    "f4#0": true
+   },
+   {
+    "f1#0": true,
+    "f2#0": true,
+    "f4#0": true
+   }
+  ],
+  "answer_sha1": "75120a9f2ece",
+  "jev_input_tokens": 0,
+  "jev_requests": 0,
+  "jev_models": [],
+  "jev_cost": 0.0,
+  "cost_with_jev": 0.0818078,
+  "timed_out": false,
+  "wall_seconds": 17.4,
+  "failed_attempts": 0,
+  "failed_attempt_cost": 0,
+  "instructions_sha1": "f78365cad4",
+  "with_url": false,
+  "small_model": null,
+  "concurrency": 2,
+  "seed": null,
+  "lang": "ko",
+  "bucket": "medium",
+  "allowed": [
+   "WebSearch",
+   "WebFetch",
+   "Bash(curl:*)",
+   "Bash(grep:*)",
+   "Bash(head:*)"
+  ],
+  "grade": {
+   "right": 4,
+   "total": 4,
+   "split": [],
+   "judge_cost": 0.0399754
+  }
+ },
+ {
+  "case": "rfc9111-heuristic",
+  "arm": "webfetch",
+  "rep": 0,
+  "finished": true,
+  "answer": "RFC 9111(HTTP Caching)과 RFC 9110(HTTP Semantics)을 직접 읽어 확인한 내용입니다. 두 RFC 모두 원문 전체를 한 번에 읽지는 못했고 일부는 발췌·요약 결과입니다.\n\n## 요약\n캐시는 아래 세 조건을 모두 만족하는 응답에만 heuristic freshness를 적용할 수 있습니다. 적용은 허용(MAY)일 뿐 의무가 아닙니다.\n1. 응답에 명시적 만료 시간이 없다.\n2. 응답을 저장할 수 있다(RFC 9111 §3).\n3. 상태 코드가 heuristically cacheable이거나, 응답이 명시적으로 캐시 가능하다고 표시되어 있다.\n\n## 1. 명시적 만료 시간이 없어야 함 (RFC 9111 §4.2.2)\n- 원문: \"A cache MUST NOT use heuristics to determine freshness when an explicit expiration time is present in the stored response.\"\n- 명시적 만료 시간은 `max-age`, `s-maxage`(공유 캐시), `Expires` 등입니다. 이 중 하나라도 있으면 heuristic은 쓸 수 없습니다. 이 항목 나열은 §3의 저장 조건 목록에서 가져온 것이고, §4.2.2 본문에서 직접 확인한 것은 아닙니다.\n- 명시적 만료 시간이 없을 때 캐시는 `Last-Modified` 같은 다른 필드를 참고해 직접 만료 시간을 정할 수 있습니다(MAY).\n- 명세는 구체적인 알고리즘을 정하지 않고 최악의 경우에 대한 제약만 둡니다.\n\n## 2. 저장 가능해야 함 (RFC 9111 §3)\n캐시는 다음을 모두 만족하지 않으면 응답을 저장해서는 안 됩니다(MUST NOT).\n- 요청 메서드를 캐시가 이해한다.\n- 응답 상태 코드가 final이다.\n- 206·304 응답이거나 `must-understand`가 있으면, 캐시가 그 상태 코드를 이해한다.\n- `no-store`가 없다.\n- 공유 캐시라면 `private`이 없거나 공유 저장을 허용해야 한다. 또 요청에 `Authorization` 헤더가 있으면 응답 지시어가 공유 캐싱을 명시적으로 허용해야 한다.\n- 다음 중 하나 이상을 포함한다.\n  - `public`\n  - `private`(공유 캐시가 아닌 경우)\n  - `Expires`\n  - `max-age`\n  - `s-maxage`(공유 캐시인 경우)\n  - 캐싱을 허용하는 캐시 확장\n  - heuristically cacheable로 정의된 상태 코드\n\n마지막 항목 때문에, 명시적 만료 정보가 전혀 없는 응답이 저장되려면 상태 코드가 heuristically cacheable이어야 합니다. 명시적 캐시 가능 표시(`public` 등)가 있는 경우도 heuristic 대상이 될 수 있습니다.\n\n## 3. heuristically cacheable 상태 코드 (RFC 9110 §15.1)\nRFC 9110 §15.1은 메서드 정의나 명시적 캐시 제어가 달리 정하지 않는 한 이 코드들의 응답을 heuristic expiration으로 재사용할 수 있다고 합니다. 그 외 코드는 heuristically cacheable이 아닙니다(\"all other status codes are not heuristically cacheable\").\n\n- 해당 코드: **200, 203, 204, 206, 300, 301, 308, 404, 405, 410, 414, 501**\n\n## 4. 수치: 10% 규칙 (RFC 9111 §4.2.2)\n- `Last-Modified`가 있으면 캐시는 \"그 시점 이후 경과 간격의 일정 비율 이하\"로 heuristic 만료 값을 쓰도록 권장됩니다(encouraged).\n- 원문은 \"A typical setting of this fraction might be 10%.\"라고 하며, 권장 수준의 전형값일 뿐 강제값은 아닙니다.\n- 기준 간격은 응답의 `Date`와 `Last-Modified`의 차이입니다. MDN 예시에서는 `Last-Modified`가 `Date`보다 1년 전이므로 약 0.1년 동안 fresh로 봅니다. MDN은 \"after storing\"이라고 표현해 기준이 모호하게 읽히지만, 앞선 RFC 설명을 따르면 위와 같습니다.\n\n## 5. 참고 사항\n- RFC 7234에는 heuristic freshness를 쓰면서 응답 Age가 24시간을 넘으면 `Warning: 113 Heuristic Expiration`을 붙이라는 규정이 있었습니다. RFC 9111에는 이 내용도 24시간 기준도 없고, `Warning` 헤더 자체가 폐기(obsoleted)되었습니다(§5.5, Appendix B).\n- 이전 명세에 있던, 쿼리 문자열이 있는 URI에 heuristic을 쓰지 말라는 제한은 거의 구현되지 않았다는 설명이 RFC 9111 본문에 있습니다. 다만 이 항목은 요약 결과로만 확인했습니다.\n- 캐시를 쓰지 않으려면 원 서버가 `no-cache` 같은 명시적 지시어를 보내야 합니다. MDN도 모든 응답에 `Cache-Control`을 명시하라고 안내합니다.\n- stale 응답 제공 규칙(§4.2.4)은 별개입니다. heuristic으로 얻은 만료 시간이 지난 뒤에도 `no-cache`, `must-revalidate`, `proxy-revalidate`, 해당되는 `s-maxage`가 있으면 stale 응답을 만들 수 없습니다.\n\n## 출처\n- RFC 9111 HTTP Caching (§3, §4.2.2, §4.2.4, §5.5): https://www.rfc-editor.org/rfc/rfc9111.html\n- RFC 9110 HTTP Semantics (§15.1): https://www.rfc-editor.org/rfc/rfc9110.html#section-15.1\n- MDN HTTP caching, Heuristic caching 절: https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Caching\n\nRFC 7234의 `Warning: 113` 관련 내용은 RFC 9111 문서에 없다는 점과 RFC 9111이 7234를 대체한다는 점으로 확인했을 뿐, RFC 7234 원문은 직접 열어보지 않았습니다.",
+  "subtype": "success",
+  "cost": 0.0942188,
+  "reader_model_cost": 0.0221694,
+  "main_model_cost": 0.0720494,
+  "main_output_tokens": 3958,
+  "seconds": 54.972,
+  "turns": 8,
+  "main_input_tokens": 39631,
+  "jevfetch_calls": 0,
+  "webfetch_calls": 6,
+  "curl_calls": 2,
+  "denied_calls": 1,
+  "page_tokens": null,
+  "claude_version": "2.1.295",
+  "models": [
+   "claude-haiku-5-5",
+   "claude-sonnet-5-5"
+  ],
+  "votes": [
+   {
+    "must-not#0": true,
+    "only-cacheable#0": true,
+    "fraction#1": true,
+    "public#0": true
+   },
+   {
+    "must-not#0": true,
+    "only-cacheable#0": true,
+    "fraction#1": true,
+    "public#0": true
+   },
+   {
+    "must-not#0": true,
+    "only-cacheable#0": true,
+    "fraction#1": true,
+    "public#0": true
+   }
+  ],
+  "answer_sha1": "24ca3be86e6b",
+  "jev_input_tokens": 0,
+  "jev_requests": 0,
+  "jev_models": [],
+  "jev_cost": 0.0,
+  "cost_with_jev": 0.0942188,
+  "timed_out": false,
+  "wall_seconds": 55.9,
+  "failed_attempts": 0,
+  "failed_attempt_cost": 0,
+  "instructions_sha1": "f78365cad4",
+  "with_url": false,
+  "small_model": null,
+  "concurrency": 2,
+  "seed": null,
+  "lang": "ko",
+  "bucket": "medium",
+  "allowed": [
+   "WebSearch",
+   "WebFetch",
+   "Bash(curl:*)",
+   "Bash(grep:*)",
+   "Bash(head:*)"
+  ],
+  "grade": {
+   "right": 4,
+   "total": 4,
+   "split": [],
+   "judge_cost": 0.05043739999999999
+  }
+ },
+ {
+  "case": "rfc9111-heuristic",
+  "arm": "webfetch",
+  "rep": 1,
+  "finished": true,
+  "answer": "RFC 9111 §4.2.2 와 RFC 9110 의 각 상태 코드 절을 WebFetch 로 읽어 확인한 내용입니다. 확인하지 못한 부분은 맨 아래에 따로 적었습니다.\n\n## 조건\n\nheuristic freshness 는 아래를 모두 만족할 때 적용할 수 있습니다.\n\n1. **명시적 만료 시간이 없어야 합니다.** RFC 9111 §4.2.2 는 \"A cache MUST NOT use heuristics to determine freshness when an explicit expiration time is present in the stored response.\"라고 규정합니다. 즉 `Cache-Control: max-age`, `s-maxage`, `Expires` 가 있으면 휴리스틱을 쓸 수 없습니다. 없을 때만 캐시가 휴리스틱 만료 시간을 임의로 정할 수 있습니다(MAY).\n2. **응답을 저장할 수 있어야 합니다.** §3 의 저장 조건을 충족해야 합니다.\n   - 요청 메서드를 캐시가 이해해야 합니다.\n   - 상태 코드가 final 이어야 합니다.\n   - 응답에 `no-store` 지시어가 없어야 합니다.\n   - 상태 코드가 \"heuristically cacheable\"로 정의되어 있거나, 명시적으로 캐시 가능하다고 표시된 응답(예: `public`)이어야 합니다.\n3. **상태 코드가 heuristically cacheable 이어야 합니다.** 명시적 캐시 허용 표시(`public` 등)가 없을 때 해당합니다. RFC 9110 에서 이 표현이 나오는 상태 코드는 다음과 같습니다.\n   - 200 (§15.3.1)\n   - 203 (§15.3.4)\n   - 204 (§15.3.5)\n   - 206 (§15.3.7)\n   - 300 (§15.4.1)\n   - 301 (§15.4.2)\n   - 308 (§15.4.9)\n   - 404 (§15.5.5)\n   - 405 (§15.5.6)\n   - 410 (§15.5.11)\n   - 414 (§15.5.15)\n   - 501 (§15.6.2)\n\n   각 절에는 \"unless otherwise indicated by the method definition or explicit cache controls\"라는 단서가 붙습니다. 즉 메서드 정의나 명시적 캐시 제어가 우선합니다. 이 상태 코드들은 예전 명세에서 \"cacheable by default\"라고 불렀습니다.\n\n## 수치\n\n- **Last-Modified 가 있을 때:** 캐시는 휴리스틱 만료 시간을 그 시점 이후 경과 시간의 일정 비율 이하로 잡도록 권장됩니다. 전형적인 값은 **10%** 입니다. 예를 들어 Last-Modified 가 1년 전이면 약 0.1년입니다.\n- 명세는 구체적 알고리즘을 정하지 않고 상한의 기준만 제시합니다.\n- MDN 은 \"저장한 시점 이후\"의 10%라고 표현합니다. 그러나 예시 계산은 Last-Modified 기준이고, RFC 가 정의하는 쪽도 Last-Modified 기준입니다.\n\n## 부가 사항\n\n- 검증자(validator)도 명시적 만료도 없는 응답은 일부 캐시가 저장하지 않을 수 있습니다. 그래도 명세는 이를 저장하는 것을 금지하지 않습니다(§3).\n- RFC 2616 은 `?` 가 포함된 URI 에 휴리스틱 사용을 금지했습니다. 그러나 널리 구현되지 않았고, 캐시를 막으려면 `no-cache` 같은 명시적 지시어를 보내야 합니다.\n- MDN 은 휴리스틱 캐싱에 의존하지 말고 모든 응답에 명시적 `Cache-Control` 을 두라고 권합니다. 예: `no-cache`, 개인화 콘텐츠는 `no-cache, private`.\n\n## 확인하지 못한 부분\n\n- 이전 RFC(7234)에 있던 \"24시간 초과 시 Warning 113\" 규칙은 RFC 9111 에서 찾지 못했습니다. Warning 헤더는 폐기되었습니다(§5.5).\n- RFC 9110 §15.1 본문을 직접 열어 보지는 못했습니다. 위 상태 코드 목록은 각 상태 코드 절의 문구로 확인했습니다.\n- WebFetch 는 요약과 짧은 인용만 돌려주므로, 정확한 문구가 필요하면 RFC 원문으로 다시 확인하세요.\n\n## 출처\n\n- https://www.rfc-editor.org/rfc/rfc9111.html (§3, §4.2.1, §4.2.2)\n- https://www.rfc-editor.org/rfc/rfc9110.html (§15.3, §15.4, §15.5, §15.6)\n- https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Caching (Heuristic caching)",
+  "subtype": "success",
+  "cost": 0.09970870000000001,
+  "reader_model_cost": 0.025646100000000005,
+  "main_model_cost": 0.0740626,
+  "main_output_tokens": 3615,
+  "seconds": 58.772,
+  "turns": 8,
+  "main_input_tokens": 52085,
+  "jevfetch_calls": 0,
+  "webfetch_calls": 6,
+  "curl_calls": 2,
+  "denied_calls": 1,
+  "page_tokens": null,
+  "claude_version": "2.1.295",
+  "models": [
+   "claude-haiku-5-5",
+   "claude-sonnet-5-5"
+  ],
+  "votes": [
+   {
+    "must-not#0": true,
+    "only-cacheable#0": true,
+    "fraction#1": true,
+    "public#0": true
+   },
+   {
+    "must-not#0": true,
+    "only-cacheable#0": true,
+    "fraction#1": true,
+    "public#0": true
+   },
+   {
+    "must-not#0": true,
+    "only-cacheable#0": true,
+    "fraction#1": true,
+    "public#0": true
+   }
+  ],
+  "answer_sha1": "196afbe37984",
+  "jev_input_tokens": 0,
+  "jev_requests": 0,
+  "jev_models": [],
+  "jev_cost": 0.0,
+  "cost_with_jev": 0.09970870000000001,
+  "timed_out": false,
+  "wall_seconds": 59.7,
+  "failed_attempts": 0,
+  "failed_attempt_cost": 0,
+  "instructions_sha1": "f78365cad4",
+  "with_url": false,
+  "small_model": null,
+  "concurrency": 2,
+  "seed": null,
+  "lang": "ko",
+  "bucket": "medium",
+  "allowed": [
+   "WebSearch",
+   "WebFetch",
+   "Bash(curl:*)",
+   "Bash(grep:*)",
+   "Bash(head:*)"
+  ],
+  "grade": {
+   "right": 4,
+   "total": 4,
+   "split": [],
+   "judge_cost": 0.0432694
+  }
+ },
+ {
+  "case": "sqlite-length",
+  "arm": "webfetch",
+  "rep": 0,
+  "finished": true,
+  "answer": "## SQLite 문자열·BLOB 최대 길이 (`SQLITE_MAX_LENGTH`)\n\n### 기본값과 상한\n- **기본값은 1,000,000,000바이트**(10억)입니다. 원문은 \"The default value of this macro is 1 billion (1 thousand million or 1,000,000,000)\"이라고 적고 있습니다.\n- **구현상 절대 상한은 2^31−3 = 2,147,483,645**입니다. 원문은 \"The current implementation will only support a string or BLOB length up to 2^31-3 or 2147483645\"라고 합니다.\n- `hex()` 같은 일부 내장 함수는 이 상한에 한참 못 미치는 길이에서도 실패할 수 있습니다.\n\n### 한도를 바꾸는 방법\n1. **컴파일 시점 (올리거나 내리기)**\n   - 컴파일 옵션으로 매크로를 지정합니다. 예: `-DSQLITE_MAX_LENGTH=123456789`\n   - 이 값이 해당 빌드의 하드 상한이 됩니다.\n2. **런타임 (연결 단위로 낮추기)**\n   - `sqlite3_limit(db, SQLITE_LIMIT_LENGTH, size)`를 호출합니다.\n   - 시그니처는 `int sqlite3_limit(sqlite3*, int id, int newVal);`입니다.\n   - 이 함수는 항상 **이전 값**을 반환합니다.\n   - 현재 값만 확인하려면 세 번째 인자에 **음수(-1)**를 넣습니다. 음수를 주면 한도는 바뀌지 않습니다.\n   - 런타임에는 컴파일 시점 값(`SQLITE_MAX_LENGTH`)을 넘겨 올릴 수 없습니다. 상한을 넘기려는 시도는 **오류 없이 하드 상한으로 잘립니다**(\"silently truncated\").\n   - limits 페이지는 런타임에 \"낮출 수 있다\"고만 설명합니다. 런타임에 올리는 것은 컴파일 시점 상한 안에서만 가능하다고 해석할 수 있는데, 이는 두 페이지 내용을 종합한 추론입니다.\n\n### 적용 조건과 주의점\n- **행 크기:** INSERT와 SELECT 처리 중 각 행 전체가 하나의 BLOB으로 인코딩됩니다. 그래서 `SQLITE_MAX_LENGTH`는 **한 행의 최대 바이트 수**도 함께 제한합니다.\n- **보안:** 보안에 민감한 애플리케이션에서는 이 한도를 올리지 않는 편이 좋습니다. 가능하다면 오히려 **수백만 바이트 수준으로 낮추라**고 권고합니다. 신뢰할 수 없는 DB를 다룰 때는 런타임 한도를 작게 잡고, `sqlite3_set_authorizer()`와 `max_page_count` PRAGMA를 함께 쓰라고 합니다.\n- **SQL 문 길이는 별개 한도입니다.**\n  - `SQLITE_MAX_SQL_LENGTH`의 기본값도 1,000,000,000이고, 런타임 조정은 `SQLITE_LIMIT_SQL_LENGTH`로 합니다.\n  - 큰 값은 SQL 리터럴에 넣지 말고 `INSERT INTO tab1 VALUES(?,?,?);`와 `sqlite3_bind_XXXX()`로 바인딩하라고 권합니다. 이스케이프가 필요 없고, SQL 인젝션 위험이 줄며, 더 빠릅니다.\n\n### 확인하지 못한 부분\n`sqlite3_limit()` 페이지에는 `SQLITE_LIMIT_LENGTH` 항목별 설명이 없습니다. 이 항목의 기본값과 컴파일 시점 최댓값은 limits 페이지의 `SQLITE_MAX_LENGTH` 설명으로만 확인했습니다.\n\n## 출처\n- https://www.sqlite.org/limits.html\n- https://www.sqlite.org/c3ref/limit.html",
+  "subtype": "success",
+  "cost": 0.0387276,
+  "reader_model_cost": 0.0019946,
+  "main_model_cost": 0.036733,
+  "main_output_tokens": 1988,
+  "seconds": 23.04,
+  "turns": 3,
+  "main_input_tokens": 13112,
+  "jevfetch_calls": 0,
+  "webfetch_calls": 2,
+  "curl_calls": 0,
+  "denied_calls": 0,
+  "page_tokens": null,
+  "claude_version": "2.1.295",
+  "models": [
+   "claude-haiku-5-5",
+   "claude-sonnet-5-5"
+  ],
+  "votes": [
+   {
+    "f2#0": true,
+    "f3#0": true
+   },
+   {
+    "f2#0": true,
+    "f3#0": true
+   },
+   {
+    "f2#0": true,
+    "f3#0": true
+   }
+  ],
+  "answer_sha1": "1922d1aab8b2",
+  "jev_input_tokens": 0,
+  "jev_requests": 0,
+  "jev_models": [],
+  "jev_cost": 0.0,
+  "cost_with_jev": 0.0387276,
+  "timed_out": false,
+  "wall_seconds": 24.5,
+  "failed_attempts": 0,
+  "failed_attempt_cost": 0,
+  "instructions_sha1": "f78365cad4",
+  "with_url": false,
+  "small_model": null,
+  "concurrency": 2,
+  "seed": null,
+  "lang": "ko",
+  "bucket": "small",
+  "allowed": [
+   "WebSearch",
+   "WebFetch",
+   "Bash(curl:*)",
+   "Bash(grep:*)",
+   "Bash(head:*)"
+  ],
+  "grade": {
+   "right": 3,
+   "total": 3,
+   "split": [],
+   "judge_cost": 0.0376834
+  }
+ },
+ {
+  "case": "sqlite-length",
+  "arm": "webfetch",
+  "rep": 1,
+  "finished": true,
+  "answer": "## 기본값과 상한\n\n- **기본값**: `SQLITE_MAX_LENGTH` = 1,000,000,000 (10억) 바이트입니다. 문자열과 BLOB에 모두 적용됩니다.\n- **구현상 절대 상한**: 2^31-3 = 2,147,483,645 바이트입니다. 문서에 따르면 `hex()` 같은 일부 내장 함수는 이 값에 도달하기 훨씬 전에 실패할 수 있습니다.\n- **행 크기**: INSERT와 SELECT 처리 중에는 행 전체가 하나의 BLOB으로 인코딩됩니다. 그래서 이 값은 행 하나의 최대 바이트 수도 결정합니다.\n\n## 한도를 바꾸는 방법\n\n1. **컴파일 시점**\n   - 컴파일 옵션으로 매크로를 지정합니다. 예: `-DSQLITE_MAX_LENGTH=123456789`\n   - 값을 올리거나 내릴 수 있습니다. 올릴 때는 위의 절대 상한(2,147,483,645)을 넘길 수 없습니다.\n   - 이 값은 런타임에 올릴 수 있는 하드 상한이 됩니다.\n\n2. **런타임 (연결 단위)**\n   - `sqlite3_limit(db, SQLITE_LIMIT_LENGTH, size);`\n   - 새 값이 음수이면 한도는 바뀌지 않습니다.\n   - 한도를 올려도 컴파일 시점의 `SQLITE_MAX_LENGTH`를 넘는 값은 조용히 그 값으로 잘립니다. 오류는 나지 않습니다.\n   - 반환값은 변경 여부와 관계없이 이전 한도입니다. 현재 값만 조회하려면 세 번째 인자에 -1을 넣습니다. 예: `sqlite3_limit(db, SQLITE_LIMIT_LENGTH, -1)`\n   - limits 페이지는 런타임에 \"낮출 수 있다\"고만 적고, 올릴 수 있는지는 명시하지 않습니다. 올릴 수 있다는 내용은 `sqlite3_limit` 페이지의 하드 상한 설명에서 나옵니다.\n\n## 관련 한도: SQL 문 길이\n\n- `SQLITE_MAX_SQL_LENGTH`도 기본값이 1,000,000,000입니다. 이 값은 SQL 문 텍스트의 바이트 길이에 대한 별도 한도입니다.\n- 런타임에는 `sqlite3_limit(db, SQLITE_LIMIT_SQL_LENGTH, size)`로 조정합니다.\n- 큰 데이터를 SQL 리터럴에 넣지 말고 `INSERT INTO tab1 VALUES(?,?,?);` 같은 바인드 파라미터와 `sqlite3_bind_XXXX()`로 넣으라고 권장합니다. 따옴표 이스케이프가 필요 없고 SQL 인젝션 위험이 줄며 더 빠릅니다.\n\n## 보안 권고\n\n보안에 민감한 애플리케이션에서는 최대 길이를 늘리지 않는 편이 좋습니다. 가능하다면 수백만 바이트 정도로 낮추는 것이 낫다고 문서는 권고합니다.\n\n## 출처\n\n- https://www.sqlite.org/limits.html\n- https://www.sqlite.org/c3ref/limit.html\n\n`sqlite3_limit` 페이지는 `SQLITE_LIMIT_LENGTH` 항목 자체를 설명하지 않고 별도의 limit categories 페이지로 연결합니다. 그 페이지는 직접 확인하지 않았습니다. `SQLITE_LIMIT_LENGTH`와 `SQLITE_MAX_LENGTH`의 대응 관계는 `SQLITE_LIMIT_*NAME*` / `SQLITE_MAX_*NAME*` 명명 규칙에서 따온 것입니다.",
+  "subtype": "success",
+  "cost": 0.037089300000000006,
+  "reader_model_cost": 0.0019805,
+  "main_model_cost": 0.0351088,
+  "main_output_tokens": 1924,
+  "seconds": 22.873,
+  "turns": 3,
+  "main_input_tokens": 12865,
+  "jevfetch_calls": 0,
+  "webfetch_calls": 2,
+  "curl_calls": 0,
+  "denied_calls": 0,
+  "page_tokens": null,
+  "claude_version": "2.1.295",
+  "models": [
+   "claude-haiku-5-5",
+   "claude-sonnet-5-5"
+  ],
+  "votes": [
+   {
+    "f2#0": true,
+    "f3#0": true
+   },
+   {
+    "f2#0": true,
+    "f3#0": true
+   },
+   {
+    "f2#0": true,
+    "f3#0": true
+   }
+  ],
+  "answer_sha1": "84637a3aaff7",
+  "jev_input_tokens": 0,
+  "jev_requests": 0,
+  "jev_models": [],
+  "jev_cost": 0.0,
+  "cost_with_jev": 0.037089300000000006,
+  "timed_out": false,
+  "wall_seconds": 23.7,
+  "failed_attempts": 0,
+  "failed_attempt_cost": 0,
+  "instructions_sha1": "f78365cad4",
+  "with_url": false,
+  "small_model": null,
+  "concurrency": 2,
+  "seed": null,
+  "lang": "ko",
+  "bucket": "small",
+  "allowed": [
+   "WebSearch",
+   "WebFetch",
+   "Bash(curl:*)",
+   "Bash(grep:*)",
+   "Bash(head:*)"
+  ],
+  "grade": {
+   "right": 3,
+   "total": 3,
+   "split": [],
+   "judge_cost": 0.0370874
+  }
+ },
+ {
+  "case": "stripe-rate",
+  "arm": "webfetch",
+  "rep": 0,
+  "finished": true,
+  "answer": "**답: 라이브 모드는 계정당 초당 100건, 샌드박스는 초당 25건이 기본값입니다.** 개별 엔드포인트는 따로 명시되지 않으면 초당 25건입니다.\n\n## 기본 한도 (계정 단위)\n\nStripe 문서에 따르면 한도는 일반적으로 **Stripe 계정당, 초당 API 요청 수**로 측정합니다. 전체 한도는 계정의 총 API 사용량에 적용되고, 일부 엔드포인트에는 별도 한도가 추가로 붙습니다.\n\n| 구분 | 한도 |\n|---|---|\n| 전역(Global) 한도, 라이브 모드 | **100 요청/초** |\n| 전역(Global) 한도, 샌드박스 | **25 요청/초** |\n| 개별 API 엔드포인트 (별도 명시가 없는 경우) | **25 요청/초** |\n\n엔드포인트 판단 기준은 이렇습니다.\n- Stripe는 이름이 붙은 API 작업 하나를 각각 별도 엔드포인트로 봅니다. 예를 들어 `POST /v1/payment_intents`와 `GET /v1/payment_intents/{id}`는 서로 다른 엔드포인트입니다.\n- `GET /v1/payment_intents/{id}`를 서로 다른 PaymentIntent ID로 호출해도 같은 엔드포인트 한도에 합산됩니다.\n\n## 별도 한도가 있는 리소스\n\n| 리소스 | 한도 |\n|---|---|\n| Payment Intents API | PaymentIntent 객체당 시간당 업데이트 1000건 |\n| Subscriptions API | 구독당 분당 새 인보이스 10건, 일당 20건, 시간당 수량 변경 200건 |\n| Files API | 읽기 20/초, 쓰기 20/초 |\n| Payouts API | 생성 15/초, 비즈니스당 동시 요청 30건 |\n| Connect 계정 생성 (Accounts v1·v2) | 라이브 30개/초, 샌드박스 5개/초 |\n| Search API | 읽기 20/초 |\n| Issuing | 카드 생성 한도는 발급 계정의 국가와 업종에 따라 다름 |\n\n## 추가 적용 조건\n\n- **동시성 한도**: 초당 요청 수와 별개로, 동시에 진행 중인 요청 수를 제한합니다. 목록 조회나 expansion을 쓰는 오래 걸리는 요청에서 주로 걸립니다.\n- **읽기(GET) 할당량**:\n  - 계정의 읽기 요청은 거래 1건당 평균 500건을 넘을 수 없습니다. 30일 동안 거래가 100건이면 읽기 요청은 최대 50,000건입니다.\n  - 이 비율은 최근 30일 롤링 기준으로 계산합니다.\n  - 거래 수와 상관없이 모든 계정에 월 최소 10,000건이 보장됩니다.\n  - 쓰기 요청에는 할당량 제한이 없습니다.\n  - Connect를 쓰면 플랫폼과 연결 계정이 각각 별도의 할당량(거래당 500건)을 가집니다.\n  - Data, Reporting, Tax 제품 엔드포인트는 이 할당량에서 제외됩니다.\n- **초과 시 응답**: `429 Too Many Requests`가 반환되고, `Stripe-Rate-Limited-Reason` 헤더에 사유가 담깁니다.\n  - 사유 값은 `global-rate`, `endpoint-rate`, `global-concurrency`, `endpoint-concurrency`, `resource-specific` 중 하나입니다.\n  - 이 헤더 없이 `429`가 오면 한도 초과가 아니라 객체 락 타임아웃(`lock_timeout`)일 수 있습니다.\n- **샌드박스 부하 테스트**: 샌드박스는 한도가 더 낮고 결제 게이트웨이가 모킹되어 지연 특성도 달라서, Stripe는 샌드박스 부하 테스트를 권장하지 않습니다.\n- **한도 증설**: Stripe Support를 통해 요청할 수 있습니다. 큰 폭의 증설은 최소 6주 전에 문의해야 합니다.\n- **한도의 성격**: Stripe는 이 수치를 \"최대치\"로 보고 불필요한 부하를 피하라고 안내합니다. 재시도는 지터를 넣은 지수 백오프를 권장합니다.\n\n이 수치는 오늘(2026-10-09) 시점의 공식 문서를 직접 읽어 확인한 내용입니다. 문서가 바뀔 수 있으니 실제 운영 전에는 해당 페이지를 다시 확인하세요.\n\n## 출처\n- https://docs.stripe.com/rate-limits",
+  "subtype": "success",
+  "cost": 0.0456178,
+  "reader_model_cost": 0,
+  "main_model_cost": 0.0456178,
+  "main_output_tokens": 1868,
+  "seconds": 17.012,
+  "turns": 2,
+  "main_input_tokens": 15618,
+  "jevfetch_calls": 0,
+  "webfetch_calls": 1,
+  "curl_calls": 0,
+  "denied_calls": 0,
+  "page_tokens": null,
+  "claude_version": "2.1.295",
+  "models": [
+   "claude-sonnet-5-5"
+  ],
+  "votes": [],
+  "answer_sha1": "0a9b48286f97",
+  "jev_input_tokens": 0,
+  "jev_requests": 0,
+  "jev_models": [],
+  "jev_cost": 0.0,
+  "cost_with_jev": 0.0456178,
+  "timed_out": false,
+  "wall_seconds": 17.9,
+  "failed_attempts": 0,
+  "failed_attempt_cost": 0,
+  "instructions_sha1": "f78365cad4",
+  "with_url": false,
+  "small_model": null,
+  "concurrency": 2,
+  "seed": null,
+  "lang": "ko",
+  "bucket": "small",
+  "allowed": [
+   "WebSearch",
+   "WebFetch",
+   "Bash(curl:*)",
+   "Bash(grep:*)",
+   "Bash(head:*)"
+  ],
+  "grade": {
+   "right": 1,
+   "total": 1,
+   "split": [],
+   "judge_cost": 0
+  }
+ },
+ {
+  "case": "stripe-rate",
+  "arm": "webfetch",
+  "rep": 1,
+  "finished": true,
+  "answer": "**결론: 라이브 모드 기본(글로벌) 한도는 초당 100 요청이고, 샌드박스(테스트 환경)는 초당 25 요청입니다.**\n\n## 기본 한도 (Stripe 계정 단위)\n| 구분 | 한도 |\n|---|---|\n| 글로벌 API, 라이브 모드 | 100 요청/초 |\n| 글로벌 API, 샌드박스 | 25 요청/초 |\n| 개별 엔드포인트(별도 명시가 없는 경우) | 25 요청/초 |\n\n## 적용 조건\n- 한도는 Stripe 계정당 초당 API 요청 수로 측정합니다. 글로벌 한도는 계정의 전체 API 사용량에 적용되고, 일부 엔드포인트에는 별도 한도가 추가로 있습니다.\n- Stripe는 이름이 붙은 각 API 작업을 별개 엔드포인트로 취급합니다. 예를 들어 `POST /v1/payment_intents`와 `GET /v1/payment_intents/{id}`는 서로 다른 엔드포인트입니다. 같은 엔드포인트라면 ID가 달라도 한도를 함께 소모합니다.\n- 한도를 넘으면 `429 Too Many Requests`가 반환됩니다. 응답의 `Stripe-Rate-Limited-Reason` 헤더 값은 `global-rate`, `endpoint-rate`, `global-concurrency`, `endpoint-concurrency`, `resource-specific` 중 하나입니다.\n- 이 헤더 없이 429가 오면 한도 초과가 아니라 객체 락 타임아웃(`lock_timeout`)일 수 있습니다.\n- 동시성 한도는 초당 요청 수와 별개로, 동시에 진행 중인 요청 수를 제한합니다. 목록 조회나 expand를 쓰는 무거운 요청에서 주로 걸립니다.\n\n## 리소스별 추가 한도\n- **Payment Intents:** PaymentIntent 객체당 시간당 업데이트 1000회\n- **Subscriptions:**\n  - 구독당 분당 새 인보이스 10개\n  - 구독당 일일 새 인보이스 20개\n  - 구독당 시간당 수량 변경 200회\n- **Files:** 읽기 20/초, 쓰기 20/초\n- **Payouts:** 생성 15/초, 사업체당 동시 요청 30개\n- **Connect 계정 생성:** 라이브 30개/초, 샌드박스 5개/초 (Accounts v1·v2 모두 해당)\n- **Search API:** 읽기 20/초\n- **Issuing:** 카드 생성 한도는 발급 계정의 국가와 업종에 따라 다릅니다.\n\n## 읽기(GET) 요청 할당량\n- 평균 거래 1건당 읽기 요청 500회를 넘을 수 없습니다. 기준 기간은 최근 30일 롤링입니다. 예를 들어 30일간 거래가 100건이면 읽기 요청은 50,000회까지입니다.\n- 거래 수와 상관없이 모든 계정에는 월 10,000회의 최소 읽기 할당량이 있습니다.\n- Connect를 쓰면 플랫폼과 연결 계정의 할당량이 따로 적용됩니다. 둘 다 거래당 500회입니다.\n- 쓰기 요청에는 할당량 제한이 없습니다.\n- Data, Reporting, Tax 제품의 엔드포인트는 이 할당량에서 제외됩니다.\n\n## 한도 상향\n- Stripe Support를 통해 요청할 수 있습니다. 큰 폭의 상향이 필요하면 최소 6주 전에 문의하라고 안내합니다.\n- Stripe는 샌드박스 부하 테스트를 권장하지 않습니다. 샌드박스 한도가 더 낮고 결제 게이트웨이 호출이 모의 처리되어 지연 특성이 달라지기 때문입니다.\n\n## 출처\n- https://docs.stripe.com/rate-limits (Stripe 공식 문서. 위 내용은 2026-10-09에 이 페이지를 직접 읽어 확인했습니다.)",
+  "subtype": "success",
+  "cost": 0.0431638,
+  "reader_model_cost": 0,
+  "main_model_cost": 0.0431638,
+  "main_output_tokens": 1627,
+  "seconds": 15.532,
+  "turns": 2,
+  "main_input_tokens": 15607,
+  "jevfetch_calls": 0,
+  "webfetch_calls": 1,
+  "curl_calls": 0,
+  "denied_calls": 0,
+  "page_tokens": null,
+  "claude_version": "2.1.295",
+  "models": [
+   "claude-sonnet-5-5"
+  ],
+  "votes": [],
+  "answer_sha1": "a68d78ee0d39",
+  "jev_input_tokens": 0,
+  "jev_requests": 0,
+  "jev_models": [],
+  "jev_cost": 0.0,
+  "cost_with_jev": 0.0431638,
+  "timed_out": false,
+  "wall_seconds": 16.5,
+  "failed_attempts": 0,
+  "failed_attempt_cost": 0,
+  "instructions_sha1": "f78365cad4",
+  "with_url": false,
+  "small_model": null,
+  "concurrency": 2,
+  "seed": null,
+  "lang": "ko",
+  "bucket": "small",
+  "allowed": [
+   "WebSearch",
+   "WebFetch",
+   "Bash(curl:*)",
+   "Bash(grep:*)",
+   "Bash(head:*)"
+  ],
+  "grade": {
+   "right": 1,
+   "total": 1,
+   "split": [],
+   "judge_cost": 0
+  }
+ },
+ {
+  "case": "us-dst",
+  "arm": "webfetch",
+  "rep": 0,
+  "finished": true,
+  "answer": "미국 서머타임(Daylight Saving Time)은 현행 규칙상 **3월 둘째 일요일에 시작해 11월 첫째 일요일에 끝납니다.**\n\n**규칙**\n- **근거 법:** 2005년 에너지정책법(Energy Policy Act of 2005) 제110조가 1966년 통일시간법(Uniform Time Act)을 개정했습니다. 2007년부터 시행 중입니다.\n- **시작:** 3월 둘째 일요일 현지 표준시 오전 2시에 시계를 1시간 앞당겨 오전 3시로 맞춥니다.\n- **종료:** 11월 첫째 일요일 현지 서머타임 오전 2시에 시계를 1시간 되돌려 오전 1시로 맞춥니다.\n- **변경 전 규칙:** 4월 첫째 일요일에 시작해 10월 마지막 일요일에 끝났습니다. 새 규칙으로 서머타임이 약 한 달 늘었습니다.\n- **시행 시기:** 법 제정 1년 후 또는 2007년 3월 1일 중 늦은 날부터입니다.\n- **의회의 권한:** 의회는 이전 일정으로 되돌릴 권한을 유지합니다.\n\n**적용 조건과 예외**\n- 서머타임을 적용하지 않는 곳은 하와이, 애리조나 대부분 지역, 미국령 아메리칸사모아·괌·푸에르토리코·미국령 버진아일랜드입니다.\n- 애리조나 안의 나바호 보호구역(Navajo Nation)은 서머타임을 적용합니다.\n- 주가 서머타임을 적용하지 않기로 선택할 권리는 이 법으로 바뀌지 않았습니다.\n- 서머타임과 시간대는 NIST가 아니라 미 교통부(DOT)가 관할합니다.\n\n**2026년 날짜**\n- 시작은 3월 8일 오전 2시, 종료는 11월 1일 오전 2시입니다.\n- 이 날짜는 위 규칙으로 제가 직접 계산한 값입니다. 검색한 페이지에서 확인한 값은 NIST 페이지의 2026년 날짜뿐입니다.\n- 오늘이 2026년 10월 9일이므로 다음 변경은 11월 1일입니다.\n\n**출처**\n- https://www.nist.gov/pml/time-and-frequency-division/popular-links/daylight-saving-time-dst\n- https://www.timeanddate.com/laws/us/energypolicyact2005.html\n- https://aa.usno.navy.mil/faq/daylight_time\n\n**확인 한계:** NIST 페이지는 직접 열어 읽었습니다. timeanddate와 USNO는 검색 결과 요약으로만 확인했고 페이지 본문은 열지 않았습니다. 제110조 문구와 시행일, 의회 환원 권한은 검색 요약에 근거합니다.",
+  "subtype": "success",
+  "cost": 0.0430118,
+  "reader_model_cost": 0.0134262,
+  "main_model_cost": 0.029585600000000004,
+  "main_output_tokens": 1306,
+  "seconds": 19.914,
+  "turns": 3,
+  "main_input_tokens": 13014,
+  "jevfetch_calls": 0,
+  "webfetch_calls": 1,
+  "curl_calls": 0,
+  "denied_calls": 0,
+  "page_tokens": null,
+  "claude_version": "2.1.295",
+  "models": [
+   "claude-haiku-5-5",
+   "claude-sonnet-5-5"
+  ],
+  "votes": [],
+  "answer_sha1": "5800130de568",
+  "jev_input_tokens": 0,
+  "jev_requests": 0,
+  "jev_models": [],
+  "jev_cost": 0.0,
+  "cost_with_jev": 0.0430118,
+  "timed_out": false,
+  "wall_seconds": 21.1,
+  "failed_attempts": 0,
+  "failed_attempt_cost": 0,
+  "instructions_sha1": "f78365cad4",
+  "with_url": false,
+  "small_model": null,
+  "concurrency": 2,
+  "seed": null,
+  "lang": "ko",
+  "bucket": "medium",
+  "allowed": [
+   "WebSearch",
+   "WebFetch",
+   "Bash(curl:*)",
+   "Bash(grep:*)",
+   "Bash(head:*)"
+  ],
+  "grade": {
+   "right": 2,
+   "total": 2,
+   "split": [],
+   "judge_cost": 0
+  }
+ },
+ {
+  "case": "us-dst",
+  "arm": "webfetch",
+  "rep": 1,
+  "finished": true,
+  "answer": "**현재 규칙 (2007년부터 적용)**\n\n- **시작:** 3월 두 번째 일요일 오전 2시(현지 표준시). 시계를 오전 3시로 1시간 앞당긴다. 그날은 하루가 23시간이다.\n- **종료:** 11월 첫 번째 일요일 오전 2시(현지 서머타임). 시계를 오전 1시로 1시간 되돌린다. 1시~2시가 반복되어 그날은 하루가 25시간이다.\n- **법적 근거:** 2005년 에너지정책법(Energy Policy Act of 2005). 의회가 정했고 2007년부터 시행됐다.\n- **2026년 날짜:** 3월 8일 시작, 11월 1일 종료. 오늘(2026-10-09) 기준으로 다음 변경은 11월 1일 일요일 오전 2시의 \"fall back\"이다.\n\n**적용 예외**\n- 하와이는 서머타임을 시행하지 않는다.\n- 아리조나는 시행하지 않는다. 다만 나바호 원주민 보호구역(Navajo Nation)은 시행한다.\n- 미국령인 아메리칸사모아, 괌, 푸에르토리코, 미국령 버진아일랜드도 시행하지 않는다. 이 내용은 NIST 페이지에만 나온다.\n\n**참고(이전 규칙)**\n- 1986~2006년에는 4월 첫째 일요일에 시작해 10월 마지막 일요일에 끝났다.\n- 1966년 Uniform Time Act는 시작일을 4월 마지막 일요일로 정했다.\n- 이 두 가지는 검색 결과 요약에만 나오며 원문 페이지를 직접 열어 확인하지는 않았다.\n\n**확인 한계**\n- NIST 페이지는 WebFetch로 읽었다. 검색 결과는 미 해군천문대(USNO) FAQ와 주정부 페이지 등의 요약으로만 확인했고 원문 전체를 열어 보지는 않았다.\n- 2026년 날짜는 두 출처가 일치하고, 둘 다 규칙에 맞는 일요일이다.\n\n**출처**\n- https://www.nist.gov/pml/time-and-frequency-division/popular-links/daylight-saving-time-dst\n- https://aa.usno.navy.mil/faq/daylight_time\n- https://dbmefaapolicy.azdes.gov/FAA6/Daylight_Saving_Time_(DST)_Definition.html",
+  "subtype": "success",
+  "cost": 0.040525000000000005,
+  "reader_model_cost": 0.013341200000000001,
+  "main_model_cost": 0.0271838,
+  "main_output_tokens": 1143,
+  "seconds": 18.935,
+  "turns": 3,
+  "main_input_tokens": 12822,
+  "jevfetch_calls": 0,
+  "webfetch_calls": 1,
+  "curl_calls": 0,
+  "denied_calls": 0,
+  "page_tokens": null,
+  "claude_version": "2.1.295",
+  "models": [
+   "claude-haiku-5-5",
+   "claude-sonnet-5-5"
+  ],
+  "votes": [],
+  "answer_sha1": "f877c850c0ea",
+  "jev_input_tokens": 0,
+  "jev_requests": 0,
+  "jev_models": [],
+  "jev_cost": 0.0,
+  "cost_with_jev": 0.040525000000000005,
+  "timed_out": false,
+  "wall_seconds": 19.9,
+  "failed_attempts": 0,
+  "failed_attempt_cost": 0,
+  "instructions_sha1": "f78365cad4",
+  "with_url": false,
+  "small_model": null,
+  "concurrency": 2,
+  "seed": null,
+  "lang": "ko",
+  "bucket": "medium",
+  "allowed": [
+   "WebSearch",
+   "WebFetch",
+   "Bash(curl:*)",
+   "Bash(grep:*)",
+   "Bash(head:*)"
+  ],
+  "grade": {
+   "right": 2,
+   "total": 2,
+   "split": [],
+   "judge_cost": 0
+  }
+ }
+]
