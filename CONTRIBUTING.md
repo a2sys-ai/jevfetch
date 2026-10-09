@@ -20,6 +20,6 @@ JEVFETCH_RECORD=1 uv run pytest tests/test_end_to_end.py
 
 CI has no key, so a pull request from a fork cannot re-record. Open the pull request with the failing test and say so in the description; a maintainer re-records and adds the fixtures to the branch.
 
-## Commits and pull requests
+## Pull requests
 
-A commit subject is one line in the form `type: description`, with type one of feat, fix, docs, refactor, test, chore. Details belong in the pull request description, not in the commit.
+Pull requests are squash-merged, so the pull request title becomes the commit on `main` and the commits on your branch do not. Write the title as one line in the form `type: description`, with type one of feat, fix, docs, refactor, test, chore. Details belong in the pull request description.
