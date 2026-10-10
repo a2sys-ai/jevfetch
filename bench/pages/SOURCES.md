@@ -1,5 +1,8 @@
 # Snapshot sources
 
+The jevfetch code is MIT-licensed; the files in this directory and the passages listed under
+[Passages copied elsewhere](#passages-copied-elsewhere) are third-party content under the licences named here.
+
 Each file is the page body as served on the fetch date, saved unchanged. Fetched with jevfetch's own
 fetcher (`jevfetch.web.fetch`, User-Agent `jevfetch/<version>`), 2026-10-09.
 
@@ -9,14 +12,41 @@ fetcher (`jevfetch.web.fetch`, User-Agent `jevfetch/<version>`), 2026-10-09.
 | python-subprocess.html | https://docs.python.org/3/library/subprocess.html | PSF License Version 2 | same as above |
 | wiki-world-war-ii.html | https://en.wikipedia.org/wiki/World_War_II | CC BY-SA 4.0 | Wikipedia contributors; https://creativecommons.org/licenses/by-sa/4.0/ |
 | wiki-python.html | https://en.wikipedia.org/wiki/Python_(programming_language) | CC BY-SA 4.0 | same as above |
-| mdn-cache-control.html | https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Cache-Control | CC BY-SA 2.5 (prose) | Mozilla Contributors; https://developer.mozilla.org/en-US/docs/MDN/Writing_guidelines/Attrib_copyright_license |
-| mdn-array-sort.html | https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort | CC BY-SA 2.5 (prose), CC0 (code samples) | same as above |
+| mdn-cache-control.html | "Cache-Control", https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Cache-Control | CC BY-SA 2.5 (prose), https://creativecommons.org/licenses/by-sa/2.5/ | Mozilla Contributors; MDN licence policy: https://developer.mozilla.org/en-US/docs/MDN/Writing_guidelines/Attrib_copyright_license |
+| mdn-array-sort.html | "Array.prototype.sort()", https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort | CC BY-SA 2.5 (prose), https://creativecommons.org/licenses/by-sa/2.5/; CC0 (code samples), https://creativecommons.org/publicdomain/zero/1.0/ | same as above |
 | rfc9110.html | https://www.rfc-editor.org/rfc/rfc9110.html | IETF Trust Legal Provisions (BCP 78) | Copyright (c) 2022 IETF Trust and the persons identified as the document authors. https://trustee.ietf.org/license-info |
 | rfc8259.html | https://www.rfc-editor.org/rfc/rfc8259.html | IETF Trust Legal Provisions (BCP 78) | Copyright (c) 2017 IETF Trust and the persons identified as the document authors |
-| uv-readme.md | https://raw.githubusercontent.com/astral-sh/uv/main/README.md | Apache-2.0 OR MIT | Copyright Astral Software Inc.; https://github.com/astral-sh/uv/blob/main/LICENSE-MIT |
+| uv-readme.md | https://raw.githubusercontent.com/astral-sh/uv/main/README.md | MIT (of the Apache-2.0 OR MIT choice) | Copyright (c) 2025 Astral Software Inc.; licence text: `LICENSE-uv-MIT.txt` (from https://github.com/astral-sh/uv/blob/main/LICENSE-MIT) |
 | nist-sp800-63b.html | https://pages.nist.gov/800-63-3/sp800-63b.html | US Government work, public domain in the US | NIST Special Publication 800-63B |
 
 Content hashes are recorded per case in `bench/baseline.json` (`snapshot_sha256`).
+
+## Passages copied elsewhere
+
+`bench/cases.json` (`facts`) holds sentences copied from the snapshots above, under the same licences.
+`bench/agents/questions.json` (`gold`) holds sentences copied from the pages the agent questions point at,
+and the answers in `bench/reports/agents-*/runs.json` quote, summarize or translate those pages. Their
+sources and the licence each site states:
+
+| site | licence | source of the licence statement |
+|---|---|---|
+| docs.cloud.google.com | CC BY 4.0 | page footer |
+| docs.github.com | CC BY 4.0 | https://github.com/github/docs/blob/main/LICENSE |
+| kubernetes.io | CC BY 4.0 | https://github.com/kubernetes/website/blob/main/LICENSE |
+| docs.npmjs.com | CC BY 4.0 | https://github.com/npm/documentation/blob/main/LICENSE |
+| docs.docker.com | Apache-2.0 | https://github.com/docker/docs/blob/main/LICENSE |
+| developer.mozilla.org | CC BY-SA 2.5 | see above |
+| en.wikipedia.org, ko.wikipedia.org | CC BY-SA 4.0 | https://foundation.wikimedia.org/wiki/Policy:Terms_of_Use |
+| docs.python.org | PSF License Version 2 | `LICENSE-PSF.txt` |
+| www.postgresql.org | PostgreSQL License | https://www.postgresql.org/about/licence/ |
+| www.sqlite.org | public domain | https://www.sqlite.org/copyright.html |
+| git-scm.com (git manual pages) | GPL-2.0 | https://github.com/git/git/blob/master/COPYING |
+| www.rfc-editor.org | IETF Trust Legal Provisions (BCP 78) | see above |
+| pages.nist.gov | US Government work | see above |
+| redis.io | CC BY-NC-SA 4.0 for the current documentation; portions that were in the earlier redis-doc repository are CC BY-SA 4.0 | https://github.com/redis/docs/blob/main/LICENSE |
+| nginx.org, docs.stripe.com, docs.claude.com | no licence stated on the site | |
+
+Korean answers to questions on English pages contain the model's translation of the quoted sentences.
 
 ## Annotation
 

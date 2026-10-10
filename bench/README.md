@@ -179,9 +179,10 @@ variable for every arm that does not pin its own. The model actually billed is i
 Each run's `meta.json` records the exact task prompt, the instruction file and its hash computed before the
 run, tools, allow rules, language, mode and small model; a finished run is reused only when all of these
 match, otherwise the runner stops and asks for a fresh results directory. `runs.json` keeps the final answer
-and the judge votes of every run, so a result set can be audited without the traces. Not archived: the page
-bytes each run fetched and the request bodies sent to Jev (the recordings hold the responses and usage, keyed by
-a hash of the request), so a run's reader inputs cannot be replayed exactly. For sets run before `concurrency`
+and the judge votes of every run, so the answers and their grades can be checked without the traces; the runs
+themselves cannot be re-executed from the committed files. Not archived: the page bytes each run fetched and the
+request bodies sent to Jev (the recordings hold the responses and usage, keyed by a hash of the request), so a
+run's reader inputs cannot be replayed exactly. For sets run before `concurrency`
 and `seed` were recorded, the values were written into `meta.json` afterwards from the launch command (the
 `3arm` sets: concurrency 1, seed 7; the earlier sets: concurrency 2).
 
@@ -195,8 +196,8 @@ for example WebFetch with Haiku 4.5 against WebFetch with Haiku 5.5 against jevf
 instruction file; `webfetch-minimal.md` is the one-sentence instruction the technical report's agents had, used
 to measure how much of a cost difference comes from instructions rather than from the reader.
 
-Only `report.md` and `runs.json` of a results directory are committed; traces, work directories, Jev
-recordings and judge votes stay local. Results so far: `reports/agents-2026-10-09-3arm-ko/` and `-3arm-en/` (URL given,
+Only `report.md`, `runs.json` and `schedule.json` of a results directory are committed; traces, work
+directories, Jev recordings of the runs and the judge's raw replies stay local (the votes are in `runs.json`). Results so far: `reports/agents-2026-10-09-3arm-ko/` and `-3arm-en/` (URL given,
 no WebSearch, 32 questions each in Korean and in English, three arms interleaved in one schedule, concurrency 1;
 the numbers in `RESULTS.md` and the README), `reports/agents-2026-10-09/` (WebSearch, no URL, Korean) and
 `reports/agents-2026-10-09-ablation/` (WebSearch, WebFetch with the one-sentence instruction).
