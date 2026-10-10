@@ -27,12 +27,12 @@
   "retention_case_mean": 1.0,
   "retention_page_macro": 1.0,
   "status_ok": 31,
-  "out_tokens": 17270,
-  "doc_tokens": 790768,
-  "workload": 4095669,
+  "out_tokens": 20438,
+  "doc_tokens": 942479,
+  "workload": 4047949,
   "live_tokens": 0,
-  "requests": 880,
-  "cost_usd": 0.172
+  "requests": 847,
+  "cost_usd": 0.17
  },
  "cases": {
   "functools-lru-maxsize-none": {
@@ -47,7 +47,7 @@
    "fact_positions": {
     "a7f3e3c54b": 0.249
    },
-   "doc_tokens": 6009,
+   "doc_tokens": 6758,
    "blocks_total": 133,
    "missing_recording": false,
    "status": "filtered",
@@ -57,13 +57,13 @@
    "keys": {
     "a552acbb15": true
    },
-   "out_tokens": 403,
-   "blocks_kept": 8,
+   "out_tokens": 420,
+   "blocks_kept": 7,
    "workload": 39512,
    "live_tokens": 0,
    "requests": 13,
    "model": "jev-1.13.0",
-   "span_density": 0.055,
+   "span_density": 0.052,
    "page": "python-functools.html"
   },
   "functools-lru-typed": {
@@ -78,7 +78,7 @@
    "fact_positions": {
     "82dbf5828a": 0.252
    },
-   "doc_tokens": 6009,
+   "doc_tokens": 6758,
    "blocks_total": 133,
    "missing_recording": false,
    "status": "filtered",
@@ -88,13 +88,13 @@
    "keys": {
     "b7bc660d60": true
    },
-   "out_tokens": 351,
+   "out_tokens": 382,
    "blocks_kept": 7,
    "workload": 36942,
    "live_tokens": 0,
    "requests": 9,
    "model": "jev-1.13.0",
-   "span_density": 0.048,
+   "span_density": 0.045,
    "page": "python-functools.html"
   },
   "functools-lru-cache-info": {
@@ -109,7 +109,7 @@
    "fact_positions": {
     "3bd891ff41": 0.284
    },
-   "doc_tokens": 6009,
+   "doc_tokens": 6758,
    "blocks_total": 133,
    "missing_recording": false,
    "status": "filtered",
@@ -119,13 +119,13 @@
    "keys": {
     "deaad5741c": true
    },
-   "out_tokens": 371,
+   "out_tokens": 405,
    "blocks_kept": 4,
    "workload": 37630,
    "live_tokens": 0,
    "requests": 10,
    "model": "jev-1.13.0",
-   "span_density": 0.075,
+   "span_density": 0.069,
    "page": "python-functools.html"
   },
   "subprocess-run-timeout": {
@@ -140,7 +140,7 @@
    "fact_positions": {
     "d53b0165e8": 0.057
    },
-   "doc_tokens": 12523,
+   "doc_tokens": 13481,
    "blocks_total": 299,
    "missing_recording": false,
    "status": "filtered",
@@ -150,13 +150,13 @@
    "keys": {
     "666d5e1c8c": true
    },
-   "out_tokens": 417,
+   "out_tokens": 436,
    "blocks_kept": 8,
    "workload": 83722,
    "live_tokens": 0,
    "requests": 20,
    "model": "jev-1.13.0",
-   "span_density": 0.036,
+   "span_density": 0.034,
    "page": "python-subprocess.html"
   },
   "subprocess-communicate-timeout": {
@@ -171,7 +171,7 @@
    "fact_positions": {
     "f625dcb310": 0.573
    },
-   "doc_tokens": 12523,
+   "doc_tokens": 13481,
    "blocks_total": 299,
    "missing_recording": false,
    "status": "filtered",
@@ -181,13 +181,13 @@
    "keys": {
     "6ac888cf92": true
    },
-   "out_tokens": 423,
+   "out_tokens": 442,
    "blocks_kept": 8,
    "workload": 84429,
    "live_tokens": 0,
    "requests": 21,
    "model": "jev-1.13.0",
-   "span_density": 0.076,
+   "span_density": 0.072,
    "page": "python-subprocess.html"
   },
   "subprocess-shell-security": {
@@ -202,7 +202,7 @@
    "fact_positions": {
     "0ede8c650b": 0.521
    },
-   "doc_tokens": 12523,
+   "doc_tokens": 13481,
    "blocks_total": 299,
    "missing_recording": false,
    "status": "filtered",
@@ -212,13 +212,13 @@
    "keys": {
     "0aeccd3dc0": true
    },
-   "out_tokens": 838,
+   "out_tokens": 908,
    "blocks_kept": 10,
    "workload": 101436,
    "live_tokens": 0,
    "requests": 47,
    "model": "jev-1.13.0",
-   "span_density": 0.043,
+   "span_density": 0.04,
    "page": "python-subprocess.html"
   },
   "cache-control-max-age": {
@@ -233,8 +233,8 @@
    "fact_positions": {
     "4bba77f528": 0.174
    },
-   "doc_tokens": 4566,
-   "blocks_total": 152,
+   "doc_tokens": 5696,
+   "blocks_total": 175,
    "missing_recording": false,
    "status": "filtered",
    "facts": {
@@ -243,13 +243,13 @@
    "keys": {
     "8135861c12": true
    },
-   "out_tokens": 659,
+   "out_tokens": 804,
    "blocks_kept": 12,
-   "workload": 60410,
+   "workload": 66568,
    "live_tokens": 0,
-   "requests": 48,
+   "requests": 52,
    "model": "jev-1.13.0",
-   "span_density": 0.032,
+   "span_density": 0.026,
    "page": "mdn-cache-control.html"
   },
   "cache-control-no-cache-vs-no-store": {
@@ -264,8 +264,8 @@
    "fact_positions": {
     "9c457357ff": 0.232
    },
-   "doc_tokens": 4566,
-   "blocks_total": 152,
+   "doc_tokens": 5696,
+   "blocks_total": 175,
    "missing_recording": false,
    "status": "filtered",
    "facts": {
@@ -274,13 +274,13 @@
    "keys": {
     "9236276984": true
    },
-   "out_tokens": 477,
-   "blocks_kept": 9,
-   "workload": 59289,
+   "out_tokens": 543,
+   "blocks_kept": 10,
+   "workload": 65209,
    "live_tokens": 0,
-   "requests": 47,
+   "requests": 50,
    "model": "jev-1.13.0",
-   "span_density": 0.038,
+   "span_density": 0.033,
    "page": "mdn-cache-control.html"
   },
   "cache-control-stale-while-revalidate": {
@@ -295,8 +295,8 @@
    "fact_positions": {
     "e870d77eff": 0.425
    },
-   "doc_tokens": 4566,
-   "blocks_total": 152,
+   "doc_tokens": 5696,
+   "blocks_total": 175,
    "missing_recording": false,
    "status": "filtered",
    "facts": {
@@ -305,13 +305,13 @@
    "keys": {
     "a2b8a8070c": true
    },
-   "out_tokens": 436,
-   "blocks_kept": 9,
-   "workload": 41501,
+   "out_tokens": 368,
+   "blocks_kept": 6,
+   "workload": 44577,
    "live_tokens": 0,
-   "requests": 16,
+   "requests": 14,
    "model": "jev-1.13.0",
-   "span_density": 0.096,
+   "span_density": 0.114,
    "page": "mdn-cache-control.html"
   },
   "array-sort-stability": {
@@ -326,8 +326,8 @@
    "fact_positions": {
     "2a7079be0e": 0.657
    },
-   "doc_tokens": 3547,
-   "blocks_total": 68,
+   "doc_tokens": 4060,
+   "blocks_total": 69,
    "missing_recording": false,
    "status": "filtered",
    "facts": {
@@ -336,13 +336,13 @@
    "keys": {
     "08258eeadc": true
    },
-   "out_tokens": 384,
+   "out_tokens": 365,
    "blocks_kept": 8,
-   "workload": 31766,
+   "workload": 30799,
    "live_tokens": 0,
-   "requests": 26,
+   "requests": 24,
    "model": "jev-1.13.0",
-   "span_density": 0.06,
+   "span_density": 0.063,
    "page": "mdn-array-sort.html"
   },
   "array-sort-default-order": {
@@ -357,8 +357,8 @@
    "fact_positions": {
     "a02aac4ef2": 0.24
    },
-   "doc_tokens": 3547,
-   "blocks_total": 68,
+   "doc_tokens": 4060,
+   "blocks_total": 69,
    "missing_recording": false,
    "status": "filtered",
    "facts": {
@@ -367,13 +367,13 @@
    "keys": {
     "2c780ed803": true
    },
-   "out_tokens": 632,
+   "out_tokens": 644,
    "blocks_kept": 7,
-   "workload": 33231,
+   "workload": 33987,
    "live_tokens": 0,
-   "requests": 28,
+   "requests": 29,
    "model": "jev-1.13.0",
-   "span_density": 0.052,
+   "span_density": 0.051,
    "page": "mdn-array-sort.html"
   },
   "array-sort-complexity": {
@@ -388,8 +388,8 @@
    "fact_positions": {
     "78bf0895bd": 0.144
    },
-   "doc_tokens": 3547,
-   "blocks_total": 68,
+   "doc_tokens": 4060,
+   "blocks_total": 69,
    "missing_recording": false,
    "status": "filtered",
    "facts": {
@@ -398,13 +398,13 @@
    "keys": {
     "720df2b637": true
    },
-   "out_tokens": 353,
+   "out_tokens": 407,
    "blocks_kept": 5,
-   "workload": 17953,
+   "workload": 18152,
    "live_tokens": 0,
    "requests": 4,
    "model": "jev-1.13.0",
-   "span_density": 0.051,
+   "span_density": 0.044,
    "page": "mdn-array-sort.html"
   },
   "array-sort-max-length": {
@@ -415,17 +415,17 @@
    "answerable": false,
    "extraction": {},
    "fact_positions": {},
-   "doc_tokens": 3547,
-   "blocks_total": 68,
+   "doc_tokens": 4060,
+   "blocks_total": 69,
    "missing_recording": false,
    "status": "no_match",
    "facts": {},
    "keys": {},
-   "out_tokens": 367,
-   "blocks_kept": 6,
-   "workload": 17178,
+   "out_tokens": 340,
+   "blocks_kept": 5,
+   "workload": 16684,
    "live_tokens": 0,
-   "requests": 3,
+   "requests": 2,
    "model": "jev-1.13.0",
    "span_density": null,
    "page": "mdn-array-sort.html"
@@ -443,7 +443,7 @@
     "a697d05e2a": 0.796
    },
    "doc_tokens": 2785,
-   "blocks_total": 55,
+   "blocks_total": 53,
    "missing_recording": false,
    "status": "filtered",
    "facts": {
@@ -452,13 +452,13 @@
    "keys": {
     "6c6ba3f600": true
    },
-   "out_tokens": 576,
-   "blocks_kept": 6,
-   "workload": 13733,
+   "out_tokens": 536,
+   "blocks_kept": 8,
+   "workload": 12831,
    "live_tokens": 0,
    "requests": 3,
    "model": "jev-1.13.0",
-   "span_density": 0.017,
+   "span_density": 0.019,
    "page": "uv-readme.md"
   },
   "uv-install": {
@@ -474,7 +474,7 @@
     "aadc768ad8": 0.257
    },
    "doc_tokens": 2785,
-   "blocks_total": 55,
+   "blocks_total": 53,
    "missing_recording": false,
    "status": "filtered",
    "facts": {
@@ -483,13 +483,13 @@
    "keys": {
     "03da0d9e82": true
    },
-   "out_tokens": 525,
+   "out_tokens": 555,
    "blocks_kept": 4,
-   "workload": 15240,
+   "workload": 14200,
    "live_tokens": 0,
    "requests": 5,
    "model": "jev-1.13.0",
-   "span_density": 0.032,
+   "span_density": 0.031,
    "page": "uv-readme.md"
   },
   "json-utf8": {
@@ -504,8 +504,8 @@
    "fact_positions": {
     "5cec8b2eee": 0.6
    },
-   "doc_tokens": 10380,
-   "blocks_total": 143,
+   "doc_tokens": 7038,
+   "blocks_total": 16,
    "missing_recording": false,
    "status": "filtered",
    "facts": {
@@ -514,13 +514,13 @@
    "keys": {
     "663b90c899": true
    },
-   "out_tokens": 382,
-   "blocks_kept": 6,
-   "workload": 44459,
+   "out_tokens": 1121,
+   "blocks_kept": 3,
+   "workload": 15429,
    "live_tokens": 0,
-   "requests": 15,
+   "requests": 6,
    "model": "jev-1.13.0",
-   "span_density": 0.052,
+   "span_density": 0.018,
    "page": "rfc8259.html"
   },
   "json-infinity-nan": {
@@ -535,8 +535,8 @@
    "fact_positions": {
     "6f648f9326": 0.463
    },
-   "doc_tokens": 10380,
-   "blocks_total": 143,
+   "doc_tokens": 7038,
+   "blocks_total": 16,
    "missing_recording": false,
    "status": "filtered",
    "facts": {
@@ -545,13 +545,13 @@
    "keys": {
     "7be28244e6": true
    },
-   "out_tokens": 528,
-   "blocks_kept": 8,
-   "workload": 42723,
+   "out_tokens": 711,
+   "blocks_kept": 2,
+   "workload": 13794,
    "live_tokens": 0,
-   "requests": 13,
+   "requests": 5,
    "model": "jev-1.13.0",
-   "span_density": 0.04,
+   "span_density": 0.03,
    "page": "rfc8259.html"
   },
   "http-415-meaning": {
@@ -566,8 +566,8 @@
    "fact_positions": {
     "c65d72365f": 0.748
    },
-   "doc_tokens": 101353,
-   "blocks_total": 2099,
+   "doc_tokens": 103780,
+   "blocks_total": 2091,
    "missing_recording": false,
    "status": "filtered",
    "facts": {
@@ -578,9 +578,9 @@
    },
    "out_tokens": 656,
    "blocks_kept": 9,
-   "workload": 539947,
+   "workload": 536694,
    "live_tokens": 0,
-   "requests": 71,
+   "requests": 69,
    "model": "jev-1.13.0",
    "span_density": 0.058,
    "page": "rfc9110.html"
@@ -597,8 +597,8 @@
    "fact_positions": {
     "70412c504e": 0.467
    },
-   "doc_tokens": 101353,
-   "blocks_total": 2099,
+   "doc_tokens": 103780,
+   "blocks_total": 2091,
    "missing_recording": false,
    "status": "filtered",
    "facts": {
@@ -609,9 +609,9 @@
    },
    "out_tokens": 1444,
    "blocks_kept": 7,
-   "workload": 541690,
+   "workload": 539059,
    "live_tokens": 0,
-   "requests": 72,
+   "requests": 71,
    "model": "jev-1.13.0",
    "span_density": 0.017,
    "page": "rfc9110.html"
@@ -628,8 +628,8 @@
    "fact_positions": {
     "b4df81c4cd": 0.577
    },
-   "doc_tokens": 101353,
-   "blocks_total": 2099,
+   "doc_tokens": 103780,
+   "blocks_total": 2091,
    "missing_recording": false,
    "status": "filtered",
    "facts": {
@@ -639,13 +639,13 @@
     "79816ecb0a": true,
     "6e9b99384f": true
    },
-   "out_tokens": 633,
-   "blocks_kept": 9,
-   "workload": 559189,
+   "out_tokens": 477,
+   "blocks_kept": 5,
+   "workload": 549195,
    "live_tokens": 0,
-   "requests": 98,
+   "requests": 86,
    "model": "jev-1.13.0",
-   "span_density": 0.071,
+   "span_density": 0.094,
    "page": "rfc9110.html"
   },
   "http-multiplexing": {
@@ -656,17 +656,17 @@
    "answerable": false,
    "extraction": {},
    "fact_positions": {},
-   "doc_tokens": 101353,
-   "blocks_total": 2099,
+   "doc_tokens": 103780,
+   "blocks_total": 2091,
    "missing_recording": false,
    "status": "no_match",
    "facts": {},
    "keys": {},
-   "out_tokens": 384,
+   "out_tokens": 424,
    "blocks_kept": 6,
-   "workload": 526112,
+   "workload": 523430,
    "live_tokens": 0,
-   "requests": 50,
+   "requests": 49,
    "model": "jev-1.13.0",
    "span_density": null,
    "page": "rfc9110.html"
@@ -683,8 +683,8 @@
    "fact_positions": {
     "94a12848a2": 0.057
    },
-   "doc_tokens": 32816,
-   "blocks_total": 437,
+   "doc_tokens": 70144,
+   "blocks_total": 453,
    "missing_recording": false,
    "status": "filtered",
    "facts": {
@@ -693,13 +693,13 @@
    "keys": {
     "73b7e32ce7": true
    },
-   "out_tokens": 1004,
+   "out_tokens": 2615,
    "blocks_kept": 6,
-   "workload": 142305,
+   "workload": 145036,
    "live_tokens": 0,
-   "requests": 42,
+   "requests": 41,
    "model": "jev-1.13.0",
-   "span_density": 0.021,
+   "span_density": 0.008,
    "page": "wiki-world-war-ii.html"
   },
   "ww2-un-founded": {
@@ -714,8 +714,8 @@
    "fact_positions": {
     "f4d4e7c531": 0.397
    },
-   "doc_tokens": 32816,
-   "blocks_total": 437,
+   "doc_tokens": 70144,
+   "blocks_total": 453,
    "missing_recording": false,
    "status": "filtered",
    "facts": {
@@ -724,13 +724,13 @@
    "keys": {
     "8dd7eab489": true
    },
-   "out_tokens": 419,
-   "blocks_kept": 4,
-   "workload": 123865,
+   "out_tokens": 343,
+   "blocks_kept": 2,
+   "workload": 126369,
    "live_tokens": 0,
-   "requests": 18,
+   "requests": 17,
    "model": "jev-1.13.0",
-   "span_density": 0.045,
+   "span_density": 0.055,
    "page": "wiki-world-war-ii.html"
   },
   "ww2-death-toll": {
@@ -745,8 +745,8 @@
    "fact_positions": {
     "933752c100": 0.424
    },
-   "doc_tokens": 32816,
-   "blocks_total": 437,
+   "doc_tokens": 70144,
+   "blocks_total": 453,
    "missing_recording": false,
    "status": "filtered",
    "facts": {
@@ -755,13 +755,13 @@
    "keys": {
     "eb8d5cd9ea": true
    },
-   "out_tokens": 463,
+   "out_tokens": 748,
    "blocks_kept": 6,
-   "workload": 134438,
+   "workload": 138411,
    "live_tokens": 0,
-   "requests": 32,
+   "requests": 33,
    "model": "jev-1.13.0",
-   "span_density": 0.067,
+   "span_density": 0.041,
    "page": "wiki-world-war-ii.html"
   },
   "python-naming": {
@@ -776,8 +776,8 @@
    "fact_positions": {
     "d9265d7a23": 0.518
    },
-   "doc_tokens": 10288,
-   "blocks_total": 147,
+   "doc_tokens": 17416,
+   "blocks_total": 162,
    "missing_recording": false,
    "status": "filtered",
    "facts": {
@@ -786,13 +786,13 @@
    "keys": {
     "ccbc68bca2": true
    },
-   "out_tokens": 377,
-   "blocks_kept": 5,
-   "workload": 41943,
+   "out_tokens": 359,
+   "blocks_kept": 4,
+   "workload": 44781,
    "live_tokens": 0,
    "requests": 9,
    "model": "jev-1.13.0",
-   "span_density": 0.074,
+   "span_density": 0.078,
    "page": "wiki-python.html"
   },
   "python-first-release": {
@@ -807,8 +807,8 @@
    "fact_positions": {
     "7896be4168": 0.082
    },
-   "doc_tokens": 10288,
-   "blocks_total": 147,
+   "doc_tokens": 17416,
+   "blocks_total": 162,
    "missing_recording": false,
    "status": "filtered",
    "facts": {
@@ -818,13 +818,13 @@
     "643fec50e7": true,
     "314969396f": true
    },
-   "out_tokens": 366,
+   "out_tokens": 426,
    "blocks_kept": 4,
-   "workload": 42738,
+   "workload": 45638,
    "live_tokens": 0,
    "requests": 10,
    "model": "jev-1.13.0",
-   "span_density": 0.052,
+   "span_density": 0.045,
    "page": "wiki-python.html"
   },
   "python-unrelated-boiling-point": {
@@ -835,15 +835,15 @@
    "answerable": false,
    "extraction": {},
    "fact_positions": {},
-   "doc_tokens": 10288,
-   "blocks_total": 147,
+   "doc_tokens": 17416,
+   "blocks_total": 162,
    "missing_recording": false,
    "status": "no_match",
    "facts": {},
    "keys": {},
-   "out_tokens": 332,
-   "blocks_kept": 4,
-   "workload": 39063,
+   "out_tokens": 456,
+   "blocks_kept": 3,
+   "workload": 41988,
    "live_tokens": 0,
    "requests": 5,
    "model": "jev-1.13.0",
@@ -862,7 +862,7 @@
    "fact_positions": {
     "884a84f322": 0.209
    },
-   "doc_tokens": 36558,
+   "doc_tokens": 37747,
    "blocks_total": 527,
    "missing_recording": false,
    "status": "filtered",
@@ -872,13 +872,13 @@
    "keys": {
     "ef811e2744": true
    },
-   "out_tokens": 1209,
+   "out_tokens": 1235,
    "blocks_kept": 9,
-   "workload": 172182,
+   "workload": 169964,
    "live_tokens": 0,
-   "requests": 51,
+   "requests": 48,
    "model": "jev-1.13.0",
-   "span_density": 0.017,
+   "span_density": 0.016,
    "page": "nist-sp800-63b.html"
   },
   "nist-password-max-length": {
@@ -893,7 +893,7 @@
    "fact_positions": {
     "4ee0dfd49d": 0.21
    },
-   "doc_tokens": 36558,
+   "doc_tokens": 37747,
    "blocks_total": 527,
    "missing_recording": false,
    "status": "filtered",
@@ -903,13 +903,13 @@
    "keys": {
     "b5aa0ac614": true
    },
-   "out_tokens": 918,
+   "out_tokens": 944,
    "blocks_kept": 7,
-   "workload": 168792,
+   "workload": 166567,
    "live_tokens": 0,
-   "requests": 47,
+   "requests": 44,
    "model": "jev-1.13.0",
-   "span_density": 0.02,
+   "span_density": 0.019,
    "page": "nist-sp800-63b.html"
   },
   "nist-aal2-reauthentication": {
@@ -924,7 +924,7 @@
    "fact_positions": {
     "db229e9c26": 0.143
    },
-   "doc_tokens": 36558,
+   "doc_tokens": 37747,
    "blocks_total": 527,
    "missing_recording": false,
    "status": "filtered",
@@ -935,13 +935,13 @@
     "dda5dba7b1": true,
     "31bbe8890d": true
    },
-   "out_tokens": 459,
+   "out_tokens": 485,
    "blocks_kept": 5,
-   "workload": 157360,
+   "workload": 159983,
    "live_tokens": 0,
-   "requests": 32,
+   "requests": 36,
    "model": "jev-1.13.0",
-   "span_density": 0.111,
+   "span_density": 0.105,
    "page": "nist-sp800-63b.html"
   },
   "nist-unrelated-world-cup": {
@@ -952,15 +952,15 @@
    "answerable": false,
    "extraction": {},
    "fact_positions": {},
-   "doc_tokens": 36558,
+   "doc_tokens": 37747,
    "blocks_total": 527,
    "missing_recording": false,
    "status": "no_match",
    "facts": {},
    "keys": {},
-   "out_tokens": 484,
-   "blocks_kept": 6,
-   "workload": 144891,
+   "out_tokens": 439,
+   "blocks_kept": 3,
+   "workload": 144933,
    "live_tokens": 0,
    "requests": 15,
    "model": "jev-1.13.0",

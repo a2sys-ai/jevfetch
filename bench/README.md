@@ -11,6 +11,7 @@ uv run python -m bench --record            # call Jev for requests without a rec
 uv run python -m bench --update-baseline   # write baseline.json after printing the per-case diff
 uv run python -m bench --cases ID,ID       # a subset; compared with the matching part of the baseline
 uv run python -m bench --set keep_threshold=0.9 --set min_output_tokens=0   # Config overrides for experiments
+uv run python -m bench --record --update-baseline --prune   # after a change to the Jev requests: record, rebaseline, drop stale recordings
 uv run python bench/compare_webfetch.py --runs 3   # live comparison with WebFetch, needs `claude` and both keys
 ```
 
@@ -26,7 +27,7 @@ Each case is a (page snapshot, question) pair with `facts` (sentences copied fro
 | column | meaning |
 |---|---|
 | status | `Result.status`; must equal the case's expected status |
-| facts | facts found verbatim in the output (heading lines excluded, markdown emphasis stripped, punctuation kept) |
+| facts | facts found verbatim in the output (heading lines excluded, markdown emphasis and `[text](url)` link markup stripped, punctuation kept) |
 | keys | key groups found as whole-token sequences after SQuAD normalization; `exact` keys keep punctuation |
 | extract | facts still present after `parse()` and `render()` of the whole page, before any Jev call |
 | out/doc tok | output tokens / page tokens (cl100k_base) |
