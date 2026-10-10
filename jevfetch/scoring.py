@@ -1,4 +1,4 @@
-"""Relevance scoring of blocks with Jev, in two stages.
+"""Relevance scoring of blocks with Jev, in two stages. Jev sees the text without link targets.
 
 Stage 1 asks one request per window of blocks, with one yes/no question per block. Stage 2 asks again
 for each candidate block alone, with the neighbouring text as context. A block passes if it answers any
@@ -7,7 +7,7 @@ part of the query, because agents often pass keyword lists or several questions 
 import asyncio
 
 from jevfetch import tokens
-from jevfetch.blocks import Block
+from jevfetch.blocks import Block, plain
 from jevfetch.jev import Jev
 
 QUESTION = (
@@ -29,10 +29,14 @@ WINDOW_ITEMS = 120
 ITEM_OVERHEAD_TOKENS = 20  # the id and section fields that accompany each passage in a window
 
 
+def _jev_text(b: Block) -> str:
+    return b.text if b.kind == "pre" else plain(b.text)
+
+
 def windows(blocks: list[Block], max_tokens: int) -> list[list[Block]]:
     out, cur, n = [], [], 0
     for b in blocks:
-        t = tokens.count(b.text) + ITEM_OVERHEAD_TOKENS
+        t = tokens.count(_jev_text(b)) + ITEM_OVERHEAD_TOKENS
         if cur and (n + t > max_tokens or len(cur) >= WINDOW_ITEMS):
             out.append(cur)
             cur, n = [], 0
@@ -56,7 +60,7 @@ async def fanout(jev: Jev, blocks: list[Block], query: str, window_tokens: int =
             }
             for k, b in enumerate(win)
         }
-        passages = [{"id": f"p{b.id}", "section": b.heading, "text": b.text} for b in win]
+        passages = [{"id": f"p{b.id}", "section": b.heading, "text": _jev_text(b)} for b in win]
         answers = await jev.ask({"query": query, "passages": passages}, questions)
         return {int(k[1:]): v["noul"] for k, v in answers.items()}
 
@@ -77,9 +81,9 @@ async def rescore(jev: Jev, blocks: list[Block], ids: list[int], query: str) -> 
         state = {
             "query": query,
             "section": b.heading,
-            "passage": b.text,
-            "context_before": blocks[i - 1].text[-CONTEXT_CHARS:] if i > 0 else "",
-            "context_after": blocks[i + 1].text[:CONTEXT_CHARS] if i + 1 < len(blocks) else "",
+            "passage": _jev_text(b),
+            "context_before": _jev_text(blocks[i - 1])[-CONTEXT_CHARS:] if i > 0 else "",
+            "context_after": _jev_text(blocks[i + 1])[:CONTEXT_CHARS] if i + 1 < len(blocks) else "",
         }
         answers = await jev.ask(state, {"rel": {"type": "noul", "instructions": instructions, "criteria": CRITERIA}})
         return bid, answers["rel"]["noul"]

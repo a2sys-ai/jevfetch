@@ -32,6 +32,10 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["jevfetch"]
+exclude = ["**/.claude/**"]
+
+[tool.hatch.build.targets.sdist]
+exclude = ["**/.claude/**"]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"

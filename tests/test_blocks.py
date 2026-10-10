@@ -1,4 +1,10 @@
-from jevfetch.blocks import merge_fragments, parse, render
+import inspect
+import json
+import sys
+
+import pytest
+
+from jevfetch.blocks import merge_fragments, parse, plain, render
 
 PAD = "<p>" + "filler text " * 60 + "</p>"  # long enough for <main> to be chosen as the content root
 
@@ -132,3 +138,206 @@ def test_superscripts_stay_separate_and_hidden_text_is_dropped():
 def test_block_boundaries_still_separate_words():
     t = texts(page("<ul><li><div>first</div><div>second</div></li></ul><p>one<br>two</p>"))
     assert "first second" in t and "one two" in t
+
+
+def test_paragraphs_in_spans_become_separate_blocks():
+    # Mintlify renders each paragraph as <span data-as="p">, with only a newline between them.
+    html = page(
+        '<h2>Behavior</h2><span data-as="p">First paragraph is long enough.</span>\n'
+        '<span data-as="p">Second paragraph, also long enough.</span>\n<ul><li>alpha item one</li></ul>'
+    )
+    blocks = [b for b in parse(html) if b.path == ["Behavior"]]
+    assert [b.text for b in blocks] == [
+        "First paragraph is long enough.",
+        "Second paragraph, also long enough.",
+        "alpha item one",
+    ]
+
+
+def test_bare_text_in_a_container_is_kept_in_order():
+    t = texts(page("<div>Loose text before the paragraph.<p>A paragraph.</p>Loose text after it.</div>"))
+    assert t[-3:] == ["Loose text before the paragraph.", "A paragraph.", "Loose text after it."]
+
+
+def test_inline_fragments_around_bare_text_stay_one_paragraph():
+    t = texts(page("<div>This is <em>very</em> <strong>important</strong> text.</div>"))
+    assert "This is very important text." in t
+
+
+def test_links_keep_their_targets_resolved_against_the_page_url():
+    t = [
+        b.text
+        for b in parse(page('<p>See the <a href="/docs/x.html">guide</a> for details.</p>'), "https://example.com/a/b")
+    ]
+    assert "See the [guide](https://example.com/docs/x.html) for details." in t
+
+
+def test_links_without_a_page_url_keep_the_href_as_written():
+    t = texts(page('<ul><li><a href="other.html">Other page</a></li></ul>'))
+    assert "[Other page](other.html)" in t
+
+
+def test_fragment_links_and_heading_links_stay_plain():
+    blocks = parse(page('<h2><a href="#sec">Section</a></h2><p><a href="#top">top</a> of the text here.</p>'))
+    assert blocks[-1].path == ["Section"] and blocks[-1].text == "top of the text here."
+
+
+def test_plain_strips_link_targets():
+    assert plain("See the [guide](https://example.com/g) and [a](b) now.") == "See the guide and a now."
+
+
+def test_short_linked_items_merge_by_their_visible_length():
+    href = "https://example.com/a/very/long/path/that/pushes/the/linked/length/of/each/item/past/the/limit"
+    items = "".join(f'<li><a href="{href}/{i}">item {i}</a></li>' for i in range(3))
+    blocks = merge_fragments(parse(page(f"<ul>{items}</ul>")))
+    assert any(b.kind == "frag" and b.text.count("](") == 3 for b in blocks)
+
+
+def test_small_json_is_one_block():
+    blocks = parse('{"name": "httpx", "version": "0.28.1"}')
+    assert [(b.path, b.text) for b in blocks] == [([], '{"name": "httpx", "version": "0.28.1"}')]
+
+
+def test_large_json_splits_into_records_with_key_paths():
+    url = "https://files.example/" + "x" * 300
+    files = [{"filename": f"httpx-0.1.{i}.whl", "sha256": "f" * 64, "url": url} for i in range(3)]
+    doc = json.dumps({"info": {"name": "httpx", "version": "0.28.1"}, "releases": {"0.1": files, "0.2": files}})
+    assert len(doc) > 1500
+    blocks = parse(doc)
+    assert any(b.path == [] and b.text == '{"info": {"name": "httpx", "version": "0.28.1"}}' for b in blocks)
+    versions = [b for b in blocks if "httpx-0.1.0.whl" in b.text]
+    assert [(b.path, b.text[:8]) for b in versions] == [(["releases"], '{"0.1": '), (["releases"], '{"0.2": ')]
+    assert all(len(b.text) <= 1500 for b in blocks)
+
+
+def test_long_json_string_value_is_its_own_block():
+    doc = json.dumps({"info": {"description": "# httpx\n\nA client. " * 150, "version": "1.0"}})
+    blocks = parse(doc)
+    description = [b for b in blocks if b.path == ["info", "description"]]
+    assert description and description[0].text.startswith("# httpx")
+    assert any('"version": "1.0"' in b.text and b.path == ["info"] for b in blocks)
+
+
+def test_invalid_json_is_plain_text():
+    blocks = parse('{"name": not json')
+    assert [b.text for b in blocks] == ['{"name": not json']
+
+
+def test_small_xml_is_one_block():
+    blocks = parse('<?xml version="1.0"?><note><to>Ann</to><body>Call me.</body></note>')
+    assert [(b.path, b.text) for b in blocks] == [([], "<note><to>Ann</to><body>Call me.</body></note>")]
+
+
+def test_large_xml_splits_into_elements_with_tag_paths():
+    items = "".join(
+        f"<item><title>Story {i}</title><description>{'words ' * 150}</description></item>" for i in range(3)
+    )
+    blocks = parse(f'<?xml version="1.0"?>\n<rss><channel><title>News</title>{items}</channel></rss>')
+    stories = [b for b in blocks if "<title>Story" in b.text]
+    assert len(stories) == 3 and all(b.path == ["rss", "channel"] and b.text.startswith("<item>") for b in stories)
+    assert any(b.path == ["rss", "channel"] and "<title>News</title>" in b.text for b in blocks)
+
+
+def test_markdown_starting_with_an_html_tag_is_plain_text():
+    blocks = parse('<h1 align="center">Project</h1>\n\nSome intro text here.\n\n## Install\n\nRun pip install.')
+    assert [b.path for b in blocks] == [[], [], ["Install"]]
+
+
+def test_markdown_with_a_centered_logo_keeps_its_headings():
+    blocks = parse('<p align="center"><img src="logo.png"></p>\n\n# Title\n\nBody text paragraph.\n')
+    assert any(b.path == ["Title"] and b.text == "Body text paragraph." for b in blocks)
+
+
+def test_xml_without_a_declaration_is_parsed_as_xml():
+    blocks = parse('<rss version="2.0"><channel><title>News</title></channel></rss>')
+    assert len(blocks) == 1 and blocks[0].text.startswith("<rss")
+
+
+def test_link_target_with_parentheses_is_encoded_and_stripped_whole():
+    html = page('<p>See <a href="/wiki/Python_(programming_language)">Python</a> for details.</p>')
+    t = [b.text for b in parse(html, "https://en.wikipedia.org/wiki/Main")]
+    linked = "See [Python](https://en.wikipedia.org/wiki/Python_%28programming_language%29) for details."
+    assert linked in t and plain(linked) == "See Python for details."
+
+
+def test_link_target_with_a_space_is_encoded_and_stripped():
+    html = page('<p>See <a href="/a b.html">the page</a> for details.</p>')
+    t = [b.text for b in parse(html, "https://example.com/")]
+    assert t[-1] == "See [the page](https://example.com/a%20b.html) for details."
+    assert plain(t[-1]) == "See the page for details."
+
+
+def test_base_href_resolves_relative_links():
+    html = (
+        '<html><head><base href="https://cdn.example.org/docs/"></head><body><main>'
+        f'{PAD}<p>See the <a href="guide.html">guide</a> now.</p></main></body></html>'
+    )
+    t = [b.text for b in parse(html, "https://example.com/a/b")]
+    assert "See the [guide](https://cdn.example.org/docs/guide.html) now." in t
+
+
+@pytest.mark.parametrize("tag", ["div", "p"])
+def test_list_leadin_wrapped_in_a_block_tag_is_printed_once(tag):
+    t = texts(page(f"<ul><li><{tag}>Lead text here</{tag}><ul><li>sub item one</li></ul></li></ul>"))
+    assert t.count("Lead text here") == 1 and "sub item one" in t
+
+
+def test_inline_tags_separated_by_whitespace_are_one_paragraph():
+    assert "Important message" in texts(page("<div><strong>Important</strong> <span>message</span></div>"))
+
+
+def test_short_inline_pieces_are_not_dropped():
+    assert "A: Yes" in texts(page("<div><b>A:</b> <span>Yes</span></div>"))
+
+
+def test_deeply_nested_json_does_not_crash():
+    parse("[" * 100000 + "]" * 100000)
+
+
+def test_oversized_xml_element_keeps_its_attributes():
+    entries = "".join(f"<entry><title>Story {i}</title><summary>{'words ' * 150}</summary></entry>" for i in range(3))
+    blocks = parse(f'<?xml version="1.0"?><feed xml:lang="en">{entries}</feed>')
+    assert any(b.path == ["feed"] and b.text == '<feed xml:lang="en">' for b in blocks)
+
+
+def test_json_groups_count_key_length_and_separators():
+    doc = json.dumps({"k" * 2000: 1, **{f"key{i}": "v" * 100 for i in range(30)}})
+    assert all(len(b.text) <= 1500 for b in parse(doc))
+
+
+def test_script_and_data_links_stay_plain():
+    t = texts(page('<p><a href="JavaScript:void(0)">menu</a> and <a href="data:text/html,x">inline</a> text.</p>'))
+    assert "menu and inline text." in t
+
+
+def test_json_nested_deeper_than_the_recursion_limit_falls_back_to_text(monkeypatch):
+    doc = ('["' + "x" * 1600 + '", ') * 100 + "[]" + "]" * 100  # every level is over MAX_DATA_CHARS, so each descends
+    limit = sys.getrecursionlimit()
+    low = len(inspect.stack(0)) + 60
+    real_loads = json.loads
+
+    def loads_with_room(text):  # the C parser accepts depths that a per-level descent does not fit
+        sys.setrecursionlimit(limit)
+        try:
+            return real_loads(text)
+        finally:
+            sys.setrecursionlimit(low)
+
+    monkeypatch.setattr(json, "loads", loads_with_room)
+    sys.setrecursionlimit(low)
+    try:
+        blocks = parse(doc)
+    finally:
+        sys.setrecursionlimit(limit)
+    assert "".join(b.text for b in blocks) == doc
+
+
+def test_xml_nested_deeper_than_the_recursion_limit_falls_back_to_text():
+    doc = ("<a>" + "x" * 1600) * 100 + "</a>" * 100  # every element is over MAX_DATA_CHARS, so each level descends
+    limit = sys.getrecursionlimit()
+    sys.setrecursionlimit(len(inspect.stack(0)) + 60)
+    try:
+        blocks = parse(doc)
+    finally:
+        sys.setrecursionlimit(limit)
+    assert "".join(b.text for b in blocks) == doc

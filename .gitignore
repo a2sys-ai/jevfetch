@@ -14,3 +14,4 @@ bench/reports/agents-*/runs.json
 bench/reports/agents-*/schedule.json
 bench/reports/webfetch-*.json
 bench/reports/agents-dryrun/
+.claude/

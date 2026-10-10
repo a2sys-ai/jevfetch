@@ -1,3 +1,4 @@
+import re
 import subprocess
 
 import httpx
@@ -27,6 +28,14 @@ def test_fetch_sends_identifying_user_agent(monkeypatch):
     monkeypatch.setattr(web.httpx, "get", fake_get)
     assert web.fetch("https://example.com") == "<html></html>"
     assert "jevfetch/" in seen["User-Agent"]
+
+
+def test_fetch_page_returns_the_final_url_after_redirects(monkeypatch):
+    def fake_get(url, **kwargs):
+        return httpx.Response(200, text="<html></html>", request=httpx.Request("GET", "https://example.com/final"))
+
+    monkeypatch.setattr(web.httpx, "get", fake_get)
+    assert web.fetch_page("https://example.com") == ("<html></html>", "https://example.com/final")
 
 
 @pytest.mark.parametrize(
@@ -84,10 +93,29 @@ def test_declared_html_is_not_sniffed_for_undecodable_bytes(monkeypatch):
     assert web.fetch("https://example.com").startswith("<p>")
 
 
-@pytest.mark.parametrize("content_type", ["application/pdf", "image/png", "application/json"])
+@pytest.mark.parametrize(
+    "content_type",
+    [
+        "application/json",
+        "application/ld+json",
+        "application/xml",
+        "text/xml",
+        "application/rss+xml",
+        "application/atom+xml",
+        "text/csv",
+        "application/javascript",
+        "application/yaml",
+    ],
+)
+def test_text_like_content_types_are_returned(monkeypatch, content_type):
+    serve(monkeypatch, b'{"version": "1.0"}', content_type)
+    assert web.fetch("https://example.com") == '{"version": "1.0"}'
+
+
+@pytest.mark.parametrize("content_type", ["application/pdf", "image/png", "image/svg+xml", "application/zip"])
 def test_other_content_types_are_refused_by_name(monkeypatch, content_type):
     serve(monkeypatch, b"{}", content_type)
-    with pytest.raises(web.UnsupportedContent, match=content_type):
+    with pytest.raises(web.UnsupportedContent, match=re.escape(content_type)):
         web.fetch("https://example.com")
 
 
