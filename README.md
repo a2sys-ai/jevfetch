@@ -254,4 +254,4 @@ jevfetch is not affiliated with TypeSafe. a2sys received no funding, credits, or
 
 ## License
 
-[MIT](LICENSE)
+[MIT](LICENSE) for the jevfetch code. The page snapshots under `bench/pages/` and the sentences quoted in `bench/cases.json` and `bench/agents/questions.json` are third-party content; [bench/pages/SOURCES.md](bench/pages/SOURCES.md) lists their sources and licences.
