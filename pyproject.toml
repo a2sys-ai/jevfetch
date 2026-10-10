@@ -48,6 +48,9 @@ extend-exclude = ["dist"]
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "B", "UP"]
 
+[tool.ruff.lint.per-file-ignores]
+"bench/agents/rubric_body.py" = ["E501"]  # regex table copied from the research repository
+
 [dependency-groups]
 dev = [
     "pytest>=9.1.1",

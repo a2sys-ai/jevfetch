@@ -341,3 +341,14 @@ def test_xml_nested_deeper_than_the_recursion_limit_falls_back_to_text():
     finally:
         sys.setrecursionlimit(limit)
     assert "".join(b.text for b in blocks) == doc
+
+
+def test_a_document_whose_root_is_an_html_element_is_parsed_as_html():
+    doc = (
+        '<pre>Request for Comments: 8259   Obsoletes: <a href="./rfc7159">7159</a>\n\n'
+        '   <span class="h1">Title</span>\n   Abstract text.\n</pre>'
+    )
+    blocks = parse(doc)
+    text = " ".join(b.text for b in blocks)
+    assert "<a href" not in text and "<span" not in text
+    assert "7159" in text and "Abstract text." in text

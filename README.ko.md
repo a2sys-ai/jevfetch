@@ -41,6 +41,15 @@ If maxsize is set to None, the LRU feature is disabled and the cache can grow wi
 
 페이지 전체를 넘기면 컨텍스트를 많이 차지하고 비용도 커진다. 요약은 인용할 수 없고 페이지와 대조해 확인할 수도 없다. jevfetch는 페이지를 블록 단위로 나누고, TypeSafe의 판정 모델 [Jev](https://docs.typesafe.ai)로 블록마다 질문에 답이 되는지 판단해, 답이 되는 블록만 원문 그대로 돌려준다.
 
+페이지 URL을 준 기술 문서 질문 32개를 한국어와 영어로 2회씩 돌려 Claude Code의 WebFetch와 비교한 결과다.
+
+| WebFetch 대비 | 에이전트 시간 | 비용 |
+|---|---|---|
+| Haiku 4.5 WebFetch | 30~32% 단축 | 42~43% 절감 |
+| Haiku 5.5 WebFetch | 42~47% 단축 | 3~13% 절감 |
+
+루브릭 사실 확인은 126개 중 124개(WebFetch는 126개). 영어 질문의 Haiku 5.5 대비 비용 차이는 오차 범위 안이다. 조건, 표, 한계: [bench/RESULTS.ko.md](bench/RESULTS.ko.md).
+
 ## 빠른 시작
 
 jevfetch 스킬은 [skills](https://github.com/vercel-labs/skills) CLI로 Claude Code, Codex를 비롯한 여러 코딩 에이전트에 설치할 수 있다. 아래는 Claude Code 기준이다. [uv](https://docs.astral.sh/uv/), Node.js(`npx` 실행용), [TypeSafe](https://typesafe.ai) API 키([API 키](#api-키) 참고)가 필요하다.
@@ -203,6 +212,8 @@ uv run ruff check . && uv run ruff format --check .
 ```bash
 JEVFETCH_RECORD=1 uv run pytest tests/test_end_to_end.py
 ```
+
+`bench/`에는 회귀 벤치마크가 있다. 실제 페이지 스냅샷 10개, 질문 31개(원문 정답이 붙은 27개, 페이지에 답이 없는 4개), 기록된 Jev 응답, CI가 비교하는 기준값이다(`uv run python -m bench`). Claude Code의 WebFetch와 비교하는 유료 수동 스크립트가 둘 있다. 도구 단독 비교와, Claude Code가 두 읽기 도구로 질문에 답하는 비교다. [bench/README.md](bench/README.md)를 참고한다.
 
 ## 이해관계 고지
 

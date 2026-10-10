@@ -5,4 +5,13 @@ __pycache__/
 .ruff_cache/
 .pytest_cache/
 dist/
+bench/reports/raw/
+bench/reports/agents-*/agents/
+bench/reports/agents-*/work/
+bench/reports/agents-*/jev/
+bench/reports/agents-*/grade/
+bench/reports/agents-*/runs.json
+bench/reports/agents-*/schedule.json
+bench/reports/webfetch-*.json
+bench/reports/agents-dryrun/
 .claude/

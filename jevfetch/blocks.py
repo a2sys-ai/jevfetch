@@ -166,8 +166,8 @@ def _kind(doc: str) -> Literal["html", "json", "xml", "text"]:
     if _is_html(doc):
         return "html"
     root = re.match(r"<([A-Za-z_][\w.:-]*)[\s>/]", body)
-    if root and body.rstrip().endswith(f"</{root.group(1)}>"):
-        return "xml"
+    if root and body.rstrip().endswith(f"</{root.group(1)}>"):  # one element wraps the whole document
+        return "html" if root.group(1).lower() in BLOCK_LEVEL else "xml"  # rfc-editor serves RFCs as one <pre>
     return "text"
 
 

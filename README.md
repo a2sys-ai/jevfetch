@@ -41,6 +41,15 @@ Each `##` line is the heading path of the passage below it. Definition-list term
 
 Passing the whole page uses more context and costs more, and a paraphrase cannot be quoted or checked against the page. jevfetch splits the page into blocks, asks TypeSafe's judgment model [Jev](https://docs.typesafe.ai) whether each block answers the question, and returns the matching blocks exactly as they appear on the page.
 
+Measured against Claude Code's WebFetch on 32 documentation questions with the page URL given, two runs each in Korean and in English:
+
+| compared with WebFetch | agent time | cost |
+|---|---|---|
+| on Haiku 4.5 | 30 to 32% less | 42 to 43% less |
+| on Haiku 5.5 | 42 to 47% less | 3 to 13% less |
+
+Rubric fact checks matched: 124 of 126 against WebFetch's 126. The cost difference on English questions against Haiku 5.5 is within the uncertainty interval. Conditions, tables and limits: [bench/RESULTS.md](bench/RESULTS.md).
+
 ## Quick start
 
 The jevfetch skill installs into Claude Code, Codex, and many other coding agents with the [skills](https://github.com/vercel-labs/skills) CLI. These steps set up Claude Code. You need [uv](https://docs.astral.sh/uv/), Node.js (for `npx`), and a [TypeSafe](https://typesafe.ai) API key (see [API key](#api-key)).
@@ -203,6 +212,8 @@ Tests need no API key and make no network requests, except that tiktoken downloa
 ```bash
 JEVFETCH_RECORD=1 uv run pytest tests/test_end_to_end.py
 ```
+
+`bench/` holds a regression benchmark: 10 real page snapshots, 31 questions (27 with verbatim answers, 4 that the page does not answer), recorded Jev responses, and a baseline that CI compares against (`uv run python -m bench`). It also has two manual, paid comparisons with Claude Code's WebFetch: the tool alone, and Claude Code answering questions with either reader. See [bench/README.md](bench/README.md).
 
 ## Disclosure
 

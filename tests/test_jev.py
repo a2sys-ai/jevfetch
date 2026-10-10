@@ -78,6 +78,7 @@ async def test_cache_hit_needs_no_key(tmp_path, monkeypatch):
     offline = Jev()
     assert await offline.ask("state", {"q": "x"}) == OK["answers"] and offline.cached == 1
     await offline.aclose()
+    assert len(offline.keys) == 1 and (offline.cache / f"{next(iter(offline.keys))}.json").exists()
 
 
 def test_retry_after_parsing():
