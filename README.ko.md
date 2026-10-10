@@ -254,4 +254,4 @@ jevfetch는 TypeSafe와 제휴 관계가 없다. a2sys는 TypeSafe에서 자금,
 
 ## 라이선스
 
-[MIT](LICENSE)
+jevfetch 코드는 [MIT](LICENSE)다. `bench/pages/`의 페이지 스냅샷과 `bench/cases.json`, `bench/agents/questions.json`에 인용한 문장은 제3자 저작물이며, 출처와 라이선스는 [bench/pages/SOURCES.md](bench/pages/SOURCES.md)에 있다.
