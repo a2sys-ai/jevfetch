@@ -27,6 +27,8 @@ BLOCK_LEVEL = set(
     "address article aside blockquote caption dd div dl dt figcaption figure footer form h1 h2 h3 h4 "
     "h5 h6 header hr li main nav ol p pre section table tbody td tfoot th thead tr ul".split()
 )
+# Types a browser shows as source. Markdown may hold raw HTML, so its content alone cannot tell it from a page.
+PLAIN_TYPES = {"text/plain", "text/markdown", "text/x-markdown"}
 MAX_BLOCK_CHARS = 4000  # keeps a single Jev request within the model's input limit
 MAX_DATA_CHARS = 1500
 # A content-like element holding less of the page's text than this is one section, not the content: the HTML
@@ -48,12 +50,16 @@ class Block:
         return " > ".join(self.path)
 
 
-def parse(doc: str, base_url: str = "") -> list[Block]:
+def parse(doc: str, base_url: str = "", media_type: str = "") -> list[Block]:
     """Blocks of an HTML page, a JSON or XML document, or plain text and markdown.
 
     Links in HTML are written as [text](href); `base_url` resolves relative hrefs. JSON is split by key and
-    array item and XML by element, with the key or tag path in place of the heading path."""
+    array item and XML by element, with the key or tag path in place of the heading path. The kind is read
+    from the content; a `media_type` (Content-Type) in PLAIN_TYPES rules out HTML unless the document opens
+    as one (an .html file on a raw file host)."""
     kind = _kind(doc)
+    if kind == "html" and media_type.split(";")[0].strip().lower() in PLAIN_TYPES and not _is_page(doc):
+        kind = "text"
     if kind == "html":
         return _parse_html(doc, base_url)
     try:
@@ -151,6 +157,15 @@ def _norm(s: str) -> str:
 def _is_html(doc: str) -> bool:
     head = doc[:3000].lower()
     return any(t in head for t in ("<html", "<body", "<div", "<p>", "<!doctype"))
+
+
+# A comment body never spans "-->", so a run of comments has one parse and a failed match does not backtrack.
+_PAGE_START = re.compile(r"﻿?(?:\s*<!--(?:(?!-->).)*-->)*\s*(?:<!doctype html|<html)", re.I | re.S)
+
+
+def _is_page(doc: str) -> bool:
+    """Whether `doc` opens as an HTML document, as an .html file does and markdown does not."""
+    return bool(_PAGE_START.match(doc[:3000]))
 
 
 def _kind(doc: str) -> Literal["html", "json", "xml", "text"]:

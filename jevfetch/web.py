@@ -38,14 +38,14 @@ class UnsupportedContent(httpx.HTTPError):
         self.kind, self.content = kind, content
 
 
-def fetch_page(url: str, timeout: float = 30) -> tuple[str, str]:
-    """The page text and its final URL after redirects."""
+def fetch_page(url: str, timeout: float = 30) -> tuple[str, str, str]:
+    """The page text, its final URL after redirects, and its media type ("" if none is declared)."""
     r = httpx.get(url, headers={"User-Agent": USER_AGENT}, follow_redirects=True, timeout=timeout)
     r.raise_for_status()
     kind = _unsupported_kind(r)
     if kind:
         raise UnsupportedContent(kind, r.content)
-    return r.text, str(r.url)
+    return r.text, str(r.url), _media_type(r)
 
 
 def fetch(url: str, timeout: float = 30) -> str:
@@ -71,8 +71,7 @@ def _unsupported_kind(r: httpx.Response) -> str | None:
     charset, and httpx then decodes them as UTF-8 with replacement characters."""
     if r.content.startswith(b"%PDF-"):
         return "application/pdf"
-    values = r.headers.get_list("content-type")
-    media = values[-1].split(";")[0].strip().lower() if values else ""
+    media = _media_type(r)
     if media.startswith("image/"):
         return media
     if media.startswith("text/") or media in TEXT_TYPES or media.endswith(("+xml", "+json")):
@@ -83,6 +82,11 @@ def _unsupported_kind(r: httpx.Response) -> str | None:
     if text.count("\ufffd") + text.count("\x00") > 0.1 * len(text):
         return f"binary data ({media or 'no Content-Type'})"
     return None
+
+
+def _media_type(r: httpx.Response) -> str:
+    values = r.headers.get_list("content-type")
+    return values[-1].split(";")[0].strip().lower() if values else ""
 
 
 def find_chrome() -> str | None:

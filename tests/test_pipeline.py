@@ -140,12 +140,23 @@ async def test_a_file_that_cannot_be_saved_is_still_a_fetch_error(monkeypatch, t
 
 async def test_nearly_empty_page_is_rendered_with_a_browser(monkeypatch):
     fake_scores(monkeypatch, {}, {})
-    monkeypatch.setattr(pipeline, "fetch_page", lambda url: ("<html><body><div id='app'></div></body></html>", url))
+    monkeypatch.setattr(
+        pipeline, "fetch_page", lambda url: ("<html><body><div id='app'></div></body></html>", url, "text/html")
+    )
     monkeypatch.setattr(
         pipeline, "fetch_rendered", lambda url: "<html><body><p>" + "rendered text " * 40 + "</p></body></html>"
     )
     res = await fetch_relevant_async("https://example.com", "q", Config(), FakeJev())
     assert res.rendered and "rendered text" in res.text
+
+
+async def test_markdown_served_as_plain_text_keeps_its_headings_and_is_not_rendered(monkeypatch):
+    doc = "# Client\n\n```pycon\n>>> r.text\n'<!doctype html>\\n<html>'\n```\n\n## Install\n\nRun pip install.\n"
+    monkeypatch.setattr(pipeline, "fetch_page", lambda url: (doc, url, "text/plain"))
+    rendered = []
+    monkeypatch.setattr(pipeline, "fetch_rendered", rendered.append)
+    res = await fetch_relevant_async("https://example.com/README.md", "q", Config(), FakeJev())
+    assert "## Client > Install" in res.text and not rendered
 
 
 def run_cli(monkeypatch, capsys, res=None, error=None, args=("https://example.com", "what?")):
@@ -227,7 +238,7 @@ async def test_stage2_sends_passage_and_context_without_link_targets():
 async def test_fetched_pages_resolve_relative_links_against_their_url(monkeypatch):
     fake_scores(monkeypatch, {}, {})
     html = '<html><body><p>Read the <a href="/docs/">docs</a>.</p></body></html>'
-    monkeypatch.setattr(pipeline, "fetch_page", lambda url: (html, url))
+    monkeypatch.setattr(pipeline, "fetch_page", lambda url: (html, url, "text/html"))
     monkeypatch.setattr(pipeline, "fetch_rendered", lambda url: None)
     res = await fetch_relevant_async("https://example.com/start", "q", Config(), FakeJev())
     assert "[docs](https://example.com/docs/)" in res.text
@@ -242,7 +253,7 @@ async def test_stage1_sends_code_blocks_as_written():
 async def test_links_resolve_against_the_final_url_after_redirects(monkeypatch):
     fake_scores(monkeypatch, {}, {})
     html = '<html><body><p>Read the <a href="docs/">docs</a>.</p></body></html>'
-    monkeypatch.setattr(pipeline, "fetch_page", lambda url: (html, "https://example.com/v2/start"))
+    monkeypatch.setattr(pipeline, "fetch_page", lambda url: (html, "https://example.com/v2/start", "text/html"))
     monkeypatch.setattr(pipeline, "fetch_rendered", lambda url: None)
     res = await fetch_relevant_async("https://example.com/start", "q", Config(), FakeJev())
     assert "[docs](https://example.com/v2/docs/)" in res.text

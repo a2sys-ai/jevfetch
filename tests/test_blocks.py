@@ -1,6 +1,7 @@
 import inspect
 import json
 import sys
+import time
 
 import pytest
 
@@ -352,3 +353,35 @@ def test_a_document_whose_root_is_an_html_element_is_parsed_as_html():
     text = " ".join(b.text for b in blocks)
     assert "<a href" not in text and "<span" not in text
     assert "7159" in text and "Abstract text." in text
+
+
+# Trips both HTML sniffs: it opens and closes with a <p>, and its code fence holds an HTML response.
+README_WITH_HTML_SAMPLE = (
+    '<p align="center"><img src="logo.png"></p>\n\n# Client\n\nFetch a page.\n\n'
+    "```pycon\n>>> r.text\n'<!doctype html>\\n<html>\\n<head>...'\n```\n\n"
+    '## Install\n\nRun pip install.\n\n<p align="center">BSD licensed.</p>\n'
+)
+
+
+@pytest.mark.parametrize("media_type", ["text/plain; charset=utf-8", "text/markdown"])
+def test_markdown_declared_as_text_keeps_its_headings(media_type):
+    paths = {tuple(b.path) for b in parse(README_WITH_HTML_SAMPLE, media_type=media_type)}
+    assert {("Client",), ("Client", "Install")} <= paths
+
+
+@pytest.mark.parametrize("prefix", ["", "﻿", "<!-- mode: Text -->\n  "])
+def test_html_file_declared_as_plain_text_is_parsed_as_html(prefix):
+    doc = f"{prefix}<!DOCTYPE html><html><body><h2>A</h2><p>Body text here.</p></body></html>"
+    assert any(b.path == ["A"] and b.text == "Body text here." for b in parse(doc, media_type="text/plain"))
+
+
+def test_many_leading_comments_are_checked_quickly():
+    doc = "<!--a-->" * 375 + "\n\n# Title\n\nUse a <div> here.\n"
+    start = time.perf_counter()
+    blocks = parse(doc, media_type="text/plain")
+    assert time.perf_counter() - start < 1 and any(b.path == ["Title"] for b in blocks)
+
+
+def test_json_declared_as_plain_text_is_still_split_by_key():
+    doc = json.dumps({"info": {"description": "word " * 400, "version": "1.0"}})
+    assert any(b.path == ["info", "description"] for b in parse(doc, media_type="text/plain"))
