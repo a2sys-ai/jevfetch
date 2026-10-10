@@ -41,14 +41,14 @@ Each `##` line is the heading path of the passage below it. Definition-list term
 
 Passing the whole page uses more context and costs more, and a paraphrase cannot be quoted or checked against the page. jevfetch splits the page into blocks, asks TypeSafe's judgment model [Jev](https://docs.typesafe.ai) whether each block answers the question, and returns the matching blocks exactly as they appear on the page.
 
-Measured against Claude Code's WebFetch on 32 documentation questions with the page URL given, two runs each in Korean and in English:
+Measured against Claude Code's WebFetch on 30 documentation questions with the page URL given, two runs each in Korean and in English:
 
 | compared with WebFetch | agent time | cost |
 |---|---|---|
-| on Haiku 4.5 | 30 to 32% less | 42 to 43% less |
-| on Haiku 5.5 | 42 to 47% less | 3 to 13% less |
+| on Haiku 4.5 | 32 to 34% less | 43 to 44% less |
+| on Haiku 5.5 | 43 to 49% less | 11% less in Korean, 1% more in English |
 
-Rubric fact checks matched: 124 of 126 against WebFetch's 126. The cost difference on English questions against Haiku 5.5 is within the uncertainty interval. Conditions, tables and limits: [bench/RESULTS.md](bench/RESULTS.md).
+Rubric fact checks matched: all 116 in each language, the same as WebFetch on Haiku 5.5. The cost differences against Haiku 5.5 are within the uncertainty interval in both languages. The 30 are the questions on which WebFetch answers through its model. Two more are left out: their sites serve Markdown, and WebFetch passes the whole page through instead. On those two, WebFetch matched every fact and jevfetch missed one Redis EXPIRE fact in every run. Conditions, tables and limits: [bench/RESULTS.md](bench/RESULTS.md).
 
 ## Quick start
 

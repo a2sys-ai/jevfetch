@@ -200,5 +200,6 @@ to measure how much of a cost difference comes from instructions rather than fro
 Only `report.md` of a results directory is committed; `runs.json` (answers, costs, judge votes),
 `schedule.json`, traces, work directories, Jev recordings of the runs and the judge's raw replies stay local. Results so far: `reports/agents-2026-10-09-3arm-ko/` and `-3arm-en/` (URL given,
 no WebSearch, 32 questions each in Korean and in English, three arms interleaved in one schedule, concurrency 1;
-the numbers in `RESULTS.md` and the README), `reports/agents-2026-10-09/` (WebSearch, no URL, Korean) and
+the numbers in `RESULTS.md` and the README, which leave out the two questions whose pages WebFetch passes through as
+Markdown), `reports/agents-2026-10-09/` (WebSearch, no URL, Korean) and
 `reports/agents-2026-10-09-ablation/` (WebSearch, WebFetch with the one-sentence instruction).

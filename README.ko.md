@@ -41,14 +41,14 @@ If maxsize is set to None, the LRU feature is disabled and the cache can grow wi
 
 페이지 전체를 넘기면 컨텍스트를 많이 차지하고 비용도 커진다. 요약은 인용할 수 없고 페이지와 대조해 확인할 수도 없다. jevfetch는 페이지를 블록 단위로 나누고, TypeSafe의 판정 모델 [Jev](https://docs.typesafe.ai)로 블록마다 질문에 답이 되는지 판단해, 답이 되는 블록만 원문 그대로 돌려준다.
 
-페이지 URL을 준 기술 문서 질문 32개를 한국어와 영어로 2회씩 돌려 Claude Code의 WebFetch와 비교한 결과다.
+페이지 URL을 준 기술 문서 질문 30개를 한국어와 영어로 2회씩 돌려 Claude Code의 WebFetch와 비교한 결과다.
 
 | WebFetch 대비 | 에이전트 시간 | 비용 |
 |---|---|---|
-| Haiku 4.5 WebFetch | 30~32% 단축 | 42~43% 절감 |
-| Haiku 5.5 WebFetch | 42~47% 단축 | 3~13% 절감 |
+| Haiku 4.5 WebFetch | 32~34% 단축 | 43~44% 절감 |
+| Haiku 5.5 WebFetch | 43~49% 단축 | 한국어 11% 절감, 영어 1% 증가 |
 
-루브릭 사실 확인은 126개 중 124개(WebFetch는 126개). 영어 질문의 Haiku 5.5 대비 비용 차이는 오차 범위 안이다. 조건, 표, 한계: [bench/RESULTS.ko.md](bench/RESULTS.ko.md).
+루브릭 사실 확인은 언어마다 116개를 모두 맞혀 Haiku 5.5 WebFetch와 같다. Haiku 5.5 대비 비용 차이는 두 언어 모두 오차 범위 안이다. 30개는 WebFetch가 모델을 거쳐 답하는 질문이다. 사이트가 마크다운을 주는 질문 2개에서는 WebFetch가 모델 대신 페이지 전체를 그대로 넘기므로 뺐다. 그 2개에서 WebFetch는 사실을 모두 맞혔고, jevfetch는 Redis EXPIRE에서 매번 사실 하나를 놓쳤다. 조건, 표, 한계: [bench/RESULTS.ko.md](bench/RESULTS.ko.md).
 
 ## 빠른 시작
 
