@@ -158,6 +158,14 @@ def table(results: dict, baseline: dict | None) -> str:
     return "\n".join(rows)
 
 
+def prune_recordings(directory: Path, keep: set[str]) -> list[str]:
+    """Delete `<key>.json` files in `directory` whose key is not in `keep`; returns the deleted names."""
+    removed = sorted(p.name for p in directory.glob("*.json") if p.stem not in keep)
+    for name in removed:
+        (directory / name).unlink()
+    return removed
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(prog="bench", description=__doc__)
     ap.add_argument("--record", action="store_true", help="call Jev for requests without a recording")
@@ -165,9 +173,12 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--cases", help="comma-separated case ids (default: all)")
     ap.add_argument("--summary", help="also append the markdown table to this file (e.g. $GITHUB_STEP_SUMMARY)")
     ap.add_argument("--set", action="append", default=[], metavar="FIELD=VALUE", help="override a Config field")
+    ap.add_argument("--prune", action="store_true", help="delete recordings in bench/jev that this run did not use")
     args = ap.parse_args(argv)
     if args.update_baseline and args.cases:
         ap.error("--update-baseline rewrites the whole baseline; drop --cases")
+    if args.prune and (args.cases or args.set):
+        ap.error("--prune needs the full run with the default Config")
     ids = set(args.cases.split(",")) if args.cases else None
     cases = load_cases(ids)
     if ids and (unknown := ids - {c["id"] for c in cases}):
@@ -203,6 +214,10 @@ def main(argv: list[str] | None = None) -> int:
         out.append("\ngate:")
         out += [f"  {'FAIL' if f.blocking else 'note'} {f}" for f in failures]
     out.append("\nFAIL" if blocking else "\nPASS")
+    if args.prune and not run["missing_recordings"]:
+        used = {k for c in run["cases"].values() for k in c.get("jev_keys", [])}
+        removed = prune_recordings(ROOT / "jev", used)
+        out.append(f"\npruned {len(removed)} unused recording(s)")
     text = "\n".join(out)
     print(text)
     if args.summary:
@@ -213,6 +228,7 @@ def main(argv: list[str] | None = None) -> int:
         for c in run["cases"].values():  # drop what changes between identical runs
             c.pop("text", None)
             c.pop("seconds", None)
+            c.pop("jev_keys", None)
         run["summary"].pop("seconds", None)
         baseline_path.write_text(
             json.dumps(

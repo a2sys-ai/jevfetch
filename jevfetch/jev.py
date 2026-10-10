@@ -57,6 +57,7 @@ class Jev:
         self.client = httpx.AsyncClient(timeout=timeout)
         self.cache = cache_dir()
         self.requests = self.cached = 0
+        self.keys: set[str] = set()  # cache keys of every request made through this client
         self.input_tokens = self.cached_input_tokens = 0
         self.models: set[str] = set()
 
@@ -65,6 +66,7 @@ class Jev:
         key = hashlib.sha1(json.dumps(body, sort_keys=True, ensure_ascii=False).encode()).hexdigest()
         path = self.cache / f"{key}.json"
         self.requests += 1
+        self.keys.add(key)
         if self.use_cache and path.exists():
             data = json.loads(path.read_text())
             self.cached += 1

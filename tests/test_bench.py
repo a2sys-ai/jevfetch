@@ -14,6 +14,17 @@ def test_emphasis_markers_wrapping_a_token_are_stripped_but_inner_underscores_st
     assert matching.strip_emphasis("max_size and __init__") == "max_size and __init__"
 
 
+def test_link_markup_is_unwrapped_to_its_text():
+    assert matching.strip_emphasis("returns a [named tuple](../glossary.html#term-named-tuple) showing") == (
+        "returns a named tuple showing"
+    )
+    assert matching.strip_emphasis("see [RFC 8259](https://www.rfc-editor.org/rfc/rfc8259) and [x](y)") == (
+        "see RFC 8259 and x"
+    )
+    assert matching.strip_emphasis("a[1] (note)") == "a[1] (note)"
+    assert matching.key_in_text("shell injection", "avoid [shell injection](https://x/y) vulnerabilities")
+
+
 def test_fact_matches_across_whitespace_and_emphasis_but_keeps_punctuation_and_case():
     blocks = ["If _maxsize_ is set to `None`,  the LRU feature is\ndisabled."]
     assert matching.fact_in_blocks("If maxsize is set to None, the LRU feature is disabled.", blocks)
@@ -223,3 +234,13 @@ def test_set_parses_booleans_and_passes_model_through():
         bench_main.parse_overrides(["render_fallback=maybe"], ap)
     with pytest.raises(SystemExit):
         bench_main.parse_overrides(["nope=1"], ap)
+
+
+def test_prune_removes_recordings_the_run_did_not_use(tmp_path):
+    from bench.__main__ import prune_recordings
+
+    for name in ("keep1", "keep2", "stale"):
+        (tmp_path / f"{name}.json").write_text("{}")
+    (tmp_path / "notes.txt").write_text("x")
+    assert prune_recordings(tmp_path, {"keep1", "keep2"}) == ["stale.json"]
+    assert sorted(p.name for p in tmp_path.iterdir()) == ["keep1.json", "keep2.json", "notes.txt"]

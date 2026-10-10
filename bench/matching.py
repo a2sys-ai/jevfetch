@@ -5,6 +5,7 @@ from jevfetch.blocks import Block
 
 _SINGLE = re.compile(r"(?<!\w)([*_])(?!\1)(\S(?:.*?\S)?)(?<!\1)\1(?!\w)")
 _DOUBLE = re.compile(r"\*\*(\S(?:.*?\S)?)\*\*")
+_LINK = re.compile(r"\[([^\]]+)\]\([^)]*\)")  # jevfetch renders links as [text](url)
 _CODE = re.compile(r"`([^`\n]+)`")
 _ARTICLES = re.compile(r"\b(a|an|the)\b")
 _PUNCT = set(string.punctuation)
@@ -19,6 +20,7 @@ def alias_text(alias: str | dict) -> str:
 
 
 def strip_emphasis(text: str) -> str:
+    text = _LINK.sub(r"\1", text)
     text = _CODE.sub(r"\1", text)
     text = _DOUBLE.sub(r"\1", text)
     return _SINGLE.sub(r"\2", text)
@@ -71,7 +73,7 @@ def _tokens(text: str, exact: bool) -> list[str]:
 
 
 def key_in_text(key: str, text: str, exact: bool = False) -> bool:
-    needle, hay = _tokens(key, exact), _tokens(text, exact)
+    needle, hay = _tokens(key, exact), _tokens(strip_emphasis(text), exact)
     n = len(needle)
     return n > 0 and any(hay[i : i + n] == needle for i in range(len(hay) - n + 1))
 

@@ -88,6 +88,7 @@ async def run_case_async(case: dict, doc: str, record: bool, cfg: Config | None 
         out.update(status=None, missing_recording=True, error=str(e))
         return out
     finally:
+        out["jev_keys"] = sorted(jev.keys)
         await jev.aclose()
     kept = matching.output_blocks(res.text, blocks)
     out.update(
