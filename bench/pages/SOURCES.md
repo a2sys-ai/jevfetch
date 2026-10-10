@@ -44,8 +44,9 @@ The site each sentence comes from and the licence that site states for its pages
 | git-scm.com (git manual pages) | GPL-2.0 | https://github.com/git/git/blob/master/COPYING |
 | www.rfc-editor.org | IETF Trust Legal Provisions (BCP 78) | see above |
 | pages.nist.gov | US Government work | see above |
-| redis.io | CC BY-NC-SA 4.0 for the current documentation; portions that were in the earlier redis-doc repository are CC BY-SA 4.0 | https://github.com/redis/docs/blob/main/LICENSE |
-| nginx.org, docs.stripe.com, docs.claude.com | no licence stated on the site | |
+| redis.io | CC BY-SA 4.0: the four EXPIRE sentences are in the earlier redis-doc repository, which carries that licence; the current site states CC BY-NC-SA 4.0 for the rest | https://github.com/redis/redis-doc/blob/master/commands/expire.md and https://github.com/redis/redis-doc/blob/master/LICENSE; https://github.com/redis/docs/blob/main/LICENSE |
+| nginx.org | BSD-2-Clause (the documentation source repository's licence) | https://github.com/nginx/nginx.org/blob/main/text/LICENSE |
+| docs.stripe.com, docs.claude.com | no licence stated on the site | |
 
 ## Annotation
 
