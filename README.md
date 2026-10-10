@@ -8,7 +8,14 @@
 
 **Give an LLM agent the parts of a web page that answer its question, quoted verbatim.**
 
-jevfetch replaces Claude Code's WebFetch. On 32 documentation questions with the page URL given, the agent finished 42 to 47% sooner with jevfetch than with WebFetch on Haiku 5.5, at a 3 to 13% lower cost (the English-question cost difference is within the uncertainty interval), and 30 to 32% sooner at 42 to 43% lower cost than with WebFetch on Haiku 4.5, while matching 124 of 126 rubric fact checks against WebFetch's 126. Conditions, tables and limits: [bench/RESULTS.md](bench/RESULTS.md).
+Use it in place of Claude Code's WebFetch. Measured on 32 documentation questions with the page URL given, two runs each in Korean and in English:
+
+| compared with WebFetch | agent time | cost |
+|---|---|---|
+| on Haiku 4.5 | 30 to 32% less | 42 to 43% less |
+| on Haiku 5.5 | 42 to 47% less | 3 to 13% less |
+
+Rubric fact checks matched: 124 of 126 against WebFetch's 126. The cost difference on English questions against Haiku 5.5 is within the uncertainty interval. Conditions, tables and limits: [bench/RESULTS.md](bench/RESULTS.md).
 
 Agents usually read web pages in one of two ways. Tools such as WebFetch use a small model to answer from the page, so the agent gets a paraphrase without the source text. Passing the whole page instead uses more context and costs more. jevfetch splits the page into blocks, asks TypeSafe's judgment model [Jev](https://docs.typesafe.ai) whether each block answers the question, and returns the matching blocks exactly as they appear on the page.
 

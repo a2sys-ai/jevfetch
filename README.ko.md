@@ -8,7 +8,14 @@
 
 **웹 페이지에서 질문에 답이 되는 부분만 골라 원문 그대로 LLM 에이전트에 넘긴다.**
 
-Claude Code의 WebFetch 대신 쓴다. 페이지 URL을 준 기술 문서 질문 32개에서 에이전트는 Haiku 5.5를 쓰는 WebFetch보다 jevfetch로 42~47% 빨리 끝냈고 비용은 3~13% 낮았으며(영어 질문의 비용 차이는 오차 범위 안), Haiku 4.5를 쓰는 WebFetch보다는 30~32% 빠르고 비용이 42~43% 낮았다. 루브릭 사실 확인은 126개 중 124개로 WebFetch는 126개였다. 조건, 표, 한계: [bench/RESULTS.ko.md](bench/RESULTS.ko.md).
+Claude Code의 WebFetch 대신 쓴다. 페이지 URL을 준 기술 문서 질문 32개를 한국어와 영어로 2회씩 돌린 결과다.
+
+| WebFetch 대비 | 에이전트 시간 | 비용 |
+|---|---|---|
+| Haiku 4.5 WebFetch | 30~32% 단축 | 42~43% 절감 |
+| Haiku 5.5 WebFetch | 42~47% 단축 | 3~13% 절감 |
+
+루브릭 사실 확인은 126개 중 124개(WebFetch는 126개). 영어 질문의 Haiku 5.5 대비 비용 차이는 오차 범위 안이다. 조건, 표, 한계: [bench/RESULTS.ko.md](bench/RESULTS.ko.md).
 
 에이전트가 웹 페이지를 읽는 방법은 보통 두 가지다. WebFetch 같은 도구는 작은 모델이 페이지를 읽고 답을 써 주기 때문에, 에이전트는 원문 없이 요약만 받는다. 페이지 전체를 넘기면 컨텍스트를 많이 차지하고 비용도 커진다. jevfetch는 페이지를 블록 단위로 나누고, TypeSafe의 판정 모델 [Jev](https://docs.typesafe.ai)로 블록마다 질문에 답이 되는지 판단해, 답이 되는 블록만 원문 그대로 돌려준다.
 
