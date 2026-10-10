@@ -298,3 +298,12 @@ def test_time_note_states_the_recorded_concurrency():
     assert "not single-session" not in concurrency_note(_rows("jevfetch", 0.03, 10.0, 1))
     assert "not single-session latency" in concurrency_note(_rows("jevfetch", 0.03, 10.0, 1, concurrency=2))
     assert "not recorded" in concurrency_note(_rows("jevfetch", 0.03, 10.0, 1, concurrency=None))
+
+
+def test_jevfetch_revision_names_the_checkout():
+    from bench.agents.__main__ import jevfetch_revision
+
+    rev = jevfetch_revision()
+    assert set(rev) == {"revision", "revision_dirty"}
+    assert len(rev["revision"]) >= 7 and int(rev["revision"], 16) >= 0
+    assert isinstance(rev["revision_dirty"], bool)
