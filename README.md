@@ -1,6 +1,6 @@
 # jevfetch
 
-**Use it instead of WebFetch: agent runs take 30 to 32% less time and cost 42 to 43% less (compared with WebFetch on Haiku 4.5).**
+**Use it instead of WebFetch: agent runs take 32 to 34% less time and cost 43 to 44% less (compared with WebFetch on Haiku 4.5).**
 
 [![ci](https://github.com/a2sys-ai/jevfetch/actions/workflows/ci.yml/badge.svg)](https://github.com/a2sys-ai/jevfetch/actions/workflows/ci.yml)
 [![MIT license](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
@@ -20,14 +20,14 @@ Passing the whole page eats context and costs more. A paraphrase can't be quoted
 
 jevfetch splits the page into blocks and asks TypeSafe's judgment model [Jev](https://docs.typesafe.ai) whether each block answers the question. It returns only the blocks that do, exactly as they appear on the page.
 
-We compared it with Claude Code's WebFetch on 32 documentation questions, giving the page URL with each question and running every question twice in Korean and twice in English:
+We compared it with Claude Code's WebFetch on 30 documentation questions, giving the page URL with each question and running every question twice in Korean and twice in English:
 
 | Compared with | Agent time | Cost |
 |---|---|---|
-| WebFetch (Haiku 4.5) | 30 to 32% less | 42 to 43% less |
-| WebFetch (Haiku 5.5) | 42 to 47% less | 3 to 13% less |
+| WebFetch (Haiku 4.5) | 32 to 34% less | 43 to 44% less |
+| WebFetch (Haiku 5.5) | 43 to 49% less | 11% less in Korean, 1% more in English |
 
-Out of 126 checks per language for facts the answer must contain, jevfetch passed 124 and WebFetch (Haiku 5.5) passed all 126. For English questions, the cost difference against Haiku 5.5 is within the margin of error. Full conditions and limits are in [bench/RESULTS.md](bench/RESULTS.md).
+Out of 116 checks per language for facts the answer must contain, jevfetch and WebFetch (Haiku 5.5) both passed all 116. Against Haiku 5.5, the cost difference is within the margin of error in both languages. The 30 are the questions on which WebFetch answers through its model. Two more are left out: their sites serve Markdown, and WebFetch passes the whole page through instead. On those two, WebFetch passed every check and jevfetch missed one Redis EXPIRE fact in every run. Full conditions and limits are in [bench/RESULTS.md](bench/RESULTS.md).
 
 ## Example
 
