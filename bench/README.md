@@ -92,7 +92,7 @@ threshold on re-recording. Check such cases by hand before accepting a changed b
 ## WebFetch comparison
 
 `compare_webfetch.py` runs each case against the live URL with both tools and writes
-`reports/webfetch-<date>.md` plus a JSON file and the raw `claude -p` traces under `reports/raw/`.
+`reports/webfetch-<date>.md`; the per-run JSON and the raw `claude -p` traces under `reports/raw/` stay local.
 It needs the `claude` CLI (2.1.290 or later, so truncation is reported rather than silent),
 `TYPESAFE_API_KEY`, and a Claude account. WebFetch is driven with user settings, plugins, MCP servers
 and skills disabled and the tool's URL cache off; the orchestrator is Sonnet so that the tool's own
@@ -178,9 +178,9 @@ variable for every arm that does not pin its own. The model actually billed is i
 
 Each run's `meta.json` records the exact task prompt, the instruction file and its hash computed before the
 run, tools, allow rules, language, mode and small model; a finished run is reused only when all of these
-match, otherwise the runner stops and asks for a fresh results directory. `runs.json` keeps the final answer
-and the judge votes of every run, so the answers and their grades can be checked without the traces; the runs
-themselves cannot be re-executed from the committed files. Not archived: the page bytes each run fetched and the
+match, otherwise the runner stops and asks for a fresh results directory. `runs.json` (local, not committed)
+keeps the final answer and the judge votes of every run, so the answers and their grades can be checked without
+the traces; the runs themselves cannot be re-executed from the committed files. Not archived: the page bytes each run fetched and the
 request bodies sent to Jev (the recordings hold the responses and usage, keyed by a hash of the request), so a
 run's reader inputs cannot be replayed exactly. For sets run before `concurrency`
 and `seed` were recorded, the values were written into `meta.json` afterwards from the launch command (the
@@ -196,8 +196,8 @@ for example WebFetch with Haiku 4.5 against WebFetch with Haiku 5.5 against jevf
 instruction file; `webfetch-minimal.md` is the one-sentence instruction the technical report's agents had, used
 to measure how much of a cost difference comes from instructions rather than from the reader.
 
-Only `report.md`, `runs.json` and `schedule.json` of a results directory are committed; traces, work
-directories, Jev recordings of the runs and the judge's raw replies stay local (the votes are in `runs.json`). Results so far: `reports/agents-2026-10-09-3arm-ko/` and `-3arm-en/` (URL given,
+Only `report.md` of a results directory is committed; `runs.json` (answers, costs, judge votes),
+`schedule.json`, traces, work directories, Jev recordings of the runs and the judge's raw replies stay local. Results so far: `reports/agents-2026-10-09-3arm-ko/` and `-3arm-en/` (URL given,
 no WebSearch, 32 questions each in Korean and in English, three arms interleaved in one schedule, concurrency 1;
 the numbers in `RESULTS.md` and the README), `reports/agents-2026-10-09/` (WebSearch, no URL, Korean) and
 `reports/agents-2026-10-09-ablation/` (WebSearch, WebFetch with the one-sentence instruction).

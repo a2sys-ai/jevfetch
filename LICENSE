@@ -24,5 +24,5 @@ SOFTWARE.
 
 The MIT License above covers the jevfetch code. Third-party content kept for the benchmark keeps its own
 licence: the page snapshots under bench/pages/ and the sentences copied from web pages into
-bench/cases.json, bench/agents/questions.json and bench/reports/ are listed with their sources and licences
-in bench/pages/SOURCES.md.
+bench/cases.json and bench/agents/questions.json are listed with their sources and licences in
+bench/pages/SOURCES.md.

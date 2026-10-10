@@ -24,9 +24,8 @@ Content hashes are recorded per case in `bench/baseline.json` (`snapshot_sha256`
 ## Passages copied elsewhere
 
 `bench/cases.json` (`facts`) holds sentences copied from the snapshots above, under the same licences.
-`bench/agents/questions.json` (`gold`) holds sentences copied from the pages the agent questions point at,
-and the answers in `bench/reports/agents-*/runs.json` quote, summarize or translate those pages. Their
-sources and the licence each site states:
+`bench/agents/questions.json` (`gold`) holds sentences copied from the pages the agent questions point at.
+Their sources and the licence each site states:
 
 | site | licence | source of the licence statement |
 |---|---|---|
@@ -45,8 +44,6 @@ sources and the licence each site states:
 | pages.nist.gov | US Government work | see above |
 | redis.io | CC BY-NC-SA 4.0 for the current documentation; portions that were in the earlier redis-doc repository are CC BY-SA 4.0 | https://github.com/redis/docs/blob/main/LICENSE |
 | nginx.org, docs.stripe.com, docs.claude.com | no licence stated on the site | |
-
-Korean answers to questions on English pages contain the model's translation of the quoted sentences.
 
 ## Annotation
 
