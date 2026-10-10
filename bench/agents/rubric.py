@@ -1,4 +1,4 @@
-"""Grading rubric for the 20 agent-level questions, copied from the research repository's tag experiments-2026-09.
+"""Grading rubric for the 20 agent-level questions.
 
 Each question maps fact id -> list of elements; a fact is right only when every required element holds.
 Element kinds: ("re", pattern) the pattern occurs in the answer; ("near", [patterns], window) all patterns occur

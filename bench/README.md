@@ -126,7 +126,7 @@ uv run python -m bench.agents report bench/reports/agents-<date>
 ```
 
 - Questions: `bench/agents/questions.json`, 32 in all, each with a Korean and an English wording. 20 Korean
-  documentation questions from the technical report's Experiment 2 (18 of the 20 pages are English; pages of 2,000 to 18,000 extracted tokens) plus 12 English
+  documentation questions (18 of the 20 pages are English; pages of 2,000 to 18,000 extracted tokens) plus 12 English
   questions promoted from the tool-level cases: 9 on long pages (RFC 9110, Wikipedia World War II, NIST SP 800-63B;
   33,000 to 101,000 tokens, past WebFetch's first 100,000-character window) and 3 on a medium page. The report
   groups results by page size (small < 5,000 tokens, medium < 20,000, large) and language; do not pool the
@@ -194,8 +194,8 @@ question (the first set is the reference) and prints facts, mean cost, median ti
 for example WebFetch with Haiku 4.5 against WebFetch with Haiku 5.5 against jevfetch.
 
 `--arms webfetch --webfetch-instructions bench/agents/webfetch-minimal.md` runs one arm with another
-instruction file; `webfetch-minimal.md` is the one-sentence instruction the technical report's agents had, used
-to measure how much of a cost difference comes from instructions rather than from the reader.
+instruction file; `webfetch-minimal.md` is a one-sentence instruction, used to measure
+how much of a cost difference comes from instructions rather than from the reader.
 
 Only `report.md` of a results directory is committed; `runs.json` (answers, costs, judge votes),
 `schedule.json`, traces, work directories, Jev recordings of the runs and the judge's raw replies stay local. Results so far: `reports/agents-2026-10-09-3arm-ko/` and `-3arm-en/` (URL given,
