@@ -30,12 +30,17 @@ def test_fetch_sends_identifying_user_agent(monkeypatch):
     assert "jevfetch/" in seen["User-Agent"]
 
 
-def test_fetch_page_returns_the_final_url_after_redirects(monkeypatch):
+def test_fetch_page_returns_the_final_url_and_the_media_type(monkeypatch):
     def fake_get(url, **kwargs):
-        return httpx.Response(200, text="<html></html>", request=httpx.Request("GET", "https://example.com/final"))
+        return httpx.Response(
+            200,
+            text="<html></html>",
+            headers={"Content-Type": "Text/HTML; charset=utf-8"},
+            request=httpx.Request("GET", "https://example.com/final"),
+        )
 
     monkeypatch.setattr(web.httpx, "get", fake_get)
-    assert web.fetch_page("https://example.com") == ("<html></html>", "https://example.com/final")
+    assert web.fetch_page("https://example.com") == ("<html></html>", "https://example.com/final", "text/html")
 
 
 @pytest.mark.parametrize(

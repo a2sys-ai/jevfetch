@@ -14,7 +14,7 @@ from typing import Literal
 import httpx
 
 from jevfetch import scoring, tokens
-from jevfetch.blocks import Block, merge_fragments, parse, render
+from jevfetch.blocks import PLAIN_TYPES, Block, merge_fragments, parse, render
 from jevfetch.jev import Jev
 from jevfetch.web import UnsupportedContent, fetch_page, fetch_rendered, save_file
 
@@ -125,7 +125,7 @@ async def fetch_relevant_async(url: str, query: str, cfg: Config | None = None, 
     """Fetch `url` and keep the blocks relevant to `query`, re-rendering the page if its static HTML is nearly empty."""
     cfg = cfg or Config()
     try:
-        html, final_url = await asyncio.to_thread(fetch_page, url)
+        html, final_url, media_type = await asyncio.to_thread(fetch_page, url)
     except UnsupportedContent as e:
         error = f"{type(e).__name__}: {e}"
         try:
@@ -135,8 +135,9 @@ async def fetch_relevant_async(url: str, query: str, cfg: Config | None = None, 
         return Result("fetch_error", "", url=url, error=error, saved=saved)
     except httpx.HTTPError as e:
         return Result("fetch_error", "", url=url, error=f"{type(e).__name__}: {e}")
-    blocks, rendered = parse(html, final_url), False
-    if cfg.render_fallback and tokens.count(render(blocks)) < cfg.render_below_tokens:
+    blocks, rendered = parse(html, final_url, media_type), False
+    # A browser shows a plain-text type as source, so rendering adds nothing and turns the text into HTML.
+    if cfg.render_fallback and media_type not in PLAIN_TYPES and tokens.count(render(blocks)) < cfg.render_below_tokens:
         dom = await asyncio.to_thread(fetch_rendered, url)
         if dom:
             again = parse(dom, final_url)
