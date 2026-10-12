@@ -49,7 +49,7 @@ extend-exclude = ["dist"]
 select = ["E", "F", "W", "I", "B", "UP"]
 
 [tool.ruff.lint.per-file-ignores]
-"bench/agents/rubric_body.py" = ["E501"]  # regex table copied from the research repository
+"bench/agents/rubric_body.py" = ["E501"]  # long regex rows in the rubric table
 
 [dependency-groups]
 dev = [

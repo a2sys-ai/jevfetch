@@ -1,7 +1,8 @@
 # Snapshot sources
 
-The jevfetch code is MIT-licensed; the files in this directory and the passages listed under
-[Passages copied elsewhere](#passages-copied-elsewhere) are third-party content under the licences named here.
+The jevfetch code is MIT-licensed. The files in this directory are third-party content redistributed under
+the licences named here. The sentences listed under [Passages copied elsewhere](#passages-copied-elsewhere)
+are short quotations with their sources named, not copies of the pages.
 
 Each file is the page body as served on the fetch date, saved unchanged. Fetched with jevfetch's own
 fetcher (`jevfetch.web.fetch`, User-Agent `jevfetch/<version>`), 2026-10-09.
@@ -23,9 +24,10 @@ Content hashes are recorded per case in `bench/baseline.json` (`snapshot_sha256`
 
 ## Passages copied elsewhere
 
-`bench/cases.json` (`facts`) holds sentences copied from the snapshots above, under the same licences.
-`bench/agents/questions.json` (`gold`) holds sentences copied from the pages the agent questions point at.
-Their sources and the licence each site states:
+`bench/cases.json` (`facts`) and `bench/agents/questions.json` (`gold`) hold a few sentences quoted from
+each page, used as grading keys: a result passes when the quoted sentence appears in the output. The `facts`
+are quoted from the snapshots above and the `gold` sentences from the pages the agent questions point at.
+The site each sentence comes from and the licence that site states for its pages:
 
 | site | licence | source of the licence statement |
 |---|---|---|
@@ -42,8 +44,9 @@ Their sources and the licence each site states:
 | git-scm.com (git manual pages) | GPL-2.0 | https://github.com/git/git/blob/master/COPYING |
 | www.rfc-editor.org | IETF Trust Legal Provisions (BCP 78) | see above |
 | pages.nist.gov | US Government work | see above |
-| redis.io | CC BY-NC-SA 4.0 for the current documentation; portions that were in the earlier redis-doc repository are CC BY-SA 4.0 | https://github.com/redis/docs/blob/main/LICENSE |
-| nginx.org, docs.stripe.com, docs.claude.com | no licence stated on the site | |
+| redis.io | CC BY-SA 4.0: the four EXPIRE sentences are in the earlier redis-doc repository, which carries that licence; the current site states CC BY-NC-SA 4.0 for the rest | https://github.com/redis/redis-doc/blob/master/commands/expire.md and https://github.com/redis/redis-doc/blob/master/LICENSE; https://github.com/redis/docs/blob/main/LICENSE |
+| nginx.org | BSD-2-Clause (the documentation source repository's licence) | https://github.com/nginx/nginx.org/blob/main/text/LICENSE |
+| docs.stripe.com, docs.claude.com | no licence stated on the site | |
 
 ## Annotation
 

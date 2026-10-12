@@ -179,6 +179,15 @@ def instructions(arm: str) -> str:
     return text.split("---", 2)[2].strip() if text.startswith("---") else text.strip()
 
 
+def jevfetch_revision() -> dict:
+    """The checkout's HEAD, and whether jevfetch/ or skills/ differ from it: the agent runs this checkout's
+    `.venv/bin/jevfetch` and reads its SKILL.md."""
+    git = ["git", "-C", str(REPO)]
+    rev = subprocess.run([*git, "rev-parse", "--short", "HEAD"], capture_output=True, text=True)
+    status = subprocess.run([*git, "status", "--porcelain", "--", "jevfetch", "skills"], capture_output=True, text=True)
+    return {"revision": rev.stdout.strip(), "revision_dirty": bool(status.stdout.strip())}
+
+
 def questions(ids: set[str] | None) -> list[dict]:
     qs = json.loads((ROOT / "questions.json").read_text())
     return [q for q in qs if not ids or q["id"] in ids]
@@ -259,6 +268,7 @@ async def run_one(
                     "timed_out": timed_out,
                     "returncode": p.returncode,
                     **config,
+                    **jevfetch_revision(),
                 },
                 ensure_ascii=False,
             )
@@ -422,6 +432,8 @@ def collect(results: Path) -> list[dict]:
                 "failed_attempts": len(failed),
                 "failed_attempt_cost": failed_cost,
                 "instructions_sha1": meta.get("instructions_sha1"),
+                "revision": meta.get("revision"),
+                "revision_dirty": meta.get("revision_dirty", False),
                 "with_url": meta.get("with_url", False),
                 "small_model": meta.get("small_model"),
                 "concurrency": meta.get("concurrency"),
@@ -446,12 +458,12 @@ def report(results: Path, seed: int) -> str:
     ungraded = [r for r in rows if r["finished"] and r["grade"] is None]
     arms = arms_present(rows)
     by_arm = {a: [r for r in rows if r["arm"] == a] for a in arms}
-    git_rev = subprocess.run(
-        ["git", "-C", str(REPO), "rev-parse", "--short", "HEAD"], capture_output=True, text=True
-    ).stdout.strip()
-    dirty = subprocess.run(
-        ["git", "-C", str(REPO), "status", "--porcelain", "--", "jevfetch", "skills"], capture_output=True, text=True
-    ).stdout.strip()
+    recorded = sorted({r["revision"] for r in rows if r.get("revision")})
+    if recorded:
+        git_rev, dirty = ", ".join(recorded), any(r["revision_dirty"] for r in rows)
+    else:  # runs made before the revision was recorded per run
+        head = jevfetch_revision()
+        git_rev, dirty = f"{head['revision']} (checkout HEAD when the report was generated)", head["revision_dirty"]
     claude_version = subprocess.run(["claude", "--version"], capture_output=True, text=True).stdout.strip()
     models = sorted({m for r in rows for m in r["models"]})
     jev_models = sorted({m for r in rows for m in r["jev_models"]})
