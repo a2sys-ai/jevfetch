@@ -35,7 +35,7 @@ packages = ["jevfetch"]
 exclude = ["**/.claude/**"]
 
 [tool.hatch.build.targets.sdist]
-exclude = ["**/.claude/**"]
+exclude = ["**/.claude/**", "/bench", "/tests/test_bench.py", "/tests/test_bench_agents.py", "/.github"]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
