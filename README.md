@@ -3,10 +3,10 @@
 **Use it instead of WebFetch: agent runs take 32 to 34% less time and cost 43 to 44% less (compared with WebFetch on Haiku 4.5).**
 
 [![ci](https://github.com/a2sys-ai/jevfetch/actions/workflows/ci.yml/badge.svg)](https://github.com/a2sys-ai/jevfetch/actions/workflows/ci.yml)
-[![MIT license](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+[![MIT license](https://img.shields.io/badge/license-MIT-blue)](https://github.com/a2sys-ai/jevfetch/blob/main/LICENSE)
 ![Python 3.12+](https://img.shields.io/badge/python-3.12%2B-blue)
 
-[한국어](README.ko.md) · [Quick start](#quick-start) · [Command-line use](#command-line-use) · [Python API](#python-api) · [More agent setup](#more-agent-setup)
+[한국어](https://github.com/a2sys-ai/jevfetch/blob/main/README.ko.md) · [Quick start](#quick-start) · [Command-line use](#command-line-use) · [Python API](#python-api) · [More agent setup](#more-agent-setup)
 
 ## Why jevfetch
 
@@ -27,7 +27,7 @@ We compared it with Claude Code's WebFetch on 30 documentation questions, giving
 | WebFetch (Haiku 4.5) | 32 to 34% less | 43 to 44% less |
 | WebFetch (Haiku 5.5) | 43 to 49% less | 11% less in Korean, 1% more in English |
 
-Out of 116 checks per language for facts the answer must contain, jevfetch and WebFetch (Haiku 5.5) both passed all 116. Against Haiku 5.5, the cost difference is within the margin of error in both languages. The 30 are the questions on which WebFetch answers through its model. Two more are left out: their sites serve Markdown, and WebFetch passes the whole page through instead. On those two, WebFetch passed every check and jevfetch missed one Redis EXPIRE fact in every run. Full conditions and limits are in [bench/RESULTS.md](bench/RESULTS.md).
+Out of 116 checks per language for facts the answer must contain, jevfetch and WebFetch (Haiku 5.5) both passed all 116. Against Haiku 5.5, the cost difference is within the margin of error in both languages. The 30 are the questions on which WebFetch answers through its model. Two more are left out: their sites serve Markdown, and WebFetch passes the whole page through instead. On those two, WebFetch passed every check and jevfetch missed one Redis EXPIRE fact in every run. Full conditions and limits are in [bench/RESULTS.md](https://github.com/a2sys-ai/jevfetch/blob/main/bench/RESULTS.md).
 
 ## Example
 
@@ -68,7 +68,7 @@ JSON and XML are re-serialized, so whitespace, escapes, and number notation in t
 
 The jevfetch skill installs into Claude Code, Codex, and many other coding agents with the [skills](https://github.com/vercel-labs/skills) CLI. These steps are for Claude Code. You need [uv](https://docs.astral.sh/uv/), Node.js (for `npx`), and a [TypeSafe](https://typesafe.ai) API key (see [API key](#api-key)).
 
-1. Install the [jevfetch skill](skills/jevfetch/SKILL.md) in your project. The skill tells Claude Code to read web pages with jevfetch, including pages it found with WebSearch, and what to do with each status. Without it, Claude Code keeps using WebFetch.
+1. Install the [jevfetch skill](https://github.com/a2sys-ai/jevfetch/blob/main/skills/jevfetch/SKILL.md) in your project. The skill tells Claude Code to read web pages with jevfetch, including pages it found with WebSearch, and what to do with each status. Without it, Claude Code keeps using WebFetch.
 
    ```bash
    npx skills add a2sys-ai/jevfetch --skill jevfetch -a claude-code
@@ -246,7 +246,7 @@ Tests need no API key and make no network requests, except that tiktoken downloa
 JEVFETCH_RECORD=1 uv run pytest tests/test_end_to_end.py
 ```
 
-`bench/` holds a regression benchmark (`uv run python -m bench`): 10 real page snapshots, 31 questions (27 with verbatim answers, 4 that the page doesn't answer), recorded Jev responses, and a baseline that CI compares against. There are also two manual comparisons with Claude Code's WebFetch, which cost money to run. One compares the two tools directly, and the other has Claude Code answer questions using each one. See [bench/README.md](bench/README.md).
+`bench/` holds a regression benchmark (`uv run python -m bench`): 10 real page snapshots, 31 questions (27 with verbatim answers, 4 that the page doesn't answer), recorded Jev responses, and a baseline that CI compares against. There are also two manual comparisons with Claude Code's WebFetch, which cost money to run. One compares the two tools directly, and the other has Claude Code answer questions using each one. See [bench/README.md](https://github.com/a2sys-ai/jevfetch/blob/main/bench/README.md).
 
 ## Disclosure
 
@@ -254,4 +254,4 @@ jevfetch is not affiliated with TypeSafe. a2sys received no funding, credits, or
 
 ## License
 
-[MIT](LICENSE) for the jevfetch code. The page snapshots under `bench/pages/` and the sentences quoted in `bench/cases.json` and `bench/agents/questions.json` are third-party content; [bench/pages/SOURCES.md](bench/pages/SOURCES.md) lists their sources and licences.
+[MIT](https://github.com/a2sys-ai/jevfetch/blob/main/LICENSE) for the jevfetch code. The page snapshots under `bench/pages/` and the sentences quoted in `bench/cases.json` and `bench/agents/questions.json` are third-party content; [bench/pages/SOURCES.md](https://github.com/a2sys-ai/jevfetch/blob/main/bench/pages/SOURCES.md) lists their sources and licences.
