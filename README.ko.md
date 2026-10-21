@@ -101,7 +101,7 @@ echo 'export TYPESAFE_API_KEY=<API 키>' >> ~/.zshrc
 스킬을 쓰면 jevfetch는 필요할 때 자동으로 설치된다. 따로 설치하려면 아래 명령을 실행한다(Python 3.12 이상 필요).
 
 ```bash
-uv tool install git+https://github.com/a2sys-ai/jevfetch@v0.1.0
+uv tool install jevfetch
 ```
 
 Chrome이나 Chromium은 없어도 된다. 있으면 JavaScript로 본문을 불러오는 페이지를 읽을 때 쓴다.
