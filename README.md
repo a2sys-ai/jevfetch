@@ -101,7 +101,7 @@ To set up other agents, install without Node.js, or turn WebFetch off, see [More
 With the skill, jevfetch gets installed automatically when it's needed. To install it yourself (Python 3.12 or later):
 
 ```bash
-uv tool install git+https://github.com/a2sys-ai/jevfetch@v0.1.0
+uv tool install jevfetch
 ```
 
 Chrome or Chromium is optional. If present, it's used for pages that load their content with JavaScript.
