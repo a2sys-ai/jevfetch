@@ -1,6 +1,6 @@
 # jevfetch
 
-**WebFetch 대신 쓰면 Haiku 5.5를 쓰는 WebFetch보다 에이전트 작업 시간이 43~49% 줄고, 찾는 사실은 같다. Haiku 4.5를 쓰는 WebFetch와 비교하면 비용도 43~44% 줄어든다.**
+**WebFetch 대신 쓰면 Haiku 5.5를 쓰는 WebFetch보다 에이전트 작업 시간이 43\~49% 줄고, 찾는 사실은 같다. Haiku 4.5를 쓰는 WebFetch와 비교하면 비용도 43\~44% 줄어든다.**
 
 [![ci](https://github.com/a2sys-ai/jevfetch/actions/workflows/ci.yml/badge.svg)](https://github.com/a2sys-ai/jevfetch/actions/workflows/ci.yml)
 [![MIT license](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
@@ -25,8 +25,8 @@ Claude Code의 WebFetch와 비교한 결과는 아래와 같다. 기술 문서 �
 
 | 비교 대상 | 에이전트 작업 시간 | 비용 |
 |---|---|---|
-| WebFetch(Haiku 5.5) | 43~49% 단축 | 한국어 11% 절감, 영어 1% 증가 |
-| WebFetch(Haiku 4.5) | 32~34% 단축 | 43~44% 절감 |
+| WebFetch(Haiku 5.5) | 43\~49% 단축 | 한국어 11% 절감, 영어 1% 증가 |
+| WebFetch(Haiku 4.5) | 32\~34% 단축 | 43\~44% 절감 |
 
 답에 꼭 들어가야 할 사실 58개를 두 번의 실행마다 확인해 언어별로 116건을 봤다. jevfetch와 Haiku 5.5 WebFetch는 두 언어 모두 116건을 충족했고, Haiku 4.5 WebFetch는 한국어에서 2건을 놓쳤다. Haiku 5.5 대비 비용 비율의 95% 구간은 두 언어 모두 차이 없음을 포함한다. 사이트가 마크다운을 주는 질문 2개는 WebFetch가 모델 없이 페이지 전체를 그대로 넘기므로 뺐다. 그 2개에서 WebFetch는 사실을 모두 찾았고, jevfetch는 Redis EXPIRE에서 매번 사실 하나를 놓쳤다.
 
