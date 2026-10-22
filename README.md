@@ -1,12 +1,13 @@
 # jevfetch
 
-**Use it instead of WebFetch: agent runs take 32 to 34% less time and cost 43 to 44% less (compared with WebFetch on Haiku 4.5).**
+**Use it instead of WebFetch: agent runs take 43 to 49% less time than with WebFetch on Haiku 5.5 and find the same facts. Against WebFetch on Haiku 4.5, they also cost 43 to 44% less.**
 
 [![ci](https://github.com/a2sys-ai/jevfetch/actions/workflows/ci.yml/badge.svg)](https://github.com/a2sys-ai/jevfetch/actions/workflows/ci.yml)
 [![MIT license](https://img.shields.io/badge/license-MIT-blue)](https://github.com/a2sys-ai/jevfetch/blob/main/LICENSE)
 ![Python 3.12+](https://img.shields.io/badge/python-3.12%2B-blue)
+[![PyPI](https://img.shields.io/pypi/v/jevfetch)](https://pypi.org/project/jevfetch/)
 
-[한국어](https://github.com/a2sys-ai/jevfetch/blob/main/README.ko.md) · [Quick start](#quick-start) · [Command-line use](#command-line-use) · [Python API](#python-api) · [More agent setup](#more-agent-setup)
+[한국어](https://github.com/a2sys-ai/jevfetch/blob/main/README.ko.md) | [Quick start](#quick-start) | [Command-line use](#command-line-use) | [Python API](#python-api) | [More agent setup](#more-agent-setup)
 
 ## Why jevfetch
 
@@ -16,18 +17,20 @@
 | A small model answers from the page (WebFetch) | A paraphrase, without the source text | Questions that don't need the page's exact wording |
 | jevfetch | Passages quoted verbatim, with their heading paths | Looking up a specific fact on a long page |
 
-Passing the whole page eats context and costs more. A paraphrase can't be quoted or checked against the page.
+Passing the whole page eats context and costs more. A paraphrase can't be quoted, and checking it means reading the page again.
 
-jevfetch splits the page into blocks and asks TypeSafe's judgment model [Jev](https://docs.typesafe.ai) whether each block answers the question. It returns only the blocks that do, exactly as they appear on the page.
+jevfetch splits the page into blocks and asks TypeSafe's judgment model [Jev](https://docs.typesafe.ai) whether each block answers the question. It returns the blocks judged to answer it, plus the first block, exactly as they appear on the page.
 
-We compared it with Claude Code's WebFetch on 30 documentation questions, giving the page URL with each question and running every question twice in Korean and twice in English:
+We compared it with Claude Code's WebFetch on 30 documentation questions, giving the page URL with each question and running every question twice in Korean and twice in English (2026-10-09, Claude Code 2.1.295, Sonnet 5.5):
 
 | Compared with | Agent time | Cost |
 |---|---|---|
-| WebFetch (Haiku 4.5) | 32 to 34% less | 43 to 44% less |
 | WebFetch (Haiku 5.5) | 43 to 49% less | 11% less in Korean, 1% more in English |
+| WebFetch (Haiku 4.5) | 32 to 34% less | 43 to 44% less |
 
-Out of 116 checks per language for facts the answer must contain, jevfetch and WebFetch (Haiku 5.5) both passed all 116. Against Haiku 5.5, the cost difference is within the margin of error in both languages. The 30 are the questions on which WebFetch answers through its model. Two more are left out: their sites serve Markdown, and WebFetch passes the whole page through instead. On those two, WebFetch passed every check and jevfetch missed one Redis EXPIRE fact in every run. Full conditions and limits are in [bench/RESULTS.md](https://github.com/a2sys-ai/jevfetch/blob/main/bench/RESULTS.md).
+The answers must contain 58 facts, checked in both runs, so 116 checks per language. jevfetch and WebFetch on Haiku 5.5 passed all 116 in both languages; WebFetch on Haiku 4.5 missed two in Korean. Against Haiku 5.5, the 95% interval of the cost ratio includes no difference in either language. Two more questions are left out because their sites serve Markdown, which WebFetch hands over whole without its model; on those, WebFetch found every fact and jevfetch missed one Redis EXPIRE fact in every run.
+
+At the tool level, asked for a specific fact, jevfetch returned the reference sentence verbatim in 81 of 81 outputs, against 25 of 81 for a single WebFetch call and 32 of 81 when WebFetch read further windows (27 English questions, three runs each, 2026-10-09, Claude Code 2.1.294). Full conditions and limits are in [bench/RESULTS.md](https://github.com/a2sys-ai/jevfetch/blob/main/bench/RESULTS.md).
 
 ## Example
 
@@ -86,7 +89,7 @@ The jevfetch skill installs into Claude Code, Codex, and many other coding agent
 
 ### API key
 
-Add your API key to your shell profile (`~/.bashrc` for bash). Then open a new terminal and start Claude Code from it.
+Add your API key to your shell profile. The command below is for zsh; for bash, use `~/.bashrc`. Then open a new terminal and start Claude Code from it.
 
 ```bash
 echo 'export TYPESAFE_API_KEY=<your key>' >> ~/.zshrc
@@ -98,7 +101,7 @@ To set up other agents, install without Node.js, or turn WebFetch off, see [More
 
 ## Command-line use
 
-With the skill, jevfetch gets installed automatically when it's needed. To install it yourself (Python 3.12 or later):
+To install it yourself (Python 3.12 or later):
 
 ```bash
 uv tool install jevfetch
@@ -110,7 +113,7 @@ Run it with a URL and a question, as in the [example](#example). The `#` lines a
 
 | Status | Meaning | Exit code |
 |---|---|---|
-| `filtered` | Blocks above the threshold, plus the first block. If the blocks other than the first add up to fewer than 300 tokens, the next highest-scoring blocks are added | 0 |
+| `filtered` | The blocks judged to answer the question, plus the first block. A short result is topped up with the next highest-scoring blocks | 0 |
 | `passthrough` | The page is 2,000 tokens or less, so it is returned whole | 0 |
 | `no_match` | No block passed the threshold, so the highest-scoring blocks are returned. The answer may still be on the page | 0 |
 | `empty` | No text could be extracted | 0 |
@@ -183,7 +186,7 @@ Use something else when:
 
 - The task needs the whole page, like a summary or translation. jevfetch returns only parts of the page.
 - The pages are short. Pages of 2,000 tokens or less come back whole, so you get nothing over fetching the page.
-- The URL is a PDF, image, or other binary file. jevfetch only picks passages from HTML and text formats such as Markdown, JSON, and XML. For binary files it returns `fetch_error` with the content type, without calling Jev, and saves the file so the agent can open it with Read.
+- The URL is a PDF, image, or other binary file. jevfetch picks passages only from HTML and text formats, and saves other files for the agent to open.
 
 ## Privacy and security
 
@@ -232,21 +235,7 @@ The async versions are `fetch_relevant_async` and `select_relevant_async`. Use `
 
 ## Development
 
-```bash
-uv sync
-uv run pytest
-uv run ruff check . && uv run ruff format --check .
-```
-
-Tests need no API key and make no network requests, except that tiktoken downloads its `cl100k_base` encoding the first time it runs on a machine. CI runs them on pushes to main and on pull requests.
-
-`tests/test_end_to_end.py` runs a test page through the whole pipeline and replays recorded Jev responses. Changing extraction, prompts, or thresholds can change the requests, and the test then fails until you re-record the responses with a key:
-
-```bash
-JEVFETCH_RECORD=1 uv run pytest tests/test_end_to_end.py
-```
-
-`bench/` holds a regression benchmark (`uv run python -m bench`): 10 real page snapshots, 31 questions (27 with verbatim answers, 4 that the page doesn't answer), recorded Jev responses, and a baseline that CI compares against. There are also two manual comparisons with Claude Code's WebFetch, which cost money to run. One compares the two tools directly, and the other has Claude Code answer questions using each one. See [bench/README.md](https://github.com/a2sys-ai/jevfetch/blob/main/bench/README.md).
+A regression benchmark on real page snapshots runs in CI against recorded Jev responses and a baseline. Setup, tests, and re-recording are in [CONTRIBUTING.md](https://github.com/a2sys-ai/jevfetch/blob/main/CONTRIBUTING.md), and the benchmark and the WebFetch comparisons are in [bench/README.md](https://github.com/a2sys-ai/jevfetch/blob/main/bench/README.md).
 
 ## Disclosure
 

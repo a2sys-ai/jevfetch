@@ -1,7 +1,7 @@
 # bench
 
-Regression benchmark for jevfetch's selection quality, output size, and Jev cost, plus a manual
-comparison with Claude Code's WebFetch.
+Regression benchmark for jevfetch's selection quality, output size, and Jev cost, plus two manual
+comparisons with Claude Code's WebFetch.
 
 ## Run
 
@@ -15,7 +15,7 @@ uv run python -m bench --record --update-baseline --prune   # after a change to 
 uv run python bench/compare_webfetch.py --runs 3   # live comparison with WebFetch, needs `claude` and both keys
 ```
 
-Replay needs no key and no network and takes about 7 seconds. The runner removes `TYPESAFE_API_KEY`
+Replay needs no key and takes about 7 seconds; the only network use is tiktoken's one-time encoding download. The runner removes `TYPESAFE_API_KEY`
 from its own environment, so a request without a recording fails with a "missing recording" message
 instead of calling the API.
 
@@ -74,7 +74,7 @@ The model name is pinned to the resolved version in `baseline.json` (`jev-1.13.0
 from one live request. Re-recording with a new model version therefore needs an explicit
 rebaseline.
 
-Measured stability (2026-10-09, cache disabled, 3 repeats): identical requests move by at most 0.07
+Measured stability (cache disabled, 3 repeats): identical requests move by at most 0.07
 in stage 1 and 0.07 in stage 2, so a block scored between about 0.75 and 0.85 can cross the 0.8
 threshold on re-recording. Check such cases by hand before accepting a changed baseline.
 
@@ -87,7 +87,7 @@ threshold on re-recording. Check such cases by hand before accepting a changed b
    the literal form on the page (`86400s`, `https://...`).
 4. For a negative, set `answerable: false`, `negative_kind`, `status: "no_match"`, empty `facts` and
    `keys`, and use a page over 2,000 tokens (shorter pages are always `passthrough`). Read the whole
-   page first: one intended near-topic negative here turned out to be answered by the page.
+   page first to confirm it does not answer the question.
 5. Run `--record`, then `--update-baseline`, then a plain run; commit `cases.json`, `jev/`, `baseline.json`.
 
 ## WebFetch comparison
@@ -183,9 +183,7 @@ match, otherwise the runner stops and asks for a fresh results directory. `runs.
 keeps the final answer and the judge votes of every run, so the answers and their grades can be checked without
 the traces; the runs themselves cannot be re-executed from the committed files. Not archived: the page bytes each run fetched and the
 request bodies sent to Jev (the recordings hold the responses and usage, keyed by a hash of the request), so a
-run's reader inputs cannot be replayed exactly. For sets run before `concurrency`
-and `seed` were recorded, the values were written into `meta.json` afterwards from the launch command (the
-`3arm` sets: concurrency 1, seed 7; the earlier sets: concurrency 2).
+run's reader inputs cannot be replayed exactly.
 
 For latency, run with `--concurrency 1`; durations measured at higher concurrency are labelled as such.
 
@@ -198,8 +196,4 @@ instruction file; `webfetch-minimal.md` is a one-sentence instruction, used to m
 how much of a cost difference comes from instructions rather than from the reader.
 
 Only `report.md` of a results directory is committed; `runs.json` (answers, costs, judge votes),
-`schedule.json`, traces, work directories, Jev recordings of the runs and the judge's raw replies stay local. Results so far: `reports/agents-2026-10-09-3arm-ko/` and `-3arm-en/` (URL given,
-no WebSearch, 32 questions each in Korean and in English, three arms interleaved in one schedule, concurrency 1;
-the numbers in `RESULTS.md` and the README, which leave out the two questions whose pages WebFetch passes through as
-Markdown), `reports/agents-2026-10-09/` (WebSearch, no URL, Korean) and
-`reports/agents-2026-10-09-ablation/` (WebSearch, WebFetch with the one-sentence instruction).
+`schedule.json`, traces, work directories, Jev recordings of the runs and the judge's raw replies stay local. The published numbers, and the reports they come from, are in `RESULTS.md`.

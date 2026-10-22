@@ -1,12 +1,13 @@
 # jevfetch
 
-**WebFetch 대신 쓰면 에이전트 작업 시간은 32~34%, 비용은 43~44% 줄어든다(Haiku 4.5를 쓰는 WebFetch 기준).**
+**WebFetch 대신 쓰면 Haiku 5.5를 쓰는 WebFetch보다 에이전트 작업 시간이 43~49% 줄고, 찾는 사실은 같다. Haiku 4.5를 쓰는 WebFetch와 비교하면 비용도 43~44% 줄어든다.**
 
 [![ci](https://github.com/a2sys-ai/jevfetch/actions/workflows/ci.yml/badge.svg)](https://github.com/a2sys-ai/jevfetch/actions/workflows/ci.yml)
 [![MIT license](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 ![Python 3.12+](https://img.shields.io/badge/python-3.12%2B-blue)
+[![PyPI](https://img.shields.io/pypi/v/jevfetch)](https://pypi.org/project/jevfetch/)
 
-[English](README.md) · [빠른 시작](#빠른-시작) · [명령으로 직접 쓰기](#명령으로-직접-쓰기) · [Python API](#python-api) · [에이전트 추가 설정](#에이전트-추가-설정)
+[English](README.md) | [빠른 시작](#빠른-시작) | [명령으로 직접 쓰기](#명령으로-직접-쓰기) | [Python API](#python-api) | [에이전트 추가 설정](#에이전트-추가-설정)
 
 ## 왜 jevfetch인가
 
@@ -16,18 +17,20 @@
 | 작은 모델이 페이지를 읽고 답한다(WebFetch) | 원문 없이 요약한 답 | 원문 표현까지는 필요 없는 질문 |
 | jevfetch | 제목 경로가 붙은 원문 발췌 | 긴 페이지에서 특정 사실 찾기 |
 
-페이지 전체를 넘기면 컨텍스트를 많이 차지하고 비용도 많이 든다. 요약은 그대로 인용할 수 없고 원문과 맞춰 볼 수도 없다.
+페이지 전체를 넘기면 컨텍스트를 많이 차지하고 비용도 많이 든다. 요약은 그대로 인용할 수 없고, 확인하려면 원문을 다시 봐야 한다.
 
-jevfetch는 페이지를 블록으로 나눈 뒤, 블록마다 질문에 답이 되는지 TypeSafe의 판정 모델 [Jev](https://docs.typesafe.ai)에 묻는다. 그리고 답이 되는 블록만 원문 그대로 돌려준다.
+jevfetch는 페이지를 블록으로 나눈 뒤, 블록마다 질문에 답이 되는지 TypeSafe의 판정 모델 [Jev](https://docs.typesafe.ai)에 묻는다. 그리고 답이 된다고 판정한 블록과 첫 블록을 원문 그대로 돌려준다.
 
-Claude Code의 WebFetch와 비교한 결과는 아래와 같다. 기술 문서 질문 30개에 페이지 URL을 함께 주고, 한국어와 영어로 각각 2회씩 돌렸다.
+Claude Code의 WebFetch와 비교한 결과는 아래와 같다. 기술 문서 질문 30개에 페이지 URL을 함께 주고, 한국어와 영어로 각각 2회씩 돌렸다(2026-10-09, Claude Code 2.1.295, Sonnet 5.5).
 
 | 비교 대상 | 에이전트 작업 시간 | 비용 |
 |---|---|---|
-| WebFetch(Haiku 4.5) | 32~34% 단축 | 43~44% 절감 |
 | WebFetch(Haiku 5.5) | 43~49% 단축 | 한국어 11% 절감, 영어 1% 증가 |
+| WebFetch(Haiku 4.5) | 32~34% 단축 | 43~44% 절감 |
 
-답에 꼭 들어가야 할 사실을 언어별로 116건씩 확인했더니, jevfetch와 WebFetch(Haiku 5.5) 모두 116건을 다 맞혔다. Haiku 5.5 대비 비용 차이는 두 언어 모두 오차 범위 안이다. 30개는 WebFetch가 모델을 거쳐 답하는 질문이다. 사이트가 마크다운을 주는 질문 2개에서는 WebFetch가 모델 대신 페이지 전체를 그대로 넘기므로 뺐다. 그 2개에서 WebFetch는 사실을 모두 맞혔고, jevfetch는 Redis EXPIRE에서 매번 사실 하나를 놓쳤다. 자세한 측정 조건과 한계는 [bench/RESULTS.ko.md](bench/RESULTS.ko.md)에 있다.
+답에 꼭 들어가야 할 사실 58개를 두 번의 실행마다 확인해 언어별로 116건을 봤다. jevfetch와 Haiku 5.5 WebFetch는 두 언어 모두 116건을 충족했고, Haiku 4.5 WebFetch는 한국어에서 2건을 놓쳤다. Haiku 5.5 대비 비용 비율의 95% 구간은 두 언어 모두 차이 없음을 포함한다. 사이트가 마크다운을 주는 질문 2개는 WebFetch가 모델 없이 페이지 전체를 그대로 넘기므로 뺐다. 그 2개에서 WebFetch는 사실을 모두 찾았고, jevfetch는 Redis EXPIRE에서 매번 사실 하나를 놓쳤다.
+
+도구 단독 비교에서는 특정 사실을 물었을 때 jevfetch가 기준 문장을 81회 중 81회 원문 그대로 돌려줬고, WebFetch는 1회 호출에서 25회, 다음 창까지 읽었을 때 32회였다(영어 질문 27개, 3회씩, 2026-10-09, Claude Code 2.1.294). 자세한 측정 조건과 한계는 [bench/RESULTS.ko.md](bench/RESULTS.ko.md)에 있다.
 
 ## 출력 예시
 
@@ -86,7 +89,7 @@ jevfetch 스킬은 [skills](https://github.com/vercel-labs/skills) CLI로 Claude
 
 ### API 키
 
-API 키를 셸 프로필에 넣는다(bash라면 `~/.bashrc`). 그다음 새 터미널을 열고 거기서 Claude Code를 실행한다.
+API 키를 셸 프로필에 넣는다. 아래 명령은 zsh 기준이고, bash라면 `~/.bashrc`에 넣는다. 그다음 새 터미널을 열고 거기서 Claude Code를 실행한다.
 
 ```bash
 echo 'export TYPESAFE_API_KEY=<API 키>' >> ~/.zshrc
@@ -98,7 +101,7 @@ echo 'export TYPESAFE_API_KEY=<API 키>' >> ~/.zshrc
 
 ## 명령으로 직접 쓰기
 
-스킬을 쓰면 jevfetch는 필요할 때 자동으로 설치된다. 따로 설치하려면 아래 명령을 실행한다(Python 3.12 이상 필요).
+직접 설치하려면 아래 명령을 실행한다(Python 3.12 이상 필요).
 
 ```bash
 uv tool install jevfetch
@@ -110,7 +113,7 @@ Chrome이나 Chromium은 없어도 된다. 있으면 JavaScript로 본문을 불
 
 | 상태 | 의미 | 종료 코드 |
 |---|---|---|
-| `filtered` | 임계값을 넘은 블록과 첫 블록을 돌려준다. 첫 블록을 뺀 나머지가 300토큰이 안 되면 점수가 높은 블록을 더 넣는다 | 0 |
+| `filtered` | 답이 된다고 판정한 블록과 첫 블록을 돌려준다. 결과가 짧으면 점수가 높은 블록을 더 넣는다 | 0 |
 | `passthrough` | 2,000토큰 이하의 짧은 페이지여서 전체를 돌려준다 | 0 |
 | `no_match` | 임계값을 넘은 블록이 없어 점수가 가장 높은 블록들을 돌려준다. 페이지에 답이 없다는 뜻은 아니다 | 0 |
 | `empty` | 본문을 추출하지 못했다 | 0 |
@@ -183,7 +186,7 @@ jevfetch는 기술 문서, 레퍼런스, 위키백과처럼 긴 페이지에서 
 
 - 요약이나 번역처럼 페이지 전체가 필요한 작업. jevfetch는 페이지 일부만 돌려준다.
 - 짧은 페이지. 2,000토큰 이하는 전체를 그대로 돌려주므로 페이지를 통째로 받는 것과 다르지 않다.
-- PDF나 이미지 같은 바이너리 파일. jevfetch는 HTML, 마크다운, JSON, XML 같은 텍스트 형식에서만 구절을 고른다. 바이너리 응답이면 Jev를 호출하지 않고 content type과 함께 `fetch_error`로 끝내며, 에이전트가 Read로 열 수 있게 파일만 저장한다.
+- PDF나 이미지 같은 바이너리 파일. jevfetch는 HTML과 텍스트 형식에서만 구절을 고르고, 다른 파일은 에이전트가 열 수 있게 저장만 한다.
 
 ## 개인정보와 보안
 
@@ -232,21 +235,7 @@ print(res.status, res.text, res.jev_input_tokens)
 
 ## 개발
 
-```bash
-uv sync
-uv run pytest
-uv run ruff check . && uv run ruff format --check .
-```
-
-테스트에는 API 키가 필요 없고 네트워크 요청도 하지 않는다. 단, 기기에서 처음 실행할 때 tiktoken이 `cl100k_base` 인코딩을 내려받는다. CI는 main 브랜치 push와 pull request마다 테스트를 돌린다.
-
-`tests/test_end_to_end.py`는 테스트용 페이지를 전체 파이프라인에 통과시키면서 녹화해 둔 Jev 응답을 재생한다. 추출, 프롬프트, 임계값을 바꾸면 요청이 달라질 수 있다. 그러면 API 키를 넣고 응답을 다시 녹화하기 전까지 이 테스트는 실패한다.
-
-```bash
-JEVFETCH_RECORD=1 uv run pytest tests/test_end_to_end.py
-```
-
-`bench/`에는 회귀 벤치마크가 있다(`uv run python -m bench`). 실제 페이지 스냅샷 10개, 질문 31개(원문 정답이 있는 27개와 페이지에 답이 없는 4개), 녹화한 Jev 응답, CI가 비교하는 기준값으로 이루어져 있다. Claude Code의 WebFetch와 비교하는 수동 스크립트도 두 개 있는데, 실행하면 비용이 든다. 하나는 두 도구만 놓고 비교하고, 다른 하나는 Claude Code가 각 도구로 질문에 답하게 해서 비교한다. 자세한 내용은 [bench/README.md](bench/README.md)를 참고한다.
+실제 페이지 스냅샷으로 만든 회귀 벤치마크를 CI에서 녹화한 Jev 응답으로 돌려 기준값과 비교한다. 개발 환경, 테스트, 응답 재녹화는 [CONTRIBUTING.md](CONTRIBUTING.md)에, 벤치마크와 WebFetch 비교는 [bench/README.md](bench/README.md)에 있다.
 
 ## 이해관계 고지
 
