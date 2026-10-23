@@ -1,4 +1,4 @@
-# jevfetch
+# <picture><source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/a2sys-ai/jevfetch/main/assets/logo-dark.svg"><img src="https://raw.githubusercontent.com/a2sys-ai/jevfetch/main/assets/logo.svg" alt="" width="32" height="32"></picture> jevfetch
 
 **Use it instead of WebFetch: agent runs take 43 to 49% less time than with WebFetch on Haiku 5.5 and find the same facts. Against WebFetch on Haiku 4.5, they also cost 43 to 44% less.**
 

@@ -1,4 +1,4 @@
-# jevfetch
+# <picture><source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/a2sys-ai/jevfetch/main/assets/logo-dark.svg"><img src="https://raw.githubusercontent.com/a2sys-ai/jevfetch/main/assets/logo.svg" alt="" width="32" height="32"></picture> jevfetch
 
 **WebFetch 대신 쓰면 Haiku 5.5를 쓰는 WebFetch보다 에이전트 작업 시간이 43\~49% 줄고, 찾는 사실은 같다. Haiku 4.5를 쓰는 WebFetch와 비교하면 비용도 43\~44% 줄어든다.**
 
