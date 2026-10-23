@@ -399,7 +399,6 @@ def main(argv: list[str] | None = None) -> int:
             f"{cell(r['webfetch_continuation'][0] if r['webfetch_continuation'] else None)} | "
             f"{cell(r['jevfetch'][0] if r['jevfetch'] else None, True)} |"
         )
-    lines += ["", "Human correctness labels: see reports/labels.json (one label per distinct output hash)."]
     report = "\n".join(lines)
     out_md = ROOT / "reports" / f"webfetch-{today}.md"
     out_md.write_text(report + "\n")
