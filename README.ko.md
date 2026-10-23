@@ -1,4 +1,4 @@
-# jevfetch
+# <picture><source media="(prefers-color-scheme: dark)" srcset="assets/logo-dark.svg"><img src="assets/logo.svg" alt="" width="32" height="32"></picture> jevfetch
 
 **WebFetch 대신 쓰면 Haiku 5.5를 쓰는 WebFetch보다 에이전트 작업 시간이 43\~49% 줄고, 찾는 사실은 같다. Haiku 4.5를 쓰는 WebFetch와 비교하면 비용도 43\~44% 줄어든다.**
 
@@ -8,6 +8,8 @@
 [![PyPI](https://img.shields.io/pypi/v/jevfetch)](https://pypi.org/project/jevfetch/)
 
 [English](README.md) | [빠른 시작](#빠른-시작) | [명령으로 직접 쓰기](#명령으로-직접-쓰기) | [Python API](#python-api) | [에이전트 추가 설정](#에이전트-추가-설정)
+
+<picture><source media="(prefers-color-scheme: dark)" srcset="assets/how-it-works-dark.svg"><img src="assets/how-it-works.svg" alt="jevfetch가 페이지를 블록으로 나누고, 질문에 답하는 블록만 골라 원문 그대로 에이전트에게 넘기는 과정"></picture>
 
 ## 왜 jevfetch인가
 

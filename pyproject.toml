@@ -2,7 +2,7 @@
 name = "jevfetch"
 version = "0.1.0"
 description = "A web-reading tool for LLM agents that returns the parts of a page relevant to a question, verbatim"
-readme = "README.md"
+dynamic = ["readme"]
 license = "MIT"
 requires-python = ">=3.12"
 authors = [{ name = "Deukwoong Woo", email = "deukwoong.woo@a2sys.ai" }]
@@ -27,8 +27,19 @@ Repository = "https://github.com/a2sys-ai/jevfetch"
 jevfetch = "jevfetch.cli:main"
 
 [build-system]
-requires = ["hatchling"]
+requires = ["hatchling", "hatch-fancy-pypi-readme>=25.1.0"]
 build-backend = "hatchling.build"
+
+[tool.hatch.metadata.hooks.fancy-pypi-readme]
+content-type = "text/markdown"
+
+[[tool.hatch.metadata.hooks.fancy-pypi-readme.fragments]]
+path = "README.md"
+
+# PyPI cannot resolve the README's relative image paths.
+[[tool.hatch.metadata.hooks.fancy-pypi-readme.substitutions]]
+pattern = '(src|srcset)="assets/'
+replacement = '\1="https://raw.githubusercontent.com/a2sys-ai/jevfetch/main/assets/'
 
 [tool.hatch.build.targets.wheel]
 packages = ["jevfetch"]

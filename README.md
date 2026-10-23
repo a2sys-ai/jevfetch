@@ -1,4 +1,4 @@
-# jevfetch
+# <picture><source media="(prefers-color-scheme: dark)" srcset="assets/logo-dark.svg"><img src="assets/logo.svg" alt="" width="32" height="32"></picture> jevfetch
 
 **Use it instead of WebFetch: agent runs take 43 to 49% less time than with WebFetch on Haiku 5.5 and find the same facts. Against WebFetch on Haiku 4.5, they also cost 43 to 44% less.**
 
@@ -8,6 +8,8 @@
 [![PyPI](https://img.shields.io/pypi/v/jevfetch)](https://pypi.org/project/jevfetch/)
 
 [한국어](https://github.com/a2sys-ai/jevfetch/blob/main/README.ko.md) | [Quick start](#quick-start) | [Command-line use](#command-line-use) | [Python API](#python-api) | [More agent setup](#more-agent-setup)
+
+<picture><source media="(prefers-color-scheme: dark)" srcset="assets/how-it-works-dark.svg"><img src="assets/how-it-works.svg" alt="jevfetch splits a page into blocks, keeps the blocks that answer the question, and passes them to the agent verbatim"></picture>
 
 ## Why jevfetch
 
