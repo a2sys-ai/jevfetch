@@ -64,6 +64,7 @@ If maxsize is set to None, the LRU feature is disabled and the cache can grow wi
 - 연속된 공백을 하나로 줄인다.
 - 링크를 `[텍스트](URL)` 형식으로 쓴다.
 - 표 셀 사이에 ` | `를 넣는다.
+- 위 첨자와 아래 첨자 앞뒤에 공백을 넣는다. `10<sup>6</sup>`은 `10 6`으로 나온다.
 - 한 블록으로 합친 목록 항목 앞에 `- `를 붙인다.
 - `##` 줄을 넣는다.
 

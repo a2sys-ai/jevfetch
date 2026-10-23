@@ -64,6 +64,7 @@ The text is copied from the page. The only changes jevfetch makes are:
 - collapsing runs of whitespace
 - writing links as `[text](url)`
 - separating table cells with ` | `
+- putting spaces around superscripts and subscripts, so `10<sup>6</sup>` reads `10 6`
 - adding `- ` before list items merged into one block
 - adding the `##` lines
 
