@@ -1,6 +1,6 @@
 # <picture><source media="(prefers-color-scheme: dark)" srcset="assets/logo-dark.svg"><img src="assets/logo.svg" alt="" width="32" height="32"></picture> jevfetch
 
-**WebFetch 대신 쓰면 기술 문서 질문 30개에서 에이전트 작업 시간이 한국어와 영어 모두 47% 줄었고, 비용 차이는 확인되지 않았다(2026-10-23).**
+**Claude Code, Codex 같은 코딩 에이전트용 웹 문서 읽기 도구다. 질문과 관련된 부분을 원문 그대로 발췌해 준다. Claude Code에서 페이지 URL을 준 문서 질문 30개로 WebFetch와 비교했을 때, 에이전트 작업 시간이 한국어와 영어 모두 47% 줄었다(2026-10-23).**
 
 [![ci](https://github.com/a2sys-ai/jevfetch/actions/workflows/ci.yml/badge.svg)](https://github.com/a2sys-ai/jevfetch/actions/workflows/ci.yml)
 [![MIT license](https://img.shields.io/badge/license-MIT-blue)](LICENSE)

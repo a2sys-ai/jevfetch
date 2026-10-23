@@ -1,6 +1,6 @@
 # <picture><source media="(prefers-color-scheme: dark)" srcset="assets/logo-dark.svg"><img src="assets/logo.svg" alt="" width="32" height="32"></picture> jevfetch
 
-**Use it instead of WebFetch: on 30 documentation questions, agent runs took 47% less time than with WebFetch in both Korean and English, with no measurable cost difference (2026-10-23).**
+**A web-page reader for coding agents such as Claude Code and Codex: it returns the parts of a page relevant to the question, quoted verbatim. In Claude Code, on 30 documentation questions with the page URL given, agent runs took 47% less time than with WebFetch in both Korean and English (2026-10-23).**
 
 [![ci](https://github.com/a2sys-ai/jevfetch/actions/workflows/ci.yml/badge.svg)](https://github.com/a2sys-ai/jevfetch/actions/workflows/ci.yml)
 [![MIT license](https://img.shields.io/badge/license-MIT-blue)](https://github.com/a2sys-ai/jevfetch/blob/main/LICENSE)
