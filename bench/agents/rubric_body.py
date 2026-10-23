@@ -131,22 +131,6 @@ RUBRIC = {
             )
         ],
     },
-    "redis-expire": {
-        "f1": [
-            (
-                "judge",
-                "The timeout is cleared only by commands that delete or overwrite the key's contents, such as DEL, SET, GETSET, and *STORE commands.",
-            )
-        ],
-        "f2": [
-            (
-                "judge",
-                "Commands that alter the stored value without replacing it (for example INCR, LPUSH, HSET) leave the timeout unchanged.",
-            )
-        ],
-        "f3": [("near", [r"PERSIST", r"제거|지우|없애|해제|clear|remove|persistent|영구|만료\s*(가\s*)?없"], 150)],
-        "f4": [("judge", "If a key is renamed with RENAME, its time to live is transferred to the new key name.")],
-    },
     "nginx-read-timeout": {
         "f1": [("near", [r"proxy_read_timeout", r"60\s*(초|s\b|seconds?)"], 200)],
         "f2": [
@@ -154,12 +138,6 @@ RUBRIC = {
                 "judge",
                 "The timeout applies only between two successive read operations, not to the transmission of the whole response.",
             )
-        ],
-    },
-    "stripe-rate": {
-        "f1": [
-            ("near", [r"(?<!\d)100(?!\d)", r"live|라이브|운영|프로덕션"], 120),
-            ("near", [r"(?<!\d)25(?!\d)", r"sandbox|샌드박스|test|테스트"], 120),
         ],
     },
     "us-dst": {

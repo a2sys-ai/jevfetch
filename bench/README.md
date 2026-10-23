@@ -120,17 +120,18 @@ count, denominators). The comparison is observational and limited to this corpus
 pages, once with WebFetch and once with jevfetch. It is manual and paid, like the WebFetch comparison above.
 
 ```bash
-uv run python -m bench.agents run bench/reports/agents-<date> --reps 2 --concurrency 1 --seed 7 --with-url --lang ko --arms webfetch,webfetch-haiku45,jevfetch
+uv run python -m bench.agents run bench/reports/agents-<date> --reps 2 --concurrency 1 --seed 7 --with-url --lang ko --arms webfetch,jevfetch
 uv run python -m bench.agents judge bench/reports/agents-<date>
 uv run python -m bench.agents report bench/reports/agents-<date>
 ```
 
-- Questions: `bench/agents/questions.json`, 32 in all, each with a Korean and an English wording. 20 Korean
-  documentation questions (18 of the 20 pages are English; pages of 2,000 to 18,000 extracted tokens) plus 12 English
+- Questions: `bench/agents/questions.json`, 30 in all, each with a Korean and an English wording. 18 Korean
+  documentation questions (16 of the 18 pages are English; pages of 2,000 to 18,000 extracted tokens) plus 12 English
   questions promoted from the tool-level cases: 9 on long pages (RFC 9110, Wikipedia World War II, NIST SP 800-63B;
   33,000 to 101,000 tokens, past WebFetch's first 100,000-character window) and 3 on a medium page. The report
   groups results by page size (small < 5,000 tokens, medium < 20,000, large) and language; do not pool the
-  two languages into one headline.
+  two languages into one headline. A page for which WebFetch hands the agent the whole page without calling
+  its reader model (some sites serve Markdown) does not measure WebFetch and is not used for a question.
 - Arms: `claude -p --safe-mode --model sonnet`, 40 turns at most, 900 s timeout. WebFetch arm: WebSearch,
   WebFetch, and Bash limited to `curl`, `grep`, `head` (the fallback pipeline both instruction files describe),
   with `bench/agents/webfetch.md` as instructions. jevfetch arm: WebSearch, the same Bash commands plus
@@ -159,13 +160,13 @@ uv run python -m bench.agents report bench/reports/agents-<date>
   and the mean; the paired ratio is over means. The time note states the concurrency the runs were executed at;
   only concurrency 1 measures single-session latency.
 - Uncertainty: paired per question, 95% bootstrap intervals that resample questions (the cluster). Two
-  repetitions of 32 questions on 23 pages (the nine large-page questions sit on three pages) give wide
+  repetitions of 30 questions on 21 pages (the nine large-page questions sit on three pages) give wide
   intervals, and resampling questions does not cover run-to-run or API-condition variation; the report wording
   states the interval.
 
 `--lang ko|en` picks the question's Korean or English wording (`query_ko` / `query_en` in `questions.json`) and
 the matching task prompt; every question exists in both languages, so language and page size can be read
-separately. Results directories are per language (`agents-<date>-3arm-ko`, `agents-<date>-3arm-en`).
+separately. Results directories are per language (`agents-<date>-2arm-ko`, `agents-<date>-2arm-en`).
 
 `--with-url` gives the agent the question's page URL in the prompt and removes WebSearch from both arms, so
 only the two readers (and `curl` as their fallback) differ; this isolates the reader from the search behaviour
