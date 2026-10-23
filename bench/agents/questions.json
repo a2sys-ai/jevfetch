@@ -305,41 +305,6 @@
   "page_tokens": 2737
  },
  {
-  "id": "redis-expire",
-  "url": "https://redis.io/docs/latest/commands/expire/",
-  "query": "EXPIRE 로 설정한 timeout 은 어떤 명령에서 지워지고 어떤 명령에서는 유지되는가",
-  "gold": [
-   {
-    "id": "f1",
-    "must": [
-     "The timeout will only be cleared by commands that delete or overwrite the contents of the key, including DEL , SET , GETSET and all the *STORE commands"
-    ]
-   },
-   {
-    "id": "f2",
-    "must": [
-     "alter the value stored at the key without replacing it with a new one will leave the timeout untouched"
-    ]
-   },
-   {
-    "id": "f3",
-    "must": [
-     "The timeout can also be cleared, turning the key back into a persistent key, using the PERSIST command"
-    ]
-   },
-   {
-    "id": "f4",
-    "must": [
-     "If a key is renamed with RENAME , the associated time to live is transferred to the new key name"
-    ]
-   }
-  ],
-  "query_ko": "EXPIRE 로 설정한 timeout 은 어떤 명령에서 지워지고 어떤 명령에서는 유지되는가",
-  "query_en": "Which commands clear a timeout set with EXPIRE, and which commands leave it in place?",
-  "lang": "ko",
-  "page_tokens": 13262
- },
- {
   "id": "nginx-read-timeout",
   "url": "https://nginx.org/en/docs/http/ngx_http_proxy_module.html",
   "query": "proxy_read_timeout 의 기본값과 타임아웃이 무엇을 기준으로 재어지는가",
@@ -361,23 +326,6 @@
   "query_en": "What is the default value of proxy_read_timeout, and what exactly does the timeout measure?",
   "lang": "ko",
   "page_tokens": 12354
- },
- {
-  "id": "stripe-rate",
-  "url": "https://docs.stripe.com/rate-limits",
-  "query": "Stripe API 의 기본 rate limit 은 초당 몇 요청인가",
-  "gold": [
-   {
-    "id": "f1",
-    "must": [
-     "Live mode : 100 requests per second Sandbox : 25 requests per second"
-    ]
-   }
-  ],
-  "query_ko": "Stripe API 의 기본 rate limit 은 초당 몇 요청인가",
-  "query_en": "What is the Stripe API's default rate limit in requests per second?",
-  "lang": "ko",
-  "page_tokens": 1949
  },
  {
   "id": "us-dst",
