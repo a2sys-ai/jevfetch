@@ -1,6 +1,6 @@
 # <picture><source media="(prefers-color-scheme: dark)" srcset="assets/logo-dark.svg"><img src="assets/logo.svg" alt="" width="32" height="32"></picture> jevfetch
 
-**Use it instead of WebFetch: agent runs take 43 to 49% less time than with WebFetch on Haiku 5.5 and find the same facts. Against WebFetch on Haiku 4.5, they also cost 43 to 44% less.**
+**Use it instead of WebFetch: on 30 documentation questions, agent runs took 47% less time than with WebFetch in both Korean and English, with no measurable cost difference (2026-10-23).**
 
 [![ci](https://github.com/a2sys-ai/jevfetch/actions/workflows/ci.yml/badge.svg)](https://github.com/a2sys-ai/jevfetch/actions/workflows/ci.yml)
 [![MIT license](https://img.shields.io/badge/license-MIT-blue)](https://github.com/a2sys-ai/jevfetch/blob/main/LICENSE)
@@ -23,14 +23,14 @@ Passing the whole page eats context and costs more. A paraphrase can't be quoted
 
 jevfetch splits the page into blocks and asks TypeSafe's judgment model [Jev](https://docs.typesafe.ai) whether each block answers the question. It returns the blocks judged to answer it, plus the first block, exactly as they appear on the page.
 
-We compared it with Claude Code's WebFetch on 30 documentation questions, giving the page URL with each question and running every question twice in Korean and twice in English (2026-10-09, Claude Code 2.1.295, Sonnet 5.5):
+We compared it with Claude Code's WebFetch on 30 documentation questions, giving the page URL with each question and running every question twice in Korean and twice in English (2026-10-23, jevfetch 488ed63, Claude Code 2.1.309, Sonnet 5.5, WebFetch's reader model Haiku 5.5):
 
-| Compared with | Agent time | Cost |
+| Question language | Agent time | Cost |
 |---|---|---|
-| WebFetch (Haiku 5.5) | 43 to 49% less | 11% less in Korean, 1% more in English |
-| WebFetch (Haiku 4.5) | 32 to 34% less | 43 to 44% less |
+| Korean | 47% less | 7% less |
+| English | 47% less | 3% less |
 
-The answers must contain 58 facts, checked in both runs, so 116 checks per language. jevfetch and WebFetch on Haiku 5.5 passed all 116 in both languages; WebFetch on Haiku 4.5 missed two in Korean. Against Haiku 5.5, the 95% interval of the cost ratio includes no difference in either language. Two more questions are left out because their sites serve Markdown, which WebFetch hands over whole without its model; on those, WebFetch found every fact and jevfetch missed one Redis EXPIRE fact in every run.
+The 95% interval of the cost ratio includes no difference in either language. The answers must contain 58 facts, checked in both runs, so 116 checks per language. WebFetch passed all 116 in both languages; jevfetch passed 115 in Korean and 116 in English.
 
 At the tool level, asked for a specific fact, jevfetch returned the reference sentence verbatim in 81 of 81 outputs, against 25 of 81 for a single WebFetch call and 32 of 81 when WebFetch read further windows (27 English questions, three runs each, 2026-10-09, Claude Code 2.1.294). Full conditions and limits are in [bench/RESULTS.md](https://github.com/a2sys-ai/jevfetch/blob/main/bench/RESULTS.md).
 

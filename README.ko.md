@@ -1,6 +1,6 @@
 # <picture><source media="(prefers-color-scheme: dark)" srcset="assets/logo-dark.svg"><img src="assets/logo.svg" alt="" width="32" height="32"></picture> jevfetch
 
-**WebFetch 대신 쓰면 Haiku 5.5를 쓰는 WebFetch보다 에이전트 작업 시간이 43\~49% 줄고, 찾는 사실은 같다. Haiku 4.5를 쓰는 WebFetch와 비교하면 비용도 43\~44% 줄어든다.**
+**WebFetch 대신 쓰면 기술 문서 질문 30개에서 에이전트 작업 시간이 한국어와 영어 모두 47% 줄었고, 비용 차이는 확인되지 않았다(2026-10-23).**
 
 [![ci](https://github.com/a2sys-ai/jevfetch/actions/workflows/ci.yml/badge.svg)](https://github.com/a2sys-ai/jevfetch/actions/workflows/ci.yml)
 [![MIT license](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
@@ -23,14 +23,14 @@
 
 jevfetch는 페이지를 블록으로 나눈 뒤, 블록마다 질문에 답이 되는지 TypeSafe의 판정 모델 [Jev](https://docs.typesafe.ai)에 묻는다. 그리고 답이 된다고 판정한 블록과 첫 블록을 원문 그대로 돌려준다.
 
-Claude Code의 WebFetch와 비교한 결과는 아래와 같다. 기술 문서 질문 30개에 페이지 URL을 함께 주고, 한국어와 영어로 각각 2회씩 돌렸다(2026-10-09, Claude Code 2.1.295, Sonnet 5.5).
+Claude Code의 WebFetch와 비교한 결과는 아래와 같다. 기술 문서 질문 30개에 페이지 URL을 함께 주고, 한국어와 영어로 각각 2회씩 돌렸다(2026-10-23, jevfetch 488ed63, Claude Code 2.1.309, Sonnet 5.5, WebFetch 읽기 모델 Haiku 5.5).
 
-| 비교 대상 | 에이전트 작업 시간 | 비용 |
+| 질문 언어 | 에이전트 작업 시간 | 비용 |
 |---|---|---|
-| WebFetch(Haiku 5.5) | 43\~49% 단축 | 한국어 11% 절감, 영어 1% 증가 |
-| WebFetch(Haiku 4.5) | 32\~34% 단축 | 43\~44% 절감 |
+| 한국어 | 47% 단축 | 7% 절감 |
+| 영어 | 47% 단축 | 3% 절감 |
 
-답에 꼭 들어가야 할 사실 58개를 두 번의 실행마다 확인해 언어별로 116건을 봤다. jevfetch와 Haiku 5.5 WebFetch는 두 언어 모두 116건을 충족했고, Haiku 4.5 WebFetch는 한국어에서 2건을 놓쳤다. Haiku 5.5 대비 비용 비율의 95% 구간은 두 언어 모두 차이 없음을 포함한다. 사이트가 마크다운을 주는 질문 2개는 WebFetch가 모델 없이 페이지 전체를 그대로 넘기므로 뺐다. 그 2개에서 WebFetch는 사실을 모두 찾았고, jevfetch는 Redis EXPIRE에서 매번 사실 하나를 놓쳤다.
+비용 비율의 95% 구간은 두 언어 모두 차이 없음을 포함한다. 답에 꼭 들어가야 할 사실 58개를 두 번의 실행마다 확인해 언어별로 116건을 봤다. WebFetch는 두 언어 모두 116건을 충족했고, jevfetch는 한국어 115건, 영어 116건을 충족했다.
 
 도구 단독 비교에서는 특정 사실을 물었을 때 jevfetch가 기준 문장을 81회 중 81회 원문 그대로 돌려줬고, WebFetch는 1회 호출에서 25회, 다음 창까지 읽었을 때 32회였다(영어 질문 27개, 3회씩, 2026-10-09, Claude Code 2.1.294). 자세한 측정 조건과 한계는 [bench/RESULTS.ko.md](bench/RESULTS.ko.md)에 있다.
 
