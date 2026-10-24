@@ -7,6 +7,7 @@
  "config": {
   "candidate_threshold": 0.3,
   "keep_threshold": 0.8,
+  "neighbor_threshold": 0.6,
   "passthrough_tokens": 2000,
   "min_output_tokens": 300,
   "window_tokens": 3000,
@@ -27,7 +28,7 @@
   "retention_case_mean": 1.0,
   "retention_page_macro": 1.0,
   "status_ok": 31,
-  "out_tokens": 20438,
+  "out_tokens": 20533,
   "doc_tokens": 942479,
   "workload": 4047949,
   "live_tokens": 0,
@@ -367,13 +368,13 @@
    "keys": {
     "2c780ed803": true
    },
-   "out_tokens": 644,
-   "blocks_kept": 7,
+   "out_tokens": 678,
+   "blocks_kept": 8,
    "workload": 33987,
    "live_tokens": 0,
    "requests": 29,
    "model": "jev-1.13.0",
-   "span_density": 0.051,
+   "span_density": 0.049,
    "page": "mdn-array-sort.html"
   },
   "array-sort-complexity": {
@@ -607,13 +608,13 @@
    "keys": {
     "805e6d79db": true
    },
-   "out_tokens": 1444,
-   "blocks_kept": 7,
+   "out_tokens": 1458,
+   "blocks_kept": 8,
    "workload": 539059,
    "live_tokens": 0,
    "requests": 71,
    "model": "jev-1.13.0",
-   "span_density": 0.017,
+   "span_density": 0.016,
    "page": "rfc9110.html"
   },
   "http-if-none-match-false": {
@@ -903,13 +904,13 @@
    "keys": {
     "b5aa0ac614": true
    },
-   "out_tokens": 944,
-   "blocks_kept": 7,
+   "out_tokens": 991,
+   "blocks_kept": 8,
    "workload": 166567,
    "live_tokens": 0,
    "requests": 44,
    "model": "jev-1.13.0",
-   "span_density": 0.019,
+   "span_density": 0.018,
    "page": "nist-sp800-63b.html"
   },
   "nist-aal2-reauthentication": {

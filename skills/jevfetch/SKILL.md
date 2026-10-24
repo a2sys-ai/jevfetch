@@ -26,7 +26,7 @@ jevfetch "https://docs.python.org/3/library/functools.html" "What happens if lru
 ```
 
 - Run it as `jevfetch`, not by its full path, so that the agent's permission rules for the command (such as `Bash(jevfetch:*)` in Claude Code) apply.
-- Pass one URL and the question as the user asked it.
+- Pass one URL and the question as the user asked it. Do not add the answer you expect or extra keywords: jevfetch keeps what matches the question, so a guess such as "(AND)" drops the passages that qualify or contradict it.
 - Several calls for different pages can run in parallel.
 - `--json` returns the same result as JSON.
 
