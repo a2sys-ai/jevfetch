@@ -44,6 +44,34 @@ def test_choose_fills_to_min_tokens_by_stage2_then_stage1_score():
     assert keep == {0, 1, 2, 4}
 
 
+def test_choose_keeps_a_near_miss_next_to_a_kept_block_under_the_same_heading():
+    blocks = blocks_of(8, words=50)
+    blocks[6] = Block(6, ["Other"], blocks[6].text, "p")
+    stage2 = {2: 0.65, 3: 0.95, 4: 0.6, 5: 0.65, 6: 0.65, 7: 0.95}
+    keep = choose_blocks(blocks, {i: 0.5 for i in range(1, 8)}, stage2, Config(min_output_tokens=0))
+    # 2 and 4 sit before and after kept 3; 5 is next to a rescued block only; 6 is under another heading
+    assert keep == {0, 2, 3, 4, 7}
+
+
+def test_choose_rescues_neighbors_by_the_configured_threshold():
+    stage1, stage2 = {1: 0.9, 2: 0.5}, {1: 0.95, 2: 0.65}
+    assert choose_blocks(blocks_of(4), stage1, stage2, Config(min_output_tokens=0)) == {0, 1, 2}
+    assert choose_blocks(blocks_of(4), stage1, stage2, Config(min_output_tokens=0, neighbor_threshold=0.7)) == {0, 1}
+
+
+def test_choose_leaves_a_neighbor_below_the_neighbor_threshold():
+    keep = choose_blocks(blocks_of(4), {1: 0.9, 2: 0.5}, {1: 0.95, 2: 0.55}, Config(min_output_tokens=0))
+    assert keep == {0, 1}
+
+
+def test_choose_does_not_rescue_across_paths_that_render_the_same():
+    blocks = blocks_of(3)
+    blocks[1] = Block(1, ["A", "B"], blocks[1].text, "p")
+    blocks[2] = Block(2, ["A > B"], blocks[2].text, "p")
+    keep = choose_blocks(blocks, {1: 0.9, 2: 0.5}, {1: 0.95, 2: 0.65}, Config(min_output_tokens=0))
+    assert keep == {0, 1}
+
+
 async def test_short_document_passes_through_without_jev(monkeypatch):
     fake_scores(monkeypatch, {}, {})
     res = await select_relevant_async(blocks_of(3, words=10), "q", Config(), FakeJev())

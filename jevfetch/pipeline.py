@@ -2,7 +2,8 @@
 
 1. A document of at most `passthrough_tokens` is returned whole.
 2. Blocks whose stage-1 score reaches `candidate_threshold` are rescored in stage 2, and those reaching
-   `keep_threshold` are kept.
+   `keep_threshold` are kept. A block right before or after a kept one under the same heading is kept from
+   `neighbor_threshold`, since a narrowly worded query tends to underrate the condition next to the answer.
 3. The first block (title and front matter) is always kept.
 4. If the kept body is shorter than `min_output_tokens`, blocks are added by stage-2 score, then by
    stage-1 score, until it is long enough."""
@@ -25,6 +26,7 @@ Status = Literal["filtered", "passthrough", "no_match", "empty", "fetch_error"]
 class Config:
     candidate_threshold: float = 0.3
     keep_threshold: float = 0.8
+    neighbor_threshold: float = 0.6
     passthrough_tokens: int = 2000
     min_output_tokens: int = 300
     window_tokens: int = 3000
@@ -57,6 +59,12 @@ class Result:
 
 def choose_blocks(blocks: list[Block], stage1: dict[int, float], stage2: dict[int, float], cfg: Config) -> set[int]:
     keep = {i for i, v in stage2.items() if v >= cfg.keep_threshold}
+    keep |= {
+        j
+        for i in keep
+        for j in (i - 1, i + 1)
+        if 0 <= j < len(blocks) and blocks[j].path == blocks[i].path and stage2.get(j, 0) >= cfg.neighbor_threshold
+    }
     if blocks:
         keep.add(0)
     ranked = sorted(stage2, key=stage2.get, reverse=True) + sorted(

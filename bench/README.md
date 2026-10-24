@@ -66,7 +66,7 @@ texts, heading paths, prompt wording, model name. Any change to extraction, wind
 prompt, or `candidate_threshold` in a way that adds candidates changes requests, and replay then
 fails with the missing-recording message. Run `--record` locally with a key and commit the new
 files (about $0.17 and 30 seconds for the whole set from an empty cache). Changes that only use the
-scores differently (`keep_threshold`, `min_output_tokens`, block 0 retention, rendering) replay
+scores differently (`keep_threshold`, `neighbor_threshold`, `min_output_tokens`, block 0 retention, rendering) replay
 without re-recording.
 
 The model name is pinned to the resolved version in `baseline.json` (`jev-1.13.0`), never the

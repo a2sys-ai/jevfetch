@@ -207,7 +207,7 @@ Use something else when:
 2. Split the page into blocks, tag each with its heading path, and drop navigation, footers, and other page chrome. A sentence ending in a colon is merged with the list items that follow it under the same heading, up to 1,500 characters, so that a condition it states stays with the items. JSON is split by key and array item, and XML by element, with the key or tag path in place of the heading path.
 3. Return documents of 2,000 tokens or less as they are.
 4. First pass: group blocks into windows of about 3,000 tokens and send one Jev request per window, asking yes or no for each block. Blocks scoring 0.3 or higher become candidates.
-5. Second pass: ask about each candidate again on its own, with up to 400 characters from each neighboring block as context. Keep blocks scoring 0.8 or higher.
+5. Second pass: ask about each candidate again on its own, with up to 400 characters from each neighboring block as context. Keep blocks scoring 0.8 or higher, and a block right before or after a kept one under the same heading from 0.6, so that a condition next to the answer stays with it.
 6. Always keep the first block, since its heading path usually contains the page title. If the other kept blocks add up to fewer than 300 tokens, add the highest-scoring remaining blocks.
 
 Requests within each pass run concurrently.
