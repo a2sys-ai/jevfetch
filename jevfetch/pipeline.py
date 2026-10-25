@@ -34,6 +34,9 @@ class Config:
     model: str = "jev-latest"
     render_fallback: bool = True
     render_below_tokens: int = 200
+    # Blocks read from notes (asides kept by blocks._clean) are scored apart from the page, which is passed through
+    # or scored as it would be without them. Off: notes go out only with a page they fit with in passthrough_tokens.
+    score_notes: bool = True
 
 
 @dataclass
@@ -59,24 +62,34 @@ class Result:
 
 def choose_blocks(blocks: list[Block], stage1: dict[int, float], stage2: dict[int, float], cfg: Config) -> set[int]:
     keep = {i for i, v in stage2.items() if v >= cfg.keep_threshold}
+    # Blocks read from notes are kept on their own scores only, so that the rest of the page is chosen, extended and
+    # topped up as it would be without them. The page's blocks are numbered in page order before the notes
+    # (blocks._number), so a page block's neighbours are the page blocks numbered one below and one above it.
+    by_id = {b.id: b for b in blocks}
     keep |= {
         j
         for i in keep
+        if not by_id[i].note
         for j in (i - 1, i + 1)
-        if 0 <= j < len(blocks) and blocks[j].path == blocks[i].path and stage2.get(j, 0) >= cfg.neighbor_threshold
+        if j in by_id
+        and not by_id[j].note
+        and by_id[j].path == by_id[i].path
+        and stage2.get(j, 0) >= cfg.neighbor_threshold
     }
-    if blocks:
-        keep.add(0)
+    first = next((b.id for b in blocks if not b.note), None)
+    if first is not None:
+        keep.add(first)
     ranked = sorted(stage2, key=stage2.get, reverse=True) + sorted(
         (i for i in stage1 if i not in stage2), key=stage1.get, reverse=True
     )
-    body = sum(tokens.count(blocks[i].text) for i in keep if i != 0)
+    ranked = [i for i in ranked if not by_id[i].note]
+    body = sum(tokens.count(by_id[i].text) for i in keep if i != first and not by_id[i].note)
     for i in ranked:
         if body >= cfg.min_output_tokens:
             break
         if i not in keep:
             keep.add(i)
-            body += tokens.count(blocks[i].text)
+            body += tokens.count(by_id[i].text)
     return keep
 
 
@@ -86,20 +99,32 @@ async def select_relevant_async(
     """The blocks of `doc` (text, HTML, or already parsed blocks) that are relevant to `query`."""
     cfg = cfg or Config()
     blocks = parse(doc) if isinstance(doc, str) else doc
-    full = render(blocks)
+    page = [b for b in blocks if not b.note]
+    full = render(page)
     doc_tokens = tokens.count(full)
     if not blocks:
         return Result("empty", "", doc_tokens=doc_tokens)
-    if doc_tokens <= cfg.passthrough_tokens:
+    fits = doc_tokens <= cfg.passthrough_tokens  # decided on the page alone, as without notes
+    if fits and len(page) < len(blocks) and tokens.count(with_notes := render(blocks)) <= cfg.passthrough_tokens:
+        page, full = blocks, with_notes
+        doc_tokens = tokens.count(full)
+    if fits and page and (len(page) == len(blocks) or not cfg.score_notes):
         return Result(
             "passthrough",
             full,
             doc_tokens=doc_tokens,
             out_tokens=doc_tokens,
-            blocks_total=len(blocks),
-            blocks_kept=len(blocks),
+            blocks_total=len(page),
+            blocks_kept=len(page),
         )
-    blocks = merge_fragments(blocks)
+    if not page and not cfg.score_notes:  # notes alone, too long to pass through
+        return Result("empty", "", doc_tokens=doc_tokens)
+    # From here on, with score_notes, a page short enough to pass through goes out whole and only its notes are
+    # scored; a longer page is scored, its notes apart from it.
+    whole = fits and bool(page)
+    if cfg.score_notes and len(page) < len(blocks):
+        doc_tokens = tokens.count(render(blocks))  # headings repeat around the notes, so not page plus notes
+    blocks = merge_fragments(blocks if cfg.score_notes else page)
     own = jev is None
     jev = jev or Jev(concurrency=cfg.concurrency, model=cfg.model)
     try:
@@ -114,7 +139,8 @@ async def select_relevant_async(
         # Merged in page order, not arrival order: choose_blocks breaks score ties by dict order.
         stage1: dict[int, float] = {}
         stage2: dict[int, float] = {}
-        for scores, rescored in await asyncio.gather(*(window(w) for w in scoring.windows(blocks, cfg.window_tokens))):
+        windows = [w for w in scoring.windows(blocks, cfg.window_tokens) if not whole or all(b.note for b in w)]
+        for scores, rescored in await asyncio.gather(*(window(w) for w in windows)):
             stage1.update(scores)
             stage2.update(rescored)
         usage = (jev.input_tokens - before[0], jev.cached_input_tokens - before[1], jev.requests - before[2])
@@ -123,8 +149,12 @@ async def select_relevant_async(
         if own:
             await jev.aclose()
     keep = choose_blocks(blocks, stage1, stage2, cfg)
+    if whole:
+        keep |= {b.id for b in blocks if not b.note}
     text = render(blocks, keep)
-    status = "filtered" if any(v >= cfg.keep_threshold for v in stage2.values()) else "no_match"
+    status = (
+        "passthrough" if whole else "filtered" if any(v >= cfg.keep_threshold for v in stage2.values()) else "no_match"
+    )
     return Result(
         status,
         text,
@@ -154,12 +184,16 @@ async def fetch_relevant_async(url: str, query: str, cfg: Config | None = None, 
     except httpx.HTTPError as e:
         return Result("fetch_error", "", url=url, error=f"{type(e).__name__}: {e}")
     blocks, rendered = parse(html, final_url, media_type), False
+
+    def size(bs: list[Block]) -> int:  # the page without its notes, as rendering was decided without them
+        return tokens.count(render([b for b in bs if not b.note]))
+
     # A browser shows a plain-text type as source, so rendering adds nothing and turns the text into HTML.
-    if cfg.render_fallback and media_type not in PLAIN_TYPES and tokens.count(render(blocks)) < cfg.render_below_tokens:
+    if cfg.render_fallback and media_type not in PLAIN_TYPES and size(blocks) < cfg.render_below_tokens:
         dom = await asyncio.to_thread(fetch_rendered, url)
         if dom:
             again = parse(dom, final_url)
-            if tokens.count(render(again)) > tokens.count(render(blocks)):
+            if size(again) > size(blocks):
                 blocks, rendered = again, True
     res = await select_relevant_async(blocks, query, cfg, jev)
     res.url, res.rendered = url, rendered

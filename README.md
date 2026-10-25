@@ -129,6 +129,7 @@ Options:
 - `--json`: print the result as JSON, with token counts and Jev usage
 - `--no-render`: don't fall back to a headless browser
 - `--model`: set the Jev model
+- `--no-notes`: on pages too long to return whole, drop notes instead of judging them, which saves their Jev requests (see [How it works](#how-it-works))
 
 The command takes a URL. For HTML, Markdown, or plain text you already have, use the [Python API](#python-api). jevfetch doesn't pick passages from PDFs and other binary files. Like WebFetch, it saves them and prints the path, so the agent can open them with its file reader.
 
@@ -204,11 +205,11 @@ Use something else when:
 ## How it works
 
 1. Fetch the page. If the static HTML has less than 200 tokens of text, render it in headless Chrome.
-2. Split the page into blocks, tag each with its heading path, and drop navigation, footers, and other page chrome. A sentence ending in a colon is merged with the list items that follow it under the same heading, up to 1,500 characters, so that a condition it states stays with the items. JSON is split by key and array item, and XML by element, with the key or tag path in place of the heading path.
-3. Return documents of 2,000 tokens or less as they are.
-4. First pass: group blocks into windows of about 3,000 tokens and send one Jev request per window, asking yes or no for each block. Blocks scoring 0.6 or higher become candidates.
-5. Second pass: ask about each candidate again on its own, with up to 400 characters from each neighboring block as context. Keep blocks scoring 0.8 or higher, and a block right before or after a kept one under the same heading from 0.6, so that a condition next to the answer stays with it.
-6. Always keep the first block, since its heading path usually contains the page title. If the other kept blocks add up to fewer than 300 tokens, add the highest-scoring remaining blocks.
+2. Split the page into blocks, tag each with its heading path, and drop navigation, footers, sidebars, and other page chrome. Notes and warnings that documentation sites write as `<aside>` are kept: an aside whose class or role names a note, tip, warning, caution, or similar, or whose text starts with a label such as `Note:`. They are read apart from the page and placed after the block they follow, so the page's own blocks are what they would be without them. A sentence ending in a colon is merged with the list items that follow it under the same heading, up to 1,500 characters, so that a condition it states stays with the items. JSON is split by key and array item, and XML by element, with the key or tag path in place of the heading path.
+3. Return documents of 2,000 tokens or less as they are, decided on the page without its notes. The notes are included when the whole still fits; when it doesn't, the page is returned whole and only its notes go through the passes below.
+4. First pass: group blocks into windows of about 3,000 tokens and send one Jev request per window, asking yes or no for each block. Notes get windows of their own, so the page is judged in the windows it would have without them. Blocks scoring 0.6 or higher become candidates.
+5. Second pass: ask about each candidate again on its own, with up to 400 characters from each neighboring block as context. Keep blocks scoring 0.8 or higher, and a page block right before or after a kept one under the same heading from 0.6, so that a condition next to the answer stays with it.
+6. Always keep the page's first block, since its heading path usually contains the page title. If the page's other kept blocks add up to fewer than 300 tokens, add its highest-scoring remaining blocks. A note is kept only on its own score.
 
 Requests within each pass run concurrently.
 

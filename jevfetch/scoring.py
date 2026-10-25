@@ -34,16 +34,20 @@ def _jev_text(b: Block) -> str:
 
 
 def windows(blocks: list[Block], max_tokens: int) -> list[list[Block]]:
-    out, cur, n = [], [], 0
-    for b in blocks:
-        t = tokens.count(_jev_text(b)) + ITEM_OVERHEAD_TOKENS
-        if cur and (n + t > max_tokens or len(cur) >= WINDOW_ITEMS):
+    """Blocks read from notes get windows of their own, so that the rest of the page is judged in the windows it
+    would have without them."""
+    out = []
+    for group in ([b for b in blocks if not b.note], [b for b in blocks if b.note]):
+        cur, n = [], 0
+        for b in group:
+            t = tokens.count(_jev_text(b)) + ITEM_OVERHEAD_TOKENS
+            if cur and (n + t > max_tokens or len(cur) >= WINDOW_ITEMS):
+                out.append(cur)
+                cur, n = [], 0
+            cur.append(b)
+            n += t
+        if cur:
             out.append(cur)
-            cur, n = [], 0
-        cur.append(b)
-        n += t
-    if cur:
-        out.append(cur)
     return out
 
 
@@ -71,19 +75,21 @@ async def fanout(jev: Jev, blocks: list[Block], query: str, window_tokens: int =
 
 
 async def rescore(jev: Jev, blocks: list[Block], ids: list[int], query: str) -> dict[int, float]:
-    """Stage 2: probability for each block in `ids`, judged alone with its neighbours as context."""
-    pos = {b.id: i for i, b in enumerate(blocks)}
+    """Stage 2: probability for each block in `ids`, judged alone with its neighbours as context. The neighbours of
+    a block outside notes are the blocks outside notes next to it, as they would be without the notes."""
+    page = [b for b in blocks if not b.note]
+    pos = {b.id: (blocks, i) for i, b in enumerate(blocks)} | {b.id: (page, i) for i, b in enumerate(page)}
     instructions = QUESTION.format(passage="`passage`") + " " + CONTEXT_NOTE
 
     async def one(bid: int) -> tuple[int, float]:
-        i = pos[bid]
-        b = blocks[i]
+        seq, i = pos[bid]
+        b = seq[i]
         state = {
             "query": query,
             "section": b.heading,
             "passage": _jev_text(b),
-            "context_before": _jev_text(blocks[i - 1])[-CONTEXT_CHARS:] if i > 0 else "",
-            "context_after": _jev_text(blocks[i + 1])[:CONTEXT_CHARS] if i + 1 < len(blocks) else "",
+            "context_before": _jev_text(seq[i - 1])[-CONTEXT_CHARS:] if i > 0 else "",
+            "context_after": _jev_text(seq[i + 1])[:CONTEXT_CHARS] if i + 1 < len(seq) else "",
         }
         answers = await jev.ask(state, {"rel": {"type": "noul", "instructions": instructions, "criteria": CRITERIA}})
         return bid, answers["rel"]["noul"]

@@ -78,6 +78,210 @@ def test_site_header_without_h1_is_dropped():
     assert not any("site menu" in x for x in texts(page("<p>body text here.</p>")))
 
 
+@pytest.mark.parametrize(
+    "aside",
+    [
+        *(
+            f'<aside class="box {c}"><p>The flag is off by default.</p></aside>'
+            for c in ("note", "tip", "hint", "important", "warning", "caution", "danger", "admonition", "key-point")
+        ),
+        '<aside class="starlight-aside starlight-aside--caution"><p>The flag is off by default.</p></aside>',
+        *(
+            f'<aside role="{r}" class="flex rounded"><p>The flag is off by default.</p></aside>'
+            for r in ("note", "doc-note", "doc-notice", "doc-tip")
+        ),
+        *(
+            f"<aside><p>{label}: The flag is off by default.</p></aside>"
+            for label in ("Note", "Important", "Warning", "Caution", "Tip", "Key Point", "Danger")
+        ),
+    ],
+)
+def test_notes_in_asides_are_kept(aside):
+    assert any("The flag is off by default." in x for x in texts(page(f"<p>Intro text.</p>{aside}")))
+
+
+@pytest.mark.parametrize(
+    "aside",
+    [
+        '<aside class="sidebar"><p>Related posts about flags.</p></aside>',
+        '<aside class="r-box promo"><p>Related posts about flags.</p></aside>',
+        '<aside class="footnotes"><p>Related posts about flags.</p></aside>',
+        "<aside><p>Important links: Related posts about flags.</p></aside>",
+        '<nav><aside class="note"><p>Related posts about flags.</p></aside></nav>',
+    ],
+)
+def test_sidebars_promotions_and_notes_in_navigation_are_dropped(aside):
+    assert not any("Related posts" in x for x in texts(page(f"<p>Intro text.</p>{aside}")))
+
+
+def test_a_kept_note_does_not_move_the_content_root():
+    words = "word " * 90
+    html = (
+        f'<html><body><main><p>{words}</p><aside class="note"><p>Note: {"x " * 60}</p></aside></main>'
+        f"<div><p>Outside the main element. {words * 3}</p></div></body></html>"
+    )
+    assert any(x.startswith("Outside the main element.") for x in texts(html))
+
+
+def test_a_heading_inside_a_note_does_not_change_the_path_after_it():
+    blocks = parse(
+        page(
+            "<h2>Install</h2><p>Run the installer first.</p>"
+            '<aside class="note"><h4>Heads up</h4><p>Restart is needed.</p></aside><p>Then restart the service.</p>'
+        )
+    )
+    paths = {b.text: b.path for b in blocks}
+    assert paths["Restart is needed."] == ["Install", "Heads up"]
+    assert paths["Then restart the service."] == ["Install"]
+
+
+def test_a_note_between_a_leadin_and_its_list_follows_the_group():
+    t = texts(
+        page(
+            "<p>If caching fails:</p>"
+            '<aside class="note"><p>Diagnostics compare consecutive requests.</p></aside>'
+            "<ul><li>Check the prefix</li><li>Check the lifetime</li></ul><p>Closing paragraph.</p>"
+        )
+    )
+    group = "If caching fails:\n- Check the prefix\n- Check the lifetime"
+    assert t[t.index(group) + 1 :] == ["Diagnostics compare consecutive requests.", "Closing paragraph."]
+
+
+def test_a_leadin_inside_a_note_does_not_take_the_list_after_the_note():
+    t = texts(page('<aside class="note"><p>Warning:</p></aside><ul><li>Normal step</li></ul>'))
+    assert "Warning:" in t and "Normal step" in t
+
+
+def test_a_note_moved_after_a_group_keeps_its_own_group():
+    t = texts(
+        page(
+            "<p>If caching fails:</p>"
+            '<aside class="note"><p>Common causes:</p><ul><li>Changed tools</li></ul></aside>'
+            "<ul><li>Check the prefix</li></ul>"
+        )
+    )
+    assert t[-2:] == ["If caching fails:\n- Check the prefix", "Common causes:\n- Changed tools"]
+
+
+def test_parse_time_grows_linearly_with_the_number_of_notes():
+    def seconds(n: int) -> float:
+        html = page('<p>Step.</p><aside class="note"><p>Warning:</p></aside>' * n)
+        best = float("inf")
+        for _ in range(3):
+            start = time.perf_counter()
+            parse(html)
+            best = min(best, time.perf_counter() - start)
+        return best
+
+    assert seconds(4000) < 6 * seconds(1000)  # 4 when linear, 16 when quadratic
+
+
+def test_a_leadin_and_list_inside_one_note_are_grouped():
+    t = texts(
+        page('<aside class="note"><p>The multipliers are:</p><ul><li>1.25x write</li><li>0.1x read</li></ul></aside>')
+    )
+    assert "The multipliers are:\n- 1.25x write\n- 0.1x read" in t
+
+
+def test_a_note_inside_a_table_cell_follows_its_row():
+    t = texts(page('<table><tr><td>state</td><td>Optional.<aside class="note">Check it.</aside></td></tr></table>'))
+    assert t[-2:] == ["state | Optional.", "Check it."]
+
+
+def test_a_note_inside_a_list_item_does_not_take_the_next_item():
+    t = texts(page('<ul><li>First step<aside class="note">Warning:</aside></li><li>Normal step</li></ul>'))
+    assert t[-3:] == ["First step", "Warning:", "Normal step"]
+
+
+def test_a_list_inside_a_note_in_a_list_item_keeps_the_outer_group():
+    t = texts(
+        page(
+            '<p>Steps:</p><ul><li>First step<aside class="note"><p>Also:</p><ul><li>inner</li></ul></aside></li>'
+            "<li>Second step</li></ul>"
+        )
+    )
+    assert t[-2:] == ["Steps:\n- First step\n- Second step", "Also:\n- inner"]
+
+
+def test_a_note_inside_a_list_item_of_another_note_is_lifted_too():
+    t = texts(
+        page('<aside class="note"><ul><li>Step<aside class="tip">Warning:</aside></li><li>Next</li></ul></aside>')
+    )
+    assert t[-3:] == ["Step", "Warning:", "Next"]
+
+
+def test_a_content_like_element_inside_a_note_is_not_taken_as_the_root():
+    html = (
+        f'<html><body><aside class="note"><div id="content">{"note words " * 80}</div></aside>'
+        f"<div><p>Body paragraph. {'body words ' * 80}</p></div></body></html>"
+    )
+    assert any(x.startswith("Body paragraph.") for x in texts(html))
+
+
+def test_inline_text_around_a_note_with_a_paragraph_stays_one_paragraph():
+    t = texts('<html><body><div>Abc<span><aside class="note"><p>Note: twice.</p></aside></span>def</div></body></html>')
+    assert t == ["Abcdef", "Note: twice."]
+
+
+def test_a_nested_note_does_not_break_the_group_of_its_outer_note():
+    t = texts(
+        page(
+            '<aside class="note"><p>Steps:</p><aside class="tip"><p>Back up first.</p></aside>'
+            "<ul><li>Run setup</li></ul></aside>"
+        )
+    )
+    assert t[-2:] == ["Steps:\n- Run setup", "Back up first."]
+
+
+def test_a_note_outside_the_content_root_is_dropped():
+    html = (
+        f'<html><body><aside class="note"><p>Note: outside.</p></aside><main>{PAD}<p>Inside.</p></main></body></html>'
+    )
+    assert "Note: outside." not in texts(html)
+
+
+def test_a_note_between_span_paragraphs_stays_between_them():
+    t = texts(
+        page(
+            '<div><span data-as="p">Before text.</span><aside class="note">Note: middle.</aside>'
+            '<span data-as="p">After text.</span></div>'
+        )
+    )
+    assert t[-3:] == ["Before text.", "Note: middle.", "After text."]
+
+
+def test_text_on_both_sides_of_a_note_stays_one_paragraph():
+    t = texts('<html><body><div>A<aside class="note">Restart first.</aside>BC</div></body></html>')
+    assert t == ["ABC", "Restart first."]
+
+
+def test_a_note_in_a_nested_definition_keeps_the_inner_term():
+    blocks = parse(
+        page(
+            "<dl><dt>outer</dt><dd><dl><dt>inner</dt>"
+            '<dd>Inner text.<aside class="note">Note: inner note.</aside></dd></dl></dd></dl><p>After the list.</p>'
+        )
+    )
+    paths = {b.text: b.path for b in blocks}
+    assert paths["Note: inner note."] == ["outer", "inner"]
+    assert paths["After the list."] == []
+
+
+def test_a_note_in_a_quote_keeps_the_heading_before_it():
+    blocks = parse(
+        page(
+            '<h2>First</h2><blockquote>Quoted text.<aside class="note">Note: quoted.</aside></blockquote>'
+            "<h2>Second</h2><p>Second text.</p>"
+        )
+    )
+    assert {b.text: b.path for b in blocks}["Note: quoted."] == ["First"]
+
+
+def test_inline_text_around_a_note_stays_one_paragraph():
+    t = texts(page('<div>Run it <span>now<aside class="note">Note: twice.</aside></span> and wait.</div>'))
+    assert t[-2:] == ["Run it now and wait.", "Note: twice."]
+
+
 def test_definition_list_wrapped_in_div():
     blocks = parse(page("<dl><div><dt>timeout</dt><dd>Seconds to wait before giving up.</dd></div></dl>"))
     dd = [b for b in blocks if b.text == "Seconds to wait before giving up."]
@@ -385,3 +589,48 @@ def test_many_leading_comments_are_checked_quickly():
 def test_json_declared_as_plain_text_is_still_split_by_key():
     doc = json.dumps({"info": {"description": "word " * 400, "version": "1.0"}})
     assert any(b.path == ["info", "description"] for b in parse(doc, media_type="text/plain"))
+
+
+def test_short_fragments_of_a_note_and_of_the_page_are_not_merged():
+    blocks = merge_fragments(parse(page('<p>Short page line.</p><aside class="note"><p>Note: short.</p></aside>')))
+    assert [(b.text, b.note) for b in blocks][-2:] == [("Short page line.", False), ("Note: short.", True)]
+
+
+def test_a_note_before_inline_text_after_a_line_break_stays_before_it():
+    t = texts(page('<p>Before text.</p>\n<aside class="note">Note: first.</aside><span>After text.</span>'))
+    assert t[-3:] == ["Before text.", "Note: first.", "After text."]
+
+
+def test_a_long_note_split_into_pieces_stays_a_note():
+    sentence = "This sentence belongs to a long note. "
+    blocks = parse(page(f'<aside class="note"><p>{sentence * 200}</p></aside>'))
+    pieces = [b for b in blocks if b.text.startswith("This sentence")]
+    assert len(pieces) > 1 and all(b.note for b in pieces)
+
+
+def test_short_paragraphs_of_one_note_merge_into_a_note_fragment():
+    blocks = merge_fragments(parse(page('<p>Intro text.</p><aside class="note"><p>Note: one.</p><p>Two.</p></aside>')))
+    assert [(b.text, b.kind, b.note) for b in blocks][-1] == ("Note: one.\nTwo.", "frag", True)
+
+
+def test_page_fragments_on_both_sides_of_a_note_merge_as_without_it():
+    with_note = merge_fragments(
+        parse(page('<p>Step one.</p><aside class="note"><p>Note: careful.</p></aside><p>Step two.</p>'))
+    )
+    without = merge_fragments(parse(page("<p>Step one.</p><p>Step two.</p>")))
+    assert [b.text for b in with_note if not b.note] == [b.text for b in without]
+    assert [b.text for b in with_note if b.note] == ["Note: careful."]
+
+
+def test_a_note_with_one_sentence_too_long_for_a_block_stays_a_note_when_cut():
+    blocks = parse(page(f'<aside class="note"><p>Note: {"x" * 9000}</p></aside>'))
+    pieces = [b for b in blocks if "xxxx" in b.text]
+    assert len(pieces) > 2 and all(b.note for b in pieces)
+
+
+def test_page_blocks_keep_the_ids_they_have_without_notes_and_notes_come_after():
+    body = "<p>One paragraph here.</p>{}<p>Two paragraph here.</p>"
+    with_note = merge_fragments(parse(page(body.format('<aside class="note"><p>Note: x.</p></aside>'))))
+    without = merge_fragments(parse(page(body.format(""))))
+    assert [(b.id, b.text) for b in with_note if not b.note] == [(b.id, b.text) for b in without]
+    assert [b.id for b in with_note if b.note] == [len(without)]
