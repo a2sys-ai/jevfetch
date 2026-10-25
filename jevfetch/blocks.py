@@ -51,6 +51,8 @@ class Block:
     text: str
     kind: Kind
     note: bool = False  # read from a note (an aside kept by _clean)
+    table: int = 0  # for a table row, the id() of its <table>; 0 otherwise
+    head: bool = False  # a table's header row: in <thead>, or a first row of <th> cells
 
     @property
     def heading(self) -> str:
@@ -100,7 +102,7 @@ def merge_fragments(blocks: list[Block], short: int = 100, cap: int = 800) -> li
             ):
                 out[-1] = (out[-1][0], Block(0, prev.path, prev.text + "\n" + b.text, "frag", b.note))
             else:
-                out.append((k, Block(0, b.path, b.text, b.kind, b.note)))
+                out.append((k, Block(0, b.path, b.text, b.kind, b.note, b.table, b.head)))
         return out
 
     parts = merge([(k, b) for k, b in enumerate(blocks) if not b.note])
@@ -439,10 +441,10 @@ def _walk(
     events: list[tuple[int, list[tuple[int, str]]]] = []
     here = 0
 
-    def emit(text: str, kind: Kind) -> None:
+    def emit(text: str, kind: Kind, table: int = 0, head: bool = False) -> None:
         text = text.strip("\n") if kind == "pre" else _norm(text)
         if len(text.strip()) >= 3:
-            out.append(Block(0, [h for _, h in path], text, kind))
+            out.append(Block(0, [h for _, h in path], text, kind, table=table, head=head))
             if order:
                 src.append(here)
 
@@ -509,8 +511,13 @@ def _walk(
                 path.append((level, _norm(_text(ch))))
                 moved(here)
             elif ch.name == "tr":
-                cells = [_norm(_text(c, links=True, base=base)) for c in ch.find_all(["td", "th"], recursive=False)]
-                emit(" | ".join(cells), "row")
+                tags = ch.find_all(["td", "th"], recursive=False)
+                cells = [_norm(_text(c, links=True, base=base)) for c in tags]
+                table = ch.find_parent("table")
+                head = ch.parent.name == "thead" or (
+                    table is not None and table.find("tr") is ch and bool(tags) and all(c.name == "th" for c in tags)
+                )
+                emit(" | ".join(cells), "row", id(table) if table is not None else 0, head)
             elif ch.name == "pre":
                 emit(ch.get_text(), "pre")
             elif ch.name == "li":
@@ -553,7 +560,7 @@ def _merge_leadins(blocks: list[Block], notes: set[int] | None = None) -> list[B
                 j += 1
                 end = j
         if len(parts) > 1:
-            merged.append(Block(0, b.path, "\n".join(parts), "group"))
+            merged.append(Block(0, b.path, "\n".join(parts), "group", table=b.table, head=b.head))
             merged += [blocks[k] for k in range(i + 1, end) if k in notes]
         else:
             merged.append(b)
@@ -574,14 +581,14 @@ def _split_long(blocks: list[Block]) -> list[Block]:
         cur = ""
         for s in parts:
             if cur and len(cur) + len(s) > MAX_BLOCK_CHARS:
-                out.append(Block(0, b.path, cur.rstrip(), b.kind, b.note))
+                out.append(Block(0, b.path, cur.rstrip(), b.kind, b.note, b.table, b.head))
                 cur = ""
             while len(s) > MAX_BLOCK_CHARS:  # a single sentence or line over the limit is cut by length
-                out.append(Block(0, b.path, s[:MAX_BLOCK_CHARS], b.kind, b.note))
+                out.append(Block(0, b.path, s[:MAX_BLOCK_CHARS], b.kind, b.note, b.table, b.head))
                 s = s[MAX_BLOCK_CHARS:]
             cur += s + sep
         if cur.strip():
-            out.append(Block(0, b.path, cur.rstrip(), b.kind, b.note))
+            out.append(Block(0, b.path, cur.rstrip(), b.kind, b.note, b.table, b.head))
     return out
 
 

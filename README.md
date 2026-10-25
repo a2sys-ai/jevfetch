@@ -209,7 +209,7 @@ Use something else when:
 3. Return documents of 2,000 tokens or less as they are, decided on the page without its notes. The notes are included when the whole still fits; when it doesn't, the page is returned whole and only its notes go through the passes below.
 4. First pass: group blocks into windows of about 3,000 tokens and send one Jev request per window, asking yes or no for each block. Notes get windows of their own, so the page is judged in the windows it would have without them. Blocks scoring 0.6 or higher become candidates.
 5. Second pass: ask about each candidate again on its own, with up to 400 characters from each neighboring block as context. Keep blocks scoring 0.8 or higher, and a page block right before or after a kept one under the same heading from 0.6, so that a condition next to the answer stays with it.
-6. Always keep the page's first block, since its heading path usually contains the page title. If the page's other kept blocks add up to fewer than 300 tokens, add its highest-scoring remaining blocks. A note is kept only on its own score.
+6. Always keep the page's first block, since its heading path usually contains the page title. If the page's other kept blocks add up to fewer than 300 tokens, add its highest-scoring remaining blocks. A note is kept only on its own score. A kept table row goes out with its table's header row (a row in `<thead>`, or a first row of `<th>` cells), so each value's column is named.
 
 Requests within each pass run concurrently.
 

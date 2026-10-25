@@ -302,6 +302,37 @@ def test_plain_text_uses_markdown_headings():
     ]
 
 
+PRICES = (
+    "<table><thead><tr><th>GPU</th><th>Listed</th><th>Effective</th></tr></thead>"
+    "<tbody><tr><td>A100</td><td>$0.50</td><td>$0.65</td></tr></tbody></table>"
+)
+
+
+def test_a_table_header_row_is_marked_and_rows_know_their_table():
+    blocks = merge_fragments(parse(page(PRICES + PRICES.replace("GPU", "Card"))))
+    rows = [b for b in blocks if b.kind == "row"]
+    assert [b.head for b in rows] == [True, False, True, False]
+    assert rows[0].table == rows[1].table != rows[2].table == rows[3].table
+    assert all(b.table == 0 for b in blocks if b.kind != "row")
+
+
+def test_a_first_row_of_th_cells_is_a_header_and_a_first_row_of_td_cells_is_not():
+    th = "<table><tr><th>GPU</th><th>Price</th></tr><tr><td>A100</td><td>$1</td></tr></table>"
+    assert [b.head for b in parse(page(th)) if b.kind == "row"] == [True, False]
+    assert [b.head for b in parse(page(th.replace("th>", "td>"))) if b.kind == "row"] == [False, False]
+
+
+def test_a_table_row_that_leads_a_list_and_a_long_header_row_keep_their_table():
+    long_th = "<th>" + "Effective hourly price after downtime. " * 150 + "</th>"
+    html = (
+        f"<table><tr><th>Step</th>{long_th}</tr><tr><td>1</td><td>Run these:</td></tr></table><ul><li>a b c</li></ul>"
+    )
+    blocks = merge_fragments(parse(page(html)))
+    head = [b for b in blocks if b.head]
+    group = next(b for b in blocks if b.text.startswith("1 | Run these:"))
+    assert len(head) > 1 and group.kind == "group" and {b.table for b in head} == {group.table} != {0}
+
+
 def test_merge_fragments_joins_short_steps_but_not_rows():
     blocks = merge_fragments(parse("1. request (by March 31)\n\n2. review\n\nA longer paragraph " + "x " * 80))
     assert blocks[0].text == "1. request (by March 31)\n2. review"

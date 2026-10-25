@@ -151,6 +151,9 @@ async def select_relevant_async(
     keep = choose_blocks(blocks, stage1, stage2, cfg)
     if whole:
         keep |= {b.id for b in blocks if not b.note}
+    # A kept table row goes out with its table's header row, which names the column of each value.
+    tables = {b.table for b in blocks if b.id in keep and b.table}
+    keep |= {b.id for b in blocks if b.head and b.table in tables}
     text = render(blocks, keep)
     status = (
         "passthrough" if whole else "filtered" if any(v >= cfg.keep_threshold for v in stage2.values()) else "no_match"

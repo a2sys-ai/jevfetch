@@ -494,6 +494,54 @@ async def test_a_short_page_goes_out_whole_and_only_its_notes_are_scored_when_th
     assert "block 0" in res.text and "block 1" in res.text and "Note: 0" in res.text and "Note: 1" not in res.text
 
 
+def price_table(first: int, note: bool = False, words: int = 0) -> list[Block]:
+    return [
+        Block(first, ["Doc"], "GPU | Listed | Effective", "row", note=note, table=1, head=True),
+        Block(first + 1, ["Doc"], "A100 | $0.50 | $0.65" + " word" * words, "row", note=note, table=1),
+        Block(first + 2, ["Doc"], "H100 | $0.90 | $1.15", "row", note=note, table=1),
+        Block(first + 3, ["Doc"], "plain | row", "row", note=note, table=2),  # a table without a header row
+    ]
+
+
+async def test_a_kept_table_row_goes_out_with_its_tables_header_row(monkeypatch):
+    fake_scores(monkeypatch, {21: 0.9, 23: 0.9}, {21: 0.99, 23: 0.99})
+    res = await select_relevant_async(blocks_of(20) + price_table(20), "q", Config(min_output_tokens=0), FakeJev())
+    assert "GPU | Listed | Effective\nA100 | $0.50 | $0.65\nplain | row" in res.text
+    assert "H100" not in res.text and res.blocks_kept == 4  # the first block, two rows, and the header row
+    assert res.jev_requests == len(scoring.windows(blocks_of(20) + price_table(20), Config().window_tokens)) + 2
+
+
+async def test_a_table_none_of_whose_rows_is_kept_leaves_its_header_row_out(monkeypatch):
+    other = [
+        Block(24, ["Doc"], "Region | Latency", "row", table=3, head=True),
+        Block(25, ["Doc"], "us-east | 20 ms", "row", table=3),
+    ]
+    fake_scores(monkeypatch, {21: 0.9}, {21: 0.99})
+    res = await select_relevant_async(
+        blocks_of(20) + price_table(20) + other, "q", Config(min_output_tokens=0), FakeJev()
+    )
+    assert "GPU | Listed | Effective\nA100" in res.text and "Region | Latency" not in res.text
+
+
+async def test_a_note_table_row_kept_beside_a_whole_page_goes_out_with_its_header_row(monkeypatch):
+    async def fanout(jev, blocks, query, window_tokens=3000):
+        jev.requests += 1
+        return {b.id: 0.9 for b in blocks}
+
+    async def rescore(jev, blocks, ids, query):
+        jev.requests += len(ids)
+        text = {b.id: b.text for b in blocks}
+        return {i: 0.95 if text[i].startswith("A100") else 0.1 for i in ids}
+
+    monkeypatch.setattr(scoring, "fanout", fanout)
+    monkeypatch.setattr(scoring, "rescore", rescore)
+    res = await select_relevant_async(
+        blocks_of(2, words=10) + price_table(2, note=True, words=2500), "q", Config(), FakeJev()
+    )
+    assert res.status == "passthrough" and "block 1" in res.text
+    assert "GPU | Listed | Effective\nA100" in res.text and "H100" not in res.text
+
+
 async def test_a_document_of_notes_too_long_to_pass_through_is_scored(monkeypatch):
     fake_scores(monkeypatch, {}, {})
     res = await select_relevant_async(note_blocks(2, 1500), "q", Config(), FakeJev())
