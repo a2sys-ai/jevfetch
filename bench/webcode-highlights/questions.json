@@ -1,0 +1,961 @@
+[
+ {
+  "id": "highlights_001",
+  "url": "https://webrtc.googlesource.com/src/+/refs/heads/lkgr/modules/desktop_capture/desktop_capturer.cc",
+  "query": "What is the exact UMA histogram name that WebRTC's desktop capture module uses to log fullscreen detector usage in screen sharing?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_003",
+  "url": "https://bun.sh/docs/api/file-io",
+  "query": "In Bun.write(), what constraint applies to the use of sendfile for writing to a socket from a file or pipe on Linux?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_005",
+  "url": "https://machinelearningplus.com/gen-ai/resilient-llm-client/",
+  "query": "In the ResilientLLMClient pattern for LLM API resilience, what default per-1K-token input and output cost rates does the _estimate_cost method use when a model is not found in the COST_TABLE?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_006",
+  "url": "https://go.dev/cmd/go/internal/cfg%40go1.25.1",
+  "query": "In Go's cmd/go/internal/cfg package, when SetGOROOT is called with isTestGo set to true, which environment variables are used to determine build.ToolDir instead of runtime.GOOS and runtime.GOARCH?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_011",
+  "url": "https://fly.io/blog/sqlite-internals-btree/",
+  "query": "In SQLite's b+tree structure, assuming ~500 child references per interior page and 4KB leaf pages, what is the approximate maximum database size at a tree depth of 4?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_015",
+  "url": "https://github.com/avajs/ava",
+  "query": "What npm package does AVA reference for listing supported CI environments for its automatic parallel test runs feature?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_016",
+  "url": "https://registry.npmjs.org/%40blumintinc%2Fuse-context-selector",
+  "query": "In @blumintinc/use-context-selector, how do you enable experimental suspense mode when using the useContextUpdate hook?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_018",
+  "url": "https://github.com/Aleph-Alpha/ts-rs",
+  "query": "In ts-rs with serde-compat enabled, what condition is required for serde's `skip_serializing` and `skip_serializing_if` attributes to have an effect on the generated TypeScript type?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_019",
+  "url": "https://cli.github.com/manual/gh_help_reference",
+  "query": "Where does the `gh extension browse` command in the GitHub CLI write its debug log files when the `--debug` flag is enabled?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_021",
+  "url": "https://github.com/spring-projects/spring-tools/releases/tag/5.1.0.RELEASE",
+  "query": "What version of lsp4j was the language server updated to in Spring Tools 5.1.0.RELEASE?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_023",
+  "url": "https://gamedev.net/tutorials/programming/general-and-gameplay-programming/replicating-quake-3-character-physics-with-u3d-r5937/",
+  "query": "In the Urho3D Quake 3 character physics tutorial, what restitution and rolling friction values are set on the environment's RigidBody?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_025",
+  "url": "https://img.ly/blog/ultimate-guide-to-ffmpeg/",
+  "query": "When converting a 117MB WAV file to FLAC using FFmpeg, what are the resulting file sizes at compression_level 0, compression_level 5 (default), and compression_level 12?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_026",
+  "url": "https://github.com/specta-rs/specta",
+  "query": "In the Specta Rust library, what attribute do you apply to a struct to prevent it from being included when calling `specta::export()` for bulk type collection?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_029",
+  "url": "https://better-i18n.com/en/blog/react-i18n-guide/",
+  "query": "How is TypeScript support characterized for the Better i18n React SDK compared to other React i18n libraries like react-intl and react-i18next?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_032",
+  "url": "https://p0stman.com/what-is-a2a-protocol",
+  "query": "What are the recommended per-minute rate limits for an A2A endpoint when limiting unauthenticated requests by IP address versus authenticated requests by API key?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_033",
+  "url": "https://github.com/ratatui/awesome-ratatui",
+  "query": "In the ratatui ecosystem, what is spotatui's relationship to the original spotify-tui project, and what other alternative is listed alongside it?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_035",
+  "url": "https://www.runpod.io/articles/guides/fp16-bf16-fp8-mixed-precision-speed-up-my-model-training",
+  "query": "When evaluating cloud GPU cost-efficiency for deep learning training with mixed precision, by approximately what factor does an NVIDIA A100 cost more per hour than a lower-end GPU, and how many times faster might it train a model, according to Runpod's cost-performance analysis?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_037",
+  "url": "https://oneuptime.com/blog/post/2026-02-23-how-to-use-terraform-with-ephemeral-development-environments/view",
+  "query": "In a Terraform ephemeral environment module that generates environment names from git branch names, what is the maximum number of characters extracted from the branch name before sanitization?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_038",
+  "url": "https://blogs.pavanrangani.com/spring-boot-beginners-complete-guide/",
+  "query": "In Spring Data JPA, what two custom derived query methods can be defined in a JpaRepository for a Product entity to search by partial name match and by price below a threshold, and what are their parameter types?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_039",
+  "url": "https://www.jamesrossjr.com/blog/software-architecture-patterns",
+  "query": "In James Ross Jr.'s guide on software architecture patterns, what specific architecture combination does he recommend as a default starting point for new systems, and what benefit does he cite if the system outgrows it?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_040",
+  "url": "https://github.com/containernetworking/cni/blob/master/SPEC.md",
+  "query": "In the CNI specification, what specific runtime behavior does error code 3 (\"Container unknown or does not exist\") imply regarding container network cleanup?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_041",
+  "url": "https://puckeditor.com/blog/top-5-drag-and-drop-libraries-for-react",
+  "query": "How does Atlassian manage the open-source development and contribution process for pragmatic-drag-and-drop?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_045",
+  "url": "https://github.com/scalable-ml-deep-learning/fine_tune_whisper",
+  "query": "When fine-tuning Whisper small on 10% of the Italian Common Voice 11 dataset, how many rows are in the training set and testing set respectively?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_046",
+  "url": "https://www.turbodocx.com/blog/react-design-patterns",
+  "query": "In the React Provider Pattern anti-pattern example showing a single monolithic context that causes unnecessary re-renders, what five state domains are combined into one createContext call?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_047",
+  "url": "https://www.rapid7.com/blog/post/em-patch-tuesday-march-2026/",
+  "query": "What is the oldest SQL Server version that receives a security patch for CVE-2026-21262, the SQL Server elevation of privilege zero-day?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_051",
+  "url": "https://git.durrantlab.pitt.edu/ofek/mcp-rust-sdk",
+  "query": "What JSON Schema draft version does the RMCP Rust SDK's schemars dependency use for schema generation?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_054",
+  "url": "https://arxiv.org/html/2511.18870v1",
+  "query": "What is the task ratio of T2I, T2V, and I2V used during mixed pretraining in HunyuanVideo 1.5?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_057",
+  "url": "https://aiorg.dev/blog/seo-for-developers",
+  "query": "When doing keyword research for a new website with a domain rating between 0 and 20, what maximum keyword difficulty (KD) score and minimum monthly search volume should be targeted?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_058",
+  "url": "https://docs.cypress.io/app/end-to-end-testing/writing-your-first-end-to-end-test",
+  "query": "In Cypress's Command Log, what specific visual indicator does the VISIT command display while the target page is still loading?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_059",
+  "url": "https://docs.gitlab.com/api/project_webhooks/",
+  "query": "What was the rate limit for the GitLab project webhook test endpoint in version 17.0, and how did it change in version 17.1?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_062",
+  "url": "https://docs.oracle.com/en/database/oracle/oracle-database/26/vecse/create-tables-using-vector-data-type.html",
+  "query": "What is the maximum number of dimensions allowed for BINARY vectors in the Oracle VECTOR data type?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_063",
+  "url": "https://nextjs.org/docs/app/getting-started/server-and-client-components",
+  "query": "For which TypeScript configuration option does Next.js provide its own type declarations for the `server-only` and `client-only` packages?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_064",
+  "url": "https://github.com/roarkhq/sdk-roark-analytics-python",
+  "query": "In the Roark Python SDK, which HTTP status codes are automatically retried by default in addition to connection errors?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_066",
+  "url": "https://noc.org/support/product-features/cdn-waf-api",
+  "query": "What is the default rate limit for cache purge requests in the NOC CDN REST API?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_067",
+  "url": "https://www.websocket.org/guides/use-cases/chat/",
+  "query": "According to websocket.org's chat guidance, at approximately what concurrent user count does the build-vs-buy crossover typically occur for WebSocket-based chat features?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_072",
+  "url": "https://bytepane.com/blog/typescript-utility-types/",
+  "query": "In a TypeScript Record type example that maps a Theme union ('light' | 'dark' | 'auto') to config objects with bg, text, and border string properties, what border color hex value is assigned to the light theme?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_074",
+  "url": "https://zxweb.eu/en/resources/articles/react-vs-angular-vs-vue-enterprise-comparison",
+  "query": "In the 2026 zxweb.eu enterprise framework comparison, what specific organization types and backend developer backgrounds are listed as reasons to choose Angular?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_077",
+  "url": "https://javascriptfundamentals.com/build-a-react-js-interactive-simple-portfolio-website/",
+  "query": "In a Create React App portfolio project, what CSS padding value is applied to the header component inside a media query targeting screens smaller than 768px for tablet responsiveness?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_078",
+  "url": "https://javascriptfundamentals.com/react-context-api-a-beginners-guide-to-state-management/",
+  "query": "In a React Context API FAQ about performance, how is the Context API described as indirectly affecting application performance, and what specific hook is recommended to optimize frequently-changing context values to prevent unnecessary re-renders?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_080",
+  "url": "https://docs.gitlab.com/api/merge_requests",
+  "query": "In the GitLab Merge Requests API, what specific preparation steps must complete before the `prepared_at` timestamp field is populated on a merge request?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_081",
+  "url": "https://cloudburn.io/blog/amazon-s3-pricing",
+  "query": "What is the compaction (binpack) pricing for Amazon S3 Tables buckets in us-east-1?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_082",
+  "url": "https://github.com/fiberplane/mcp-lite",
+  "query": "In mcp-lite, what client capabilities can be declared under MCP protocol version 2025-03-26 versus 2025-06-18?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_083",
+  "url": "https://www.digitalocean.com/community/tutorials/how-to-set-up-a-private-docker-registry-on-ubuntu-20-04",
+  "query": "When configuring Nginx as a reverse proxy for a private Docker Registry on Ubuntu, what client_max_body_size value is set in nginx.conf to support large image uploads?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_085",
+  "url": "https://nilcoalescing.com/blog/BuildAMacOSMenuBarUtilityInSwiftUI",
+  "query": "When styling a SwiftUI TextEditor inside a MenuBarExtra window-style scene to blend with the popover appearance, what specific ShapeStyle material is applied as the background after hiding the default scroll content background?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_086",
+  "url": "https://peasycss.com/guides/css-container-queries-responsive-components/",
+  "query": "In a CSS container query product card example, at what container width threshold does the card switch from vertical stacking to a horizontal layout, and what is the resulting element arrangement?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_090",
+  "url": "https://github.com/gohugoio/hugo/releases/tag/v0.158.0",
+  "query": "In Hugo v0.158.0, what CLDR versions were involved in the locales library upgrade?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_091",
+  "url": "https://developers.google.com/identity/protocols/oauth2/web-server",
+  "query": "In Google OAuth 2.0 redirect URI validation, what path requirement must be met if an app that owns a URL shortener domain chooses to redirect to that domain?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_092",
+  "url": "https://developer.github.com/enterprise/2.17/v3/issues/comments/",
+  "query": "In the GitHub Enterprise 2.17 Issue Comments API, what query parameters does the endpoint for listing comments on a single issue (GET /repos/:owner/:repo/issues/:issue_number/comments) accept, and notably which parameters available on the repository-wide listing endpoint are absent?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_093",
+  "url": "https://www.pkgpulse.com/blog/state-of-javascript-build-tools-2026",
+  "query": "In 2026 JavaScript build tool benchmarks for a 500-component application, what are Rspack's dev cold start time, HMR update speed, and production build time?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_095",
+  "url": "https://forem.com/archibaldtitan/how-to-deploy-your-ai-model-to-production-complete-hosting-guide-43i3",
+  "query": "In a GitHub Actions CI/CD workflow for AI model deployment to DigitalOcean, what file paths should trigger the deployment workflow on push to main?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_096",
+  "url": "https://www.truefoundry.com/blog/aws-bedrock-pricing-explained-everything-you-need-to-know",
+  "query": "What is the approximate minimum monthly baseline cost of an AWS Bedrock Knowledge Base backed by OpenSearch Serverless in us-east-1, and what drives this floor cost even with zero query traffic?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_097",
+  "url": "https://cvefind.com/CVE-2026-26116",
+  "query": "For CVE-2026-26116, what is the upper-bound excluded version for Microsoft SQL Server 2025 in the CU (Cumulative Update) branch?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_099",
+  "url": "https://react.dev/learn/reusing-logic-with-custom-hooks",
+  "query": "In React, what three specific custom Hook names does the React team identify as anti-pattern \"lifecycle\" Hooks that should not be created as convenience wrappers for useEffect?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_100",
+  "url": "https://github.com/servo/core-foundation-rs/issues/729",
+  "query": "In objc2-core-foundation's design, why is a direct CFURL to String conversion not provided, and what conversions are offered instead?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_101",
+  "url": "https://www.w3.org/TR/security-guidelines-cryptography/",
+  "query": "In the W3C cryptography usage guidelines, what is the minimum recommended HMAC tag length when SHA-1 is used as the underlying hash function?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_102",
+  "url": "https://stevekinney.com/courses/full-stack-typescript/testing-with-zod-and-express",
+  "query": "In the Jest test pattern for Express API validation using superagent and zod-fixture, what specific invalid username and email values are sent to test the POST /users endpoint when the Zod schema enforces z.string().min(3) on username and z.string().email() on email?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_104",
+  "url": "https://noqta.tn/en/tutorials/better-auth-nextjs-authentication-tutorial-2026",
+  "query": "In a feature comparison between Better Auth, Auth.js v5, and a custom JWT implementation, what are the approximate bundle sizes listed for each approach?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_107",
+  "url": "https://docs.coveo.com/en/q3cb0086/",
+  "query": "In the Coveo Commerce API, what syntax is used to wrap a query string so Coveo treats it as literal text instead of a query expression?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_109",
+  "url": "https://lib.rs/crates/typescript-type-def",
+  "query": "In the typescript-type-def Rust crate, how does a struct field of type `usize` appear in the generated TypeScript definition file?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_110",
+  "url": "https://unmarkdown.com/blog/build-mcp-server-from-scratch-2026",
+  "query": "What localhost URL and port does the MCP Inspector debugging tool open on when launched with npx?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_114",
+  "url": "https://dev.to/pockit_tools/vercel-ai-sdk-complete-guide-building-production-ready-ai-chat-apps-with-nextjs-4cp6",
+  "query": "In the Vercel AI SDK comprehensive error handling pattern using AIError codes, what HTTP status code is returned when the error code is `invalid_api_key`, and what user-facing message accompanies it?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_117",
+  "url": "https://dev.to/tech_croc_f32fbb6ea8ed4/pytorch-vs-tensorflow-vs-keras-for-deep-learning-a-comparative-guide-10f7",
+  "query": "Beyond TensorFlow's official Python, JavaScript, C++, and Java APIs, what is the complete set of programming languages that have third-party TensorFlow language binding packages?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_120",
+  "url": "https://voxel51.com/blog/how-to-use-segment-anything-model-sam3",
+  "query": "How many images, videos, and unique concepts are annotated in Meta's SA-Co (Segment Anything with Concepts) benchmark dataset released alongside SAM 3?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_121",
+  "url": "https://www.javacodegeeks.com/2026/03/spring-boot-4-spring-ai-and-ai-first-java-development.html",
+  "query": "After Undertow support was removed in Spring Boot 4 due to Servlet 6.1 incompatibility, what specific embedded container versions are the supported migration targets?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_122",
+  "url": "https://cs4760.csl.mtu.edu/2026/lectures/interactive-3d-graphics-on-the-web/",
+  "query": "In the Three.js drone flight project (2021-SD-UI/drone_flight), when implementing ToggledOrbitControls with keydown/keyup event listeners for toggling between orbit and drag modes, what DOM element do the keyboard event listeners have to be attached to, and what alternative was tried unsuccessfully?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_124",
+  "url": "https://www.builder.io/blog/parallax-scrolling-effect",
+  "query": "In a React parallax scrolling implementation using direct scroll with transform, what are the typical base translateY offset values for the foreground layer on mobile vs desktop, and at what viewport width breakpoint do they switch?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_126",
+  "url": "https://github.com/huggingface/diffusers/issues/10662",
+  "query": "According to Hugging Face diffusers maintainers, how many training images were used for the best-quality ControlNet, and what type of ControlNet was it?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_127",
+  "url": "https://github.com/coactum/moodle-mod_discourse",
+  "query": "What known incompatibility exists for the moodle-mod_discourse plugin, and what happens if you trigger it?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_128",
+  "url": "https://forem.com/kenzic/real-time-face-tracking-in-the-browser-with-mediapipe-22c9",
+  "query": "In the kenzic/monkey-ears-filter MediaPipe Face Landmarker demo, what specific pixel offsets are applied to the landmark coordinates when translating the canvas context for drawing the left ear overlay image?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_129",
+  "url": "https://aws.amazon.com/blogs/machine-learning/using-agents-for-amazon-bedrock-to-interactively-generate-infrastructure-as-code",
+  "query": "In the AWS blog post solution for generating Terraform IaC from architecture diagrams using Amazon Bedrock Agents, what are the two action group names referenced in the agent instruction prompt?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_130",
+  "url": "https://vitest.dev/guide/browser/component-testing",
+  "query": "In Vitest's browser mode, what method can be chained on locator queries to provide fallback selector strategies, and what common Playwright-like method is explicitly noted as unavailable on the `page` object?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_131",
+  "url": "https://dev.to/synsun/fastapi-vs-django-vs-flask-what-i-actually-use-after-testing-all-three-in-2026-4e04",
+  "query": "In a load test comparing async FastAPI to synchronous Flask with 50 concurrent users calling an LLM endpoint, how many fewer workers did the FastAPI version require?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_133",
+  "url": "https://github.com/configu/configu",
+  "query": "What three types of custom implementations does the Configu project support as part of its extensibility?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_135",
+  "url": "https://github.com/krig/gleam-presenterm",
+  "query": "Which five terminal emulators does presenterm explicitly list as supporting images and animated gifs?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_136",
+  "url": "https://nixos-and-flakes.thiscute.world/development/intro",
+  "query": "In the Nix pkgs.mkShell implementation, when assembling the final `shellHook` from multiple `inputsFrom` derivations, what transformation is applied to the `inputsFrom` list before extracting and concatenating the individual shellHook values?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_137",
+  "url": "https://techbullion.com/gpunex-vs-runpod-vs-vast-ai-gpu-cloud-comparison-2026/",
+  "query": "What are the listed and effective hourly cost ranges for an A100 80GB GPU on Vast.ai's marketplace in 2026, after factoring in downtime and reliability issues on unverified hosts?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_138",
+  "url": "https://github.com/DSpace/RestContract/blob/main/bitstreams.md",
+  "query": "What dspace.cfg property controls whether the DSpace bitstream access status endpoint calculates status based on the anonymous group or the current user?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_139",
+  "url": "https://www.cncf.io/blog/2026/03/18/understanding-kubernetes-metrics-best-practices-for-effective-monitoring/",
+  "query": "In Kubernetes control plane monitoring, at what scheduler queue length does it indicate potential resource allocation or configuration issues, and what operational aspects are negatively affected by a persistently large scheduler queue?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_142",
+  "url": "https://www.research.ibm.com/blog/pytorch-support-ibm-spyre",
+  "query": "What is the maximum overhead target for IBM Spyre's out-of-tree PyTorch device registration compared to direct device access?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_146",
+  "url": "https://developers.hubspot.com/docs/api-reference/marketing-transactional-single-send-v3/guide",
+  "query": "In HubSpot's Single-Send transactional email API, under what specific condition does the `customProperties` field support arrays?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_148",
+  "url": "https://dev.to/suhas_mallesh/deploy-your-first-azure-ai-agent-with-terraform-model-agnostic-and-future-proof-1g72",
+  "query": "What SKU is required for the Azure AI Services cognitive account to support stateful features like the AI agent service, and what Terraform property must be enabled for agent operations?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_149",
+  "url": "https://www.pythonforbiginners.com/2025/06/create-animations-in-tkinter-python-gui.html",
+  "query": "In a Tkinter shake animation for form validation errors, what is the maximum shake count and the delay in milliseconds between each shake step in the commonly shown shake_widget implementation?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_153",
+  "url": "https://nextjs.org/docs/app/guides/data-security",
+  "query": "In Next.js, how long are Server Action secure IDs cached before they are regenerated?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_154",
+  "url": "https://reactnative.dev/blog/2026/02/11/react-native-0.84",
+  "query": "What environment variables must be passed during CocoaPods installation to opt out of Hermes V1 on iOS in React Native 0.84?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_155",
+  "url": "https://codercrafter.in/blogs/react-native/context-api-vs-redux-vs-zustand-the-2025-state-management-showdown-real-talk",
+  "query": "In a side-by-side comparison of React state management solutions, what are the approximate bundle sizes listed for Redux Toolkit with React-Redux and for Zustand?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_159",
+  "url": "https://vercel.com/docs/environment-variables",
+  "query": "What is the minimum Vercel CLI version required to use development environment variable features such as `vercel env pull`?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_160",
+  "url": "https://react.dev/learn/synchronizing-with-effects",
+  "query": "In React, when useEffect-based analytics logging fires twice in development due to Strict Mode, what alternative event source does the React team recommend for sending analytics instead of Effects, and what specific browser API do they recommend for tracking how long components remain visible in the viewport?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_161",
+  "url": "https://github.com/huggingface/transformers/issues/30860",
+  "query": "What approximate memory reduction percentage is achieved for Mistral models by removing `logits = logits.float()` from the forward pass in HuggingFace Transformers ModelForCausalLM?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_163",
+  "url": "https://www.getknit.dev/blog/ats-integration-guide",
+  "query": "Beyond standard dual encryption for data at rest and in transit, what additional security measure does Knit's unified API platform apply specifically to personally identifiable information in ATS integrations?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_165",
+  "url": "https://docs.gitlab.com/18.5/user/project/issues/create_issues/",
+  "query": "In GitLab, what URL parameter is used to prefill description templates specifically for tasks, OKRs, and epics when creating issues via URL, and in which version was it introduced?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_166",
+  "url": "https://articles.mergify.com/best-practice-for-software-development/",
+  "query": "When first implementing CI/CD, what is the recommended ideal maximum duration for the CI pipeline that automates builds and unit tests on every commit?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_168",
+  "url": "https://forem.com/link2twenty/react-singletons-arent-as-evil-as-you-think-44m8",
+  "query": "In a TypeScript singleton-based ToastManager built on TypedEventTarget for React, what are the four allowed literal values for the Toast interface's `type` property?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_169",
+  "url": "https://github.com/react-native-skia/react-native-skia",
+  "query": "In the react-native-skia project's Linux build configuration, what is the default value of the `is_component_build` gn arg?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_172",
+  "url": "https://thelinuxcode.com/what-is-mixed-precision-training-a-practical-2026-era-guide-for-faster-deep-learning/",
+  "query": "In mixed precision training guides, what GPU idle time percentage range indicates that enabling AMP is unlikely to provide meaningful speedup due to a dataloader bottleneck?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_174",
+  "url": "https://scrimba.com/articles/how-to-learn-javascript-the-complete-beginners-guide-2026/",
+  "query": "How long is Scrimba's Advanced JavaScript course and who teaches it?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_178",
+  "url": "https://www.sitepoint.com/why-react-19-s-compiler-changes-everything-for-senior-devs/",
+  "query": "During React Compiler migration, what two specific failure modes can occur when removing useMemo from values that provided referential stability for useEffect dependency arrays?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_179",
+  "url": "https://aws.amazon.com/blogs/machine-learning/accelerate-custom-llm-deployment-fine-tune-with-oumi-and-deploy-to-amazon-bedrock/",
+  "query": "What default EC2 instance type, AMI, and storage volume are provisioned by the Oumi fine-tuning Bedrock Custom Model Import setup script (setup-aws-env.sh)?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_180",
+  "url": "https://lancedb.com/blog/rethinking-table-file-paths-lance-multi-base-layout/",
+  "query": "In Lance's multi-base layout protobuf specification, which field in the BasePath message is defined as optional, and what is its data type?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_181",
+  "url": "https://blog.logrocket.com/tailwind-css-guide/",
+  "query": "In a Tailwind CSS v4 glassmorphism implementation using @utility, what are the backdrop-filter blur values for a base `glass` utility, a `glass-strong` utility for modals, and a `popup-blur` overlay utility?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_182",
+  "url": "https://checkmarx.com/learn/ai-security/top-12-ai-developer-tools-in-2026-for-security-coding-and-quality/",
+  "query": "How much less test maintenance does testRigor claim compared to Selenium or Appium-based frameworks?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_183",
+  "url": "https://spec.openapis.org/oas/latest.html",
+  "query": "In OpenAPI Specification v3.2.0, what is the default `style` value for a Parameter Object with `in: \"cookie\"` when using `schema`, and what style is recommended instead?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_184",
+  "url": "https://dev.to/rahulxsingh/code-review-best-practices-the-complete-guide-for-engineering-teams-2026-52a4",
+  "query": "When measuring code review effectiveness using time-to-merge as a metric, what is the recommended target for a standard pull request and what threshold is considered excellent?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_186",
+  "url": "https://fluttergems.dev/widget-library-ui-framework/",
+  "query": "What does the Flutter adaptive_platform_ui package automatically render for devices running iOS 26 or later?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_191",
+  "url": "https://hammerspoon.org/docs/LuaSkin/Classes/LuaSkin/index.html",
+  "query": "In LuaSkin's pushNSObject method, what is the ordered list of default NSObject classes checked for conversion to Lua representations?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_192",
+  "url": "https://github.com/spring-projects/spring-ai/releases/tag/v2.0.0-M3",
+  "query": "What configuration file path does Spring AI's OpenAiEmbeddingModel use for specifying custom embedding dimensions?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_194",
+  "url": "https://www.mikeash.com/pyblog/friday-qa-2012-03-02-key-value-observing-done-right-take-2.html",
+  "query": "In MAKVONotificationCenter's observation removal method, when a key path is specified, does it match helpers that observe any of the specified key paths, or only those whose key path set exactly matches?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_196",
+  "url": "https://sqlite.org/fileformat.html",
+  "query": "In SQLite's freelist trunk page format, how many entries at the end of the array are avoided by newer versions for backward compatibility with older versions?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_199",
+  "url": "https://forums.swift.org/t/weird-behavior-using-mainactor-isolation-across-modules-on-ios-17/82628",
+  "query": "How can the Swift compiler bug involving `nonisolated(nonsending)` function type metadata crashing on older OS versions be reproduced without using SwiftUI or Combine?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_200",
+  "url": "https://www.brimco.io/software/issue-tracking-software/",
+  "query": "What automation capability does Zoho BugTracker offer for handling incoming bug reports, and what is its entry-level per-user pricing?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_201",
+  "url": "https://github.com/anthropics/claude-code/issues/34430",
+  "query": "In Claude Code on macOS, what is the root cause when renaming a parent directory while the CLI is running leads to a persistent \"--print\" error across all directories, even after reinstallation?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_202",
+  "url": "https://docs.lumalabs.ai/docs/python-video-generation",
+  "query": "In the Luma AI Python SDK, what is the retry policy and timeout for callback_url notifications when the endpoint returns a non-200 status code?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_206",
+  "url": "https://milvus.io/docs/v2.4.x/schema.md",
+  "query": "What is the maximum allowed value for the max_length property of a VARCHAR field in Milvus?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_207",
+  "url": "https://nextjs.org/blog/next-16-2",
+  "query": "What prerequisite experimental flag must be enabled for `experimental.cachedNavigations` to work in Next.js 16.2?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_208",
+  "url": "https://buttondown.com/weekly-project-news/archive/weekly-github-report-for-maui-december-01-2025/",
+  "query": "In .NET MAUI, what is the workaround for custom MapHandler event handlers not firing on iOS when the linker is set to \"Link Framework SDK Only\"?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_209",
+  "url": "https://playwright.help/docs/next/api/class-browsercontext",
+  "query": "What is the default value of the `updateMode` option in Playwright's `browserContext.routeFromHAR()` method, and what does it omit?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_210",
+  "url": "https://oneuptime.com/blog/post/2026-02-02-flask-celery-background-tasks/view",
+  "query": "In a Celery task that imports CSV files with chunked processing and progress tracking, what default chunk_size is used when no import options are specified?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_211",
+  "url": "https://smashsend.com/blog/email-drip-campaign-examples",
+  "query": "In a B2B SaaS feature announcement email drip campaign, what is the recommended target percentage of the user segment that should adopt a new feature, and within what timeframe?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_215",
+  "url": "https://developer.chrome.com/blog/new-in-devtools-144",
+  "query": "What Chrome flag must be enabled to use individual network request throttling in Chrome 144 DevTools, and why is it needed?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_216",
+  "url": "https://github.com/semver/semver/pull/682",
+  "query": "In the semver 3.0.0 LIBRARY version RFC proposal (PR #682), what specific version number was proposed as the correct bump for the Rails 5.2.4 breaking change instead of going to 6.x?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_217",
+  "url": "https://github.com/github/gh-aw/issues/16294",
+  "query": "What GraphQL-Features header value is required when using GitHub's GraphQL API to assign the Copilot coding agent to an issue with a specific model selection?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_218",
+  "url": "https://dev.to/amals367/i-ship-a-lot-of-apiwebhook-integrations-heres-how-i-make-them-not-hurt-in-production-50hb",
+  "query": "In a two-layer webhook logging strategy that separates request-level and async job-level logging, what four specific data points should be captured at the job/worker processing layer?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_219",
+  "url": "https://github.com/WCSCourses/index/blob/main/Docker_guide.md",
+  "query": "What Globus endpoint names should you search for when downloading Wellcome Connecting Science (WCS) Docker course files?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_221",
+  "url": "https://www.hackingwithswift.com/forums/100-days-of-swiftui/day-53-swiftdata-and-swiftui-introduction-data-not-persisting/28494",
+  "query": "When using SwiftData with iOS 18.1.1 on a physical device, under what condition does the data persistence bug remain even after upgrading the device OS?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_225",
+  "url": "https://awscli.amazonaws.com/v2/documentation/api/latest/reference/rekognition/get-face-search.html",
+  "query": "What regex pattern constraint applies to the JobTag output field in the AWS Rekognition GetFaceSearch API?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_230",
+  "url": "https://github.com/github/github-mcp-server/issues/2229",
+  "query": "In the github-mcp-server project, what existing type names in pullrequests.go must the proposed list_pull_request_review_threads tool's implementation avoid colliding with?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_231",
+  "url": "https://spin.atomicobject.com/react-native-skia/",
+  "query": "In the gvanderclay/skia-white-board React Native Skia project, what are the predefined stroke width values available in the toolbar for brush thickness selection?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_233",
+  "url": "https://docs.astral.sh/uv/concepts/configuration-files/",
+  "query": "In uv, how are array settings merged when they appear in both project-level and user-level configuration files?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_234",
+  "url": "https://docs.oracle.com/en/cloud/paas/content-cloud/solutions/integrate-oracle-content-management-using-oauth.html",
+  "query": "In Oracle Content Management, after creating a new OAuth client with client credentials in IDCS or IAM Identity Domain, how long must you wait before the client appears in search within the OCM web UI Members dialog?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_235",
+  "url": "https://thelinuxcode.com/building-a-rest-api-with-php-and-mysql-in-2026-a-practical-crud-service-you-can-run-locally/",
+  "query": "In a PHP REST API using PDO with a users endpoint, what is the default pagination limit and the maximum allowed limit value for the GET /users list endpoint?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_236",
+  "url": "https://blog.jetbrains.com/go/2026/03/02/secure-go-error-handling-best-practices/",
+  "query": "In the \"split-brain\" SafeError pattern for secure Go error handling, what format string does the LogString() method use to produce the detailed internal string?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_237",
+  "url": "https://github.com/software-mansion/react-native-reanimated/discussions/7264",
+  "query": "In react-native-worklets, what builtins does createWorkletRuntime provide to a Worklet Runtime by default?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_240",
+  "url": "https://github.com/rive-app/rive-react-native/blob/main/docs/rive-react-native-reference.md",
+  "query": "In rive-react-native, what happens when the `stop` ref method is called without passing any animationNames argument?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_243",
+  "url": "https://dev.to/devjordan/nextjs-15-app-router-complete-guide-to-server-and-client-components-5h6k",
+  "query": "In Next.js 15 App Router, when fixing a hydration mismatch for a time-dependent Client Component by deferring rendering to useEffect, what TypeScript type annotation is used for the useState hook's generic parameter, and what fallback text is displayed while the value is still unset?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_246",
+  "url": "https://jotai.pmnd.rs/",
+  "query": "In Jotai's official extension ecosystem, which two atom types are specifically cited as examples of extensions that provide two-way data binding?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_247",
+  "url": "https://www.cozcore.com/blog/flutter-vs-react-native-2026",
+  "query": "In a 2026 comparison of Flutter vs React Native for enterprise apps, what framework is recommended for offline-first applications with complex local data, and what specific reasoning is given for that recommendation?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_248",
+  "url": "https://github.com/rootcause-rs/rootcause",
+  "query": "What is the Minimum Supported Rust Version (MSRV) for the rootcause error handling library?",
+  "lang": "en",
+  "gold": []
+ },
+ {
+  "id": "highlights_249",
+  "url": "https://reintech.io/blog/how-to-call-javascript-from-webassembly-and-vice-versa",
+  "query": "In a comparison of WebAssembly-JavaScript interop patterns, which pattern is classified as \"High\" complexity, and what is it best suited for?",
+  "lang": "en",
+  "gold": []
+ }
+]

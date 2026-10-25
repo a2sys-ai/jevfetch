@@ -34,6 +34,8 @@ The 95% interval of the cost ratio includes no difference in either language. Th
 
 At the tool level, asked for a specific fact, jevfetch returned the reference sentence verbatim in 81 of 81 outputs, against 25 of 81 for a single WebFetch call and 32 of 81 when WebFetch read further windows (27 English questions, three runs each, 2026-10-09, Claude Code 2.1.294). Full conditions and limits are in [bench/RESULTS.md](https://github.com/a2sys-ai/jevfetch/blob/main/bench/RESULTS.md).
 
+On Exa's public WebCode Highlights set, 137 of its 250 coding questions (those whose cited answer was on the page as fetched), with the URL given and one run each (Claude Code 2.1.310; WebFetch on 2026-10-25, jevfetch on 2026-10-26), the agent answered all 137 correctly with jevfetch and 132 with WebFetch. Over the same 137 questions (Claude Code 2.1.310; jevfetch on 2026-10-26, WebFetch on 2026-10-25), jevfetch's mean time was 0.69 times WebFetch's and its mean cost 1.20 times (runs a day apart, so the time ratio also carries any change in API latency). WebFetch's five misses of the 137 were four pages that refused WebFetch and one where it got only the site's navigation. These counts are re-graded on whether the answer gives what the question asks; under the stricter original grading of the same 274 runs (Claude Code 2.1.310, 2026-10-25 and 2026-10-26) they are 136 and 126. The seven of the 274 verdicts that the re-grading changed, and the five answers still wrong, were checked by hand.
+
 ## Example
 
 ```bash

@@ -196,5 +196,41 @@ for example WebFetch with Haiku 4.5 against WebFetch with Haiku 5.5 against jevf
 instruction file; `webfetch-minimal.md` is a one-sentence instruction, used to measure
 how much of a cost difference comes from instructions rather than from the reader.
 
+## WebCode Highlights
+
+`webcode.py` compares the readers on Exa's WebCode Highlights items ([exa-labs/benchmarks](https://github.com/exa-labs/benchmarks),
+MIT; notice in `webcode-highlights/LICENSE`) with search held fixed: every reader gets the item's URL and question.
+`webcode-highlights/` holds the 137 items behind the published figures (`items.json`), and the question file and
+rubric that `bench.agents` takes for them. An item was kept when its citation excerpt was on the page as fetched,
+in jevfetch's rendering or in the raw HTML; `webcode.py convert` makes these files from the dataset and those two
+checks, which are not part of this repository. Like the comparisons above, this is a manual, paid run.
+
+```bash
+R=bench/reports/webcode-<date>
+I=bench/webcode-highlights
+uv run python bench/webcode.py tools $R/tools --items $I/items.json --thresholds 0.6
+uv run python bench/webcode.py judge $R/tools --items $I/items.json
+uv run python bench/webcode.py summary $R/tools
+A=(--questions $I/questions.json --rubric $I/rubric.json --arms webfetch-only,jevfetch-only)
+uv run python -m bench.agents run $R/agents "${A[@]}" --reps 1 --concurrency 1 --seed 7 --with-url --lang en
+uv run python -m bench.agents judge $R/agents "${A[@]}"
+uv run python -m bench.agents report $R/agents "${A[@]}" --seed 0
+uv run python bench/webcode.py regrade $R/agents --items $I/items.json
+```
+
+- `tools` runs WebFetch through `claude -p`, once and with continuation windows as in the WebFetch comparison, and
+  jevfetch at each candidate threshold given. `judge` asks a Sonnet judge whether each returned text holds the
+  information for the expected answer: one vote per distinct text, two more for every text of an item whose texts
+  got different first votes. A refused fetch, an HTTP error page, or a block page counts as a failed fetch.
+- The agent arms `webfetch-only` and `jevfetch-only` allow nothing but the reader (no `curl`, no WebSearch with
+  `--with-url`), so the reader is the only difference. `--questions` and `--rubric` point `bench.agents` at these
+  files instead of its own 30 questions.
+- The rubric holds each item's whole expected answer, and the expected answers often explain more than their
+  question asks, so the rubric judge fails answers that leave that out. `regrade` asks a Sonnet judge, three votes
+  per answer and without saying which arm wrote it, whether the answer gives what the question asks. Read every
+  verdict that changes, and every answer still judged wrong, before publishing.
+- Committed per run, at the top of `reports/webcode-<date>/`: `report.md` from `bench.agents report`, `tools.txt`
+  from `summary`, and `regrade.txt` from `regrade`. Rows, judge votes, traces and the pages fetched stay local.
+
 Only `report.md` of a results directory is committed; `runs.json` (answers, costs, judge votes),
 `schedule.json`, traces, work directories, Jev recordings of the runs and the judge's raw replies stay local. The published numbers, and the reports they come from, are in `RESULTS.md`.
