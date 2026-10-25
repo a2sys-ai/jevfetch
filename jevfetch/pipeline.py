@@ -24,7 +24,7 @@ Status = Literal["filtered", "passthrough", "no_match", "empty", "fetch_error"]
 
 @dataclass(frozen=True)
 class Config:
-    candidate_threshold: float = 0.3
+    candidate_threshold: float = 0.6
     keep_threshold: float = 0.8
     neighbor_threshold: float = 0.6
     passthrough_tokens: int = 2000
@@ -104,9 +104,19 @@ async def select_relevant_async(
     jev = jev or Jev(concurrency=cfg.concurrency, model=cfg.model)
     try:
         before = (jev.input_tokens, jev.cached_input_tokens, jev.requests)
-        stage1 = await scoring.fanout(jev, blocks, query, cfg.window_tokens)
-        candidates = [i for i, v in stage1.items() if v >= cfg.candidate_threshold]
-        stage2 = await scoring.rescore(jev, blocks, candidates, query) if candidates else {}
+
+        # A window's candidates go to stage 2 as soon as that window is scored, not after the slowest window.
+        async def window(win: list[Block]) -> tuple[dict[int, float], dict[int, float]]:
+            scores = await scoring.fanout(jev, win, query, cfg.window_tokens)
+            candidates = [i for i, v in scores.items() if v >= cfg.candidate_threshold]
+            return scores, await scoring.rescore(jev, blocks, candidates, query) if candidates else {}
+
+        # Merged in page order, not arrival order: choose_blocks breaks score ties by dict order.
+        stage1: dict[int, float] = {}
+        stage2: dict[int, float] = {}
+        for scores, rescored in await asyncio.gather(*(window(w) for w in scoring.windows(blocks, cfg.window_tokens))):
+            stage1.update(scores)
+            stage2.update(rescored)
         usage = (jev.input_tokens - before[0], jev.cached_input_tokens - before[1], jev.requests - before[2])
         model = ",".join(sorted(jev.models))
     finally:

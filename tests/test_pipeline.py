@@ -1,3 +1,4 @@
+import asyncio
 import json
 from pathlib import Path
 
@@ -22,7 +23,7 @@ class FakeJev:
 def fake_scores(monkeypatch, stage1: dict[int, float], stage2: dict[int, float]):
     async def fanout(jev, blocks, query, window_tokens):
         jev.requests += 1
-        return stage1
+        return {b.id: stage1[b.id] for b in blocks if b.id in stage1}
 
     async def rescore(jev, blocks, ids, query):
         jev.requests += len(ids)
@@ -89,7 +90,61 @@ async def test_long_document_is_filtered_and_usage_counted(monkeypatch):
     res = await select_relevant_async(blocks_of(20), "q", Config(min_output_tokens=0), FakeJev())
     assert res.status == "filtered"
     assert res.blocks_kept == 2 and "block 7 " in res.text and "block 0 " in res.text
-    assert res.jev_requests == 2 and res.model == "jev-test"
+    windows = len(scoring.windows(blocks_of(20), Config().window_tokens))
+    assert res.jev_requests == windows + 1 and res.model == "jev-test"
+
+
+async def test_stage2_starts_while_a_slower_window_is_still_scored(monkeypatch):
+    blocks = blocks_of(20)
+    assert len(scoring.windows(blocks, Config().window_tokens)) > 1
+    rescored = asyncio.Event()
+
+    async def fanout(jev, win, query, window_tokens):
+        if win[0].id == 0:
+            await rescored.wait()  # the first window answers only after another window reached stage 2
+        return {b.id: 0.9 for b in win}
+
+    async def rescore(jev, blocks, ids, query):
+        rescored.set()
+        return {i: 0.99 for i in ids}
+
+    monkeypatch.setattr(scoring, "fanout", fanout)
+    monkeypatch.setattr(scoring, "rescore", rescore)
+    res = await asyncio.wait_for(select_relevant_async(blocks, "q", Config(), FakeJev()), 1)
+    assert res.status == "filtered"
+
+
+async def test_default_candidate_threshold_sends_six_tenths_and_above_to_stage2(monkeypatch):
+    sent: list[int] = []
+
+    async def fanout(jev, win, query, window_tokens):
+        return {b.id: {3: 0.59, 5: 0.6}.get(b.id, 0.0) for b in win}
+
+    async def rescore(jev, blocks, ids, query):
+        sent.extend(ids)
+        return {i: 0.9 for i in ids}
+
+    monkeypatch.setattr(scoring, "fanout", fanout)
+    monkeypatch.setattr(scoring, "rescore", rescore)
+    await select_relevant_async(blocks_of(20), "q", Config(), FakeJev())
+    assert sent == [5]
+
+
+async def test_score_ties_are_broken_by_page_order_not_arrival_order(monkeypatch):
+    blocks = blocks_of(20)
+    last = scoring.windows(blocks, Config().window_tokens)[-1][0].id
+    answered = asyncio.Event()
+
+    async def fanout(jev, win, query, window_tokens):
+        if win[0].id == last:
+            answered.set()
+        else:
+            await answered.wait()  # the last window arrives first
+        return {b.id: 0.2 for b in win}
+
+    monkeypatch.setattr(scoring, "fanout", fanout)
+    res = await asyncio.wait_for(select_relevant_async(blocks, "q", Config(min_output_tokens=300), FakeJev()), 1)
+    assert "block 1 " in res.text and "block 2 " in res.text and f"block {last} " not in res.text
 
 
 async def test_no_block_passing_keep_threshold_reports_no_match(monkeypatch):
