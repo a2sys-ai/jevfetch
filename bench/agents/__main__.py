@@ -77,6 +77,17 @@ ARMS = {
         "allowed": ["WebSearch", "Bash(curl:*)", "Bash(grep:*)", "Bash(head:*)", "Bash(jevfetch:*)"],
         "instructions": REPO / "skills" / "jevfetch" / "SKILL.md",
     },
+    # The same two arms with the reader as the only way to read a page: no curl, grep or head to fall back on.
+    "webfetch-only": {
+        "tools": "WebSearch,WebFetch",
+        "allowed": ["WebSearch", "WebFetch"],
+        "instructions": ROOT / "webfetch.md",
+    },
+    "jevfetch-only": {
+        "tools": "WebSearch,Bash",
+        "allowed": ["WebSearch", "Bash(jevfetch:*)"],
+        "instructions": REPO / "skills" / "jevfetch" / "SKILL.md",
+    },
 }
 DEFAULT_ARMS = ("webfetch", "jevfetch")
 
@@ -100,6 +111,12 @@ ARM_ORDER = tuple(ARMS)  # report order; `main` trims ARMS to the arms being run
 def config_mismatch(old: dict, expected: dict) -> list[str]:
     """Configuration keys on which a recorded run differs from what this invocation would run."""
     return [k for k in CONFIG_KEYS if old.get(k) != expected.get(k)]
+
+
+def paired_arms(arms: list[str]) -> tuple[str | None, list[str]]:
+    """The jevfetch arm ("jevfetch" or "jevfetch-only") and the WebFetch arms it is compared with."""
+    subject = next((a for a in arms if a.startswith("jevfetch")), None)
+    return subject, [a for a in arms if a.startswith("webfetch")] if subject else []
 
 
 def arms_present(rows: list[dict]) -> list[str]:
@@ -188,8 +205,11 @@ def jevfetch_revision() -> dict:
     return {"revision": rev.stdout.strip(), "revision_dirty": bool(status.stdout.strip())}
 
 
+QUESTIONS = ROOT / "questions.json"  # --questions replaces it, and --rubric replaces RUBRIC, for another suite
+
+
 def questions(ids: set[str] | None) -> list[dict]:
-    qs = json.loads((ROOT / "questions.json").read_text())
+    qs = json.loads(QUESTIONS.read_text())
     return [q for q in qs if not ids or q["id"] in ids]
 
 
@@ -541,14 +561,14 @@ def report(results: Path, seed: int) -> str:
             f"{sum(r['curl_calls'] for r in fin)} ({sum(r['curl_calls'] > 0 for r in fin)}) | "
             f"{sum(r['denied_calls'] > 0 for r in fin)} |"
         )
-    refs = [a for a in arms if a != "jevfetch"] if "jevfetch" in arms else []
+    subject, refs = paired_arms(arms)
     lines += [
         "",
         "## Paired comparison (jevfetch relative to each WebFetch arm, 95% bootstrap interval clustered by question)",
         "",
     ]
     for ref in refs:
-        st = paired_stats(rows, ref, "jevfetch", seed)
+        st = paired_stats(rows, ref, subject, seed)
         if st is None:
             continue
         est, lo, hi = st["cost"]
@@ -580,7 +600,7 @@ def report(results: Path, seed: int) -> str:
         if len(qids) >= 3 and refs:
             cost_cells, time_cells = [], []
             for ref in refs:
-                st = paired_stats(sub, ref, "jevfetch", seed)
+                st = paired_stats(sub, ref, subject, seed)
                 if st is None or st["questions"] < len(qids):
                     continue
                 tag = f" vs {ref}" if len(refs) > 1 else ""
@@ -607,7 +627,7 @@ def report(results: Path, seed: int) -> str:
                 f"{fmt(statistics.mean(r['main_output_tokens'] for r in rs), 0)} | "
                 f"{fmt(statistics.mean(r['jevfetch_calls'] + r['webfetch_calls'] for r in rs), 2)} | "
                 f"{sum(r['curl_calls'] for r in rs)} ({sum(r['curl_calls'] > 0 for r in rs)}) | "
-                f"{ratios[0] if a == 'jevfetch' else ''} | {ratios[1] if a == 'jevfetch' else ''} |"
+                f"{ratios[0] if a == subject else ''} | {ratios[1] if a == subject else ''} |"
             )
     splits = [(r["case"], r["arm"], r["rep"], r["grade"]["split"]) for r in rows if r["grade"] and r["grade"]["split"]]
     judged_runs = sum(
@@ -703,9 +723,17 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--with-url", action="store_true", help="give the agent the page URL and no WebSearch")
     ap.add_argument("--lang", choices=["ko", "en"], default="ko", help="language of the task prompt and question")
     ap.add_argument("--small-model", help="ANTHROPIC_SMALL_FAST_MODEL for the runs, e.g. claude-haiku-4-5-20251001")
+    ap.add_argument("--questions", type=Path, help="question file to use instead of bench/agents/questions.json")
+    ap.add_argument("--rubric", type=Path, help="JSON rubric {question id: {fact id: [element, ...]}} for --questions")
     args = ap.parse_args(argv)
-    global SMALL_MODEL
+    global SMALL_MODEL, QUESTIONS
     SMALL_MODEL = args.small_model
+    if bool(args.questions) != bool(args.rubric):
+        ap.error("--questions and --rubric go together")
+    if args.questions:
+        QUESTIONS = args.questions.resolve()
+        RUBRIC.clear()
+        RUBRIC.update(json.loads(args.rubric.read_text()))
     if args.command == "compare":
         sets = []
         for item in args.results:
