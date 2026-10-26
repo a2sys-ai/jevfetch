@@ -39,4 +39,28 @@ What these numbers are, and are not:
 - Bash allow rules named `curl`, `grep` and `head`. One of the 60 Korean WebFetch runs had a command refused, and in each language 3 of the 60 WebFetch runs had a `grep` pattern rejected by the machine's `grep` (ugrep); no jevfetch run had either. Those turns stay in the measured runs.
 - Costs are as billed, prompt caching included. The page bytes fetched and the Jev request bodies were not archived, so a run's reader inputs cannot be replayed exactly.
 
+## WebCode Highlights
+
+Exa's WebCode benchmark ([exa-labs/benchmarks](https://github.com/exa-labs/benchmarks), MIT) pairs coding questions with the page that answers them. We used its Highlights set with search held fixed: each reader got the item's URL and question. Of the 250 items, 137 were kept, those whose citation excerpt was on the page as fetched (in jevfetch's rendering or in the raw HTML); the other 113 were left out, 24 of them because the site refused the fetch.
+
+At the agent level ([report](reports/webcode-2026-10-26/report.md); Claude Code 2.1.310, Sonnet 5.5 main model, WebFetch's reader Haiku 5.5, Jev `jev-1.14.0`; English questions, the URL given and no web search, one run per question, run one at a time). The WebFetch runs are from 2026-10-25 and the jevfetch runs from 2026-10-26: when jevfetch's selection changed, only its 137 runs were made again, since the WebFetch runs do not use jevfetch.
+
+| reader | answers graded correct | under the original grading | mean cost per question | of which main model | of which reader model or Jev | main-model input tokens | median time |
+|---|---|---|---|---|---|---|---|
+| WebFetch, Haiku 5.5 (2026-10-25) | 132 of 137 | 126 | $0.0149 | $0.0131 | $0.0018 | 9,447 | 12.1 s |
+| jevfetch (2026-10-26) | 137 of 137 | 136 | $0.0180 | $0.0168 | $0.0011 | 12,647 | 8.1 s |
+
+Paired over the 137 questions (one run each, Claude Code 2.1.310; 95% bootstrap intervals that resample questions), jevfetch's runs of 2026-10-26 against WebFetch's of 2026-10-25: mean time 0.69 (0.66 to 0.72), cost 1.20 (1.13 to 1.28), and under the original grading +0.07 answers right per question (+0.03 to +0.12). The two readers ran a day apart, so the time ratio also carries any change in API latency between the two sessions. The cost difference is the main model reading jevfetch's verbatim output, which is longer than WebFetch's summary; Jev itself averaged $0.0011 per question over the 137 jevfetch runs of 2026-10-26.
+
+The original grading, in the report, asks a Sonnet judge whether the answer states the whole expected answer, and Highlights' expected answers often explain more than their question asks: an answer naming the right flag failed for leaving out why. `bench/webcode.py regrade` asked again whether each answer gives what the question asks, three votes per answer, without telling the judge which reader's agent wrote it, though 24 of the 274 answers name WebFetch or jevfetch in their own text ([summary](reports/webcode-2026-10-26/regrade.txt)). Every vote was unanimous. Of the 274 answers (137 per reader, Claude Code 2.1.310), seven verdicts went from wrong to right, six WebFetch answers of 2026-10-25 and one jevfetch answer of 2026-10-26, and none the other way; all seven were read by hand and answer the question. The five WebFetch answers still wrong are four pages that returned HTTP 403 or 503 to WebFetch and one where it received only the site's navigation and footer; these were read by hand too.
+
+At the tool level ([summary](reports/webcode-2026-10-26/tools.txt); Jev `jev-1.14.0`, WebFetch through Claude Code 2.1.310), on the 133 items whose page every reader fetched, the same kind of judge found the information needed for the expected answer in 133 jevfetch outputs of 2026-10-26, and in 120 single WebFetch calls and 123 WebFetch calls with continuation windows of 2026-10-25. Of those 133, jevfetch's output held the citation excerpt verbatim in 121, WebFetch's in 10 and 10. On the same 133 items, tool time summed to 124 s for jevfetch (2026-10-26) and 420 s and 453 s for WebFetch (2026-10-25).
+
+What these numbers are, and are not:
+
+- One run per question, in English, on coding and developer-documentation pages. Intervals resample questions only.
+- Items were kept by whether the excerpt was on the page as fetched, so pages that refused every fetch, or no longer held the excerpt, are not in the 137.
+- Pages were fetched live during each run, and the page bytes were not archived. jevfetch and WebFetch fetched each page at different times (a day apart at the agent level, about 90 minutes apart at the tool level), so a page that changed in between is not compared on the same bytes.
+- The jevfetch measured here is the one [How it works](../README.md#how-it-works) describes, with candidate threshold 0.6. One item (`highlights_215`) has its answer only in a note written as `<aside>`.
+
 How it is measured: [bench/README.md](README.md).

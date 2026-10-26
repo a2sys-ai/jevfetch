@@ -1,0 +1,1098 @@
+[
+ {
+  "id": "highlights_001",
+  "set": "highlights",
+  "url": "https://webrtc.googlesource.com/src/+/refs/heads/lkgr/modules/desktop_capture/desktop_capturer.cc",
+  "question": "What is the exact UMA histogram name that WebRTC's desktop capture module uses to log fullscreen detector usage in screen sharing?",
+  "excerpt": "void LogDesktopCapturerFullscreenDetectorUsage() {\n  RTC_HISTOGRAM_BOOLEAN(\"WebRTC.Screenshare.DesktopCapturerFullscreenDetector\",\n                        true);\n}",
+  "expected_answer": "The histogram name is \"WebRTC.Screenshare.DesktopCapturerFullscreenDetector\", logged as a boolean via RTC_HISTOGRAM_BOOLEAN."
+ },
+ {
+  "id": "highlights_003",
+  "set": "highlights",
+  "url": "https://bun.sh/docs/api/file-io",
+  "question": "In Bun.write(), what constraint applies to the use of sendfile for writing to a socket from a file or pipe on Linux?",
+  "excerpt": "| socket | file or pipe | sendfile (if http, not https) | Linux |",
+  "expected_answer": "sendfile is only used if the protocol is http, not https"
+ },
+ {
+  "id": "highlights_005",
+  "set": "highlights",
+  "url": "https://machinelearningplus.com/gen-ai/resilient-llm-client/",
+  "question": "In the ResilientLLMClient pattern for LLM API resilience, what default per-1K-token input and output cost rates does the _estimate_cost method use when a model is not found in the COST_TABLE?",
+  "excerpt": "def _estimate_cost(self, model, p_tok, c_tok):\n        rates = self.COST_TABLE.get(\n            model, {\"input\": 0.001, \"output\": 0.002})\n        return (p_tok / 1000 * rates[\"input\"]\n                + c_tok / 1000 * rates[\"output\"])",
+  "expected_answer": "The fallback default rates are $0.001 per 1K input tokens and $0.002 per 1K output tokens, used when the model isn't in COST_TABLE."
+ },
+ {
+  "id": "highlights_006",
+  "set": "highlights",
+  "url": "https://go.dev/cmd/go/internal/cfg%40go1.25.1",
+  "question": "In Go's cmd/go/internal/cfg package, when SetGOROOT is called with isTestGo set to true, which environment variables are used to determine build.ToolDir instead of runtime.GOOS and runtime.GOARCH?",
+  "excerpt": "If isTestGo is true, build.ToolDir is set based on the TESTGO_GOHOSTOS and TESTGO_GOHOSTARCH environment variables instead of runtime.GOOS and runtime.GOARCH.",
+  "expected_answer": "TESTGO_GOHOSTOS and TESTGO_GOHOSTARCH environment variables are used instead of runtime.GOOS and runtime.GOARCH."
+ },
+ {
+  "id": "highlights_011",
+  "set": "highlights",
+  "url": "https://fly.io/blog/sqlite-internals-btree/",
+  "question": "In SQLite's b+tree structure, assuming ~500 child references per interior page and 4KB leaf pages, what is the approximate maximum database size at a tree depth of 4?",
+  "excerpt": "At a tree depth of 4, we can hold about 500³ leaf pages, or about a 476GB database. That means we only need to read 4 pages to find a given record—even in a huge database!",
+  "expected_answer": "Approximately 476GB, since 500³ leaf pages at 4KB each yields about 476GB of data, requiring only 4 page reads to find any record."
+ },
+ {
+  "id": "highlights_015",
+  "set": "highlights",
+  "url": "https://github.com/avajs/ava",
+  "question": "What npm package does AVA reference for listing supported CI environments for its automatic parallel test runs feature?",
+  "excerpt": "AVA automatically detects whether your CI environment supports parallel builds. Each build will run a subset of all test files, while still making sure all tests get executed. See the [`ci-parallel-vars`](https://www.npmjs.com/package/ci-parallel-vars) package for a list of supported CI environments.",
+  "expected_answer": "The `ci-parallel-vars` npm package provides the list of supported CI environments for AVA's automatic parallel builds detection."
+ },
+ {
+  "id": "highlights_016",
+  "set": "highlights",
+  "url": "https://registry.npmjs.org/%40blumintinc%2Fuse-context-selector",
+  "question": "In @blumintinc/use-context-selector, how do you enable experimental suspense mode when using the useContextUpdate hook?",
+  "excerpt": "```javascript\nimport { useContextUpdate } from '@blumintinc/use-context-selector';\n\nconst update = useContextUpdate();\n\n// Wrap set state function\nupdate(() => setState(...));\n\n// Experimental suspense mode\nupdate(() => setState(...), { suspense: true });\n```",
+  "expected_answer": "Pass `{ suspense: true }` as the second argument to the update function returned by useContextUpdate, e.g. `update(() => setState(...), { suspense: true })`."
+ },
+ {
+  "id": "highlights_018",
+  "set": "highlights",
+  "url": "https://github.com/Aleph-Alpha/ts-rs",
+  "question": "In ts-rs with serde-compat enabled, what condition is required for serde's `skip_serializing` and `skip_serializing_if` attributes to have an effect on the generated TypeScript type?",
+  "excerpt": "**Note**: `skip_serializing` and `skip_serializing_if` only have an effect when used together with\n`#[serde(default)]`. This ensures that the generated type is correct for both serialization and deserialization.",
+  "expected_answer": "They only have an effect when used together with `#[serde(default)]`, ensuring the generated type is correct for both serialization and deserialization."
+ },
+ {
+  "id": "highlights_019",
+  "set": "highlights",
+  "url": "https://cli.github.com/manual/gh_help_reference",
+  "question": "Where does the `gh extension browse` command in the GitHub CLI write its debug log files when the `--debug` flag is enabled?",
+  "excerpt": "    --debug           Log to /tmp/extBrowse-*",
+  "expected_answer": "Debug logs are written to /tmp/extBrowse-* when using the --debug flag with gh extension browse."
+ },
+ {
+  "id": "highlights_021",
+  "set": "highlights",
+  "url": "https://github.com/spring-projects/spring-tools/releases/tag/5.1.0.RELEASE",
+  "question": "What version of lsp4j was the language server updated to in Spring Tools 5.1.0.RELEASE?",
+  "excerpt": "*(Spring Boot)* update lsp4j in language servers to `1.0.0` [#1781](https://github.com/spring-projects/spring-tools/issues/1781)",
+  "expected_answer": "lsp4j was updated to version 1.0.0 in the language servers"
+ },
+ {
+  "id": "highlights_023",
+  "set": "highlights",
+  "url": "https://gamedev.net/tutorials/programming/general-and-gameplay-programming/replicating-quake-3-character-physics-with-u3d-r5937/",
+  "question": "In the Urho3D Quake 3 character physics tutorial, what restitution and rolling friction values are set on the environment's RigidBody?",
+  "excerpt": "        environmentBody->SetFriction(0.8f);\n        environmentBody->SetRestitution(0.1f);\n        environmentBody->SetRollingFriction(0.1f);\n        environmentBody->SetAnisotropicFriction(Vector3(1.0f, 1.0f, 1.0f));",
+  "expected_answer": "Both restitution and rolling friction are set to 0.1f on the environment RigidBody."
+ },
+ {
+  "id": "highlights_025",
+  "set": "highlights",
+  "url": "https://img.ly/blog/ultimate-guide-to-ffmpeg/",
+  "question": "When converting a 117MB WAV file to FLAC using FFmpeg, what are the resulting file sizes at compression_level 0, compression_level 5 (default), and compression_level 12?",
+  "excerpt": "It's good if you know that flac results in a smaller file than WAV, as WAV doesn't actually compress by default:\n\n```\n117M bbb_audio.wav\n52M  bbb_audio_lossless_0.flac\n45M  bbb_audio_lossless_5.flac\n43M  bbb_audio_lossless_12.flac\n```",
+  "expected_answer": "compression_level 0 produces 52MB, compression_level 5 (default) produces 45MB, and compression_level 12 produces 43MB."
+ },
+ {
+  "id": "highlights_026",
+  "set": "highlights",
+  "url": "https://github.com/specta-rs/specta",
+  "question": "In the Specta Rust library, what attribute do you apply to a struct to prevent it from being included when calling `specta::export()` for bulk type collection?",
+  "excerpt": "#[derive(Type)]\n#[specta(collect = false)]\npub struct DontExportMe {\n    field: String,\n}",
+  "expected_answer": "The attribute `#[specta(collect = false)]` is applied to the struct to exclude it from bulk export via `specta::export()`."
+ },
+ {
+  "id": "highlights_029",
+  "set": "highlights",
+  "url": "https://better-i18n.com/en/blog/react-i18n-guide/",
+  "question": "How is TypeScript support characterized for the Better i18n React SDK compared to other React i18n libraries like react-intl and react-i18next?",
+  "excerpt": "| Better i18n React SDK | ~2KB | Partial | Full (inferred) | Yes | Low |",
+  "expected_answer": "Better i18n React SDK's TypeScript support is described as \"Full (inferred)\", whereas react-intl and react-i18next are both characterized as having \"Strong\" TypeScript support."
+ },
+ {
+  "id": "highlights_032",
+  "set": "highlights",
+  "url": "https://p0stman.com/what-is-a2a-protocol",
+  "question": "What are the recommended per-minute rate limits for an A2A endpoint when limiting unauthenticated requests by IP address versus authenticated requests by API key?",
+  "excerpt": "- Limit by IP address (for unauthenticated requests): 10-20 requests per minute\n- Limit by API key (for authenticated requests): 60-100 requests per minute",
+  "expected_answer": "The recommended rate limits are 10-20 requests per minute for unauthenticated requests limited by IP address, and 60-100 requests per minute for authenticated requests limited by API key."
+ },
+ {
+  "id": "highlights_033",
+  "set": "highlights",
+  "url": "https://github.com/ratatui/awesome-ratatui",
+  "question": "In the ratatui ecosystem, what is spotatui's relationship to the original spotify-tui project, and what other alternative is listed alongside it?",
+  "excerpt": "- [spotatui](https://github.com/LargeModGames/spotatui) - Spotify client with native streaming, synced lyrics, and audio visualization. A direct fork of spotify-tui with continued development and new features.\n- [spotify-player](https://github.com/aome510/spotify-player) - An independently developed Spotify player with full feature parity.\n- [spotify-tui](https://github.com/Rigellute/spotify-tui) - (Unmaintained) The original Spotify TUI; see spotatui (direct fork) or spotify-player (independent alternative).",
+  "expected_answer": "spotatui is described as a direct fork of spotify-tui (which is unmaintained), while spotify-player is listed as an independent alternative."
+ },
+ {
+  "id": "highlights_035",
+  "set": "highlights",
+  "url": "https://www.runpod.io/articles/guides/fp16-bf16-fp8-mixed-precision-speed-up-my-model-training",
+  "question": "When evaluating cloud GPU cost-efficiency for deep learning training with mixed precision, by approximately what factor does an NVIDIA A100 cost more per hour than a lower-end GPU, and how many times faster might it train a model, according to Runpod's cost-performance analysis?",
+  "excerpt": "while an A100 costs about 3× more per hour than a lower-end GPU, it might train a model 4–5× faster, giving you more bang for your buck",
+  "expected_answer": "According to Runpod's analysis, the A100 costs about 3× more per hour than a lower-end GPU, but it might train a model 4–5× faster, resulting in greater overall cost efficiency despite the higher hourly rate."
+ },
+ {
+  "id": "highlights_037",
+  "set": "highlights",
+  "url": "https://oneuptime.com/blog/post/2026-02-23-how-to-use-terraform-with-ephemeral-development-environments/view",
+  "question": "In a Terraform ephemeral environment module that generates environment names from git branch names, what is the maximum number of characters extracted from the branch name before sanitization?",
+  "excerpt": "locals {\n  # Generate a safe environment name from branch\n  env_name = replace(\n    lower(substr(var.branch_name, 0, 30)),\n    \"/[^a-z0-9-]/\", \"-\"\n  )",
+  "expected_answer": "The first 30 characters of the branch name are extracted using substr(var.branch_name, 0, 30), then lowercased and non-alphanumeric characters are replaced with hyphens."
+ },
+ {
+  "id": "highlights_038",
+  "set": "highlights",
+  "url": "https://blogs.pavanrangani.com/spring-boot-beginners-complete-guide/",
+  "question": "In Spring Data JPA, what two custom derived query methods can be defined in a JpaRepository for a Product entity to search by partial name match and by price below a threshold, and what are their parameter types?",
+  "excerpt": "// Repository — Spring generates all CRUD methods automatically\npublic interface ProductRepository extends JpaRepository<Product, Long> {\n    List<Product> findByNameContaining(String keyword);\n    List<Product> findByPriceLessThan(BigDecimal maxPrice);\n}",
+  "expected_answer": "findByNameContaining(String keyword) for partial name matching via SQL LIKE, and findByPriceLessThan(BigDecimal maxPrice) for prices below a threshold."
+ },
+ {
+  "id": "highlights_039",
+  "set": "highlights",
+  "url": "https://www.jamesrossjr.com/blog/software-architecture-patterns",
+  "question": "In James Ross Jr.'s guide on software architecture patterns, what specific architecture combination does he recommend as a default starting point for new systems, and what benefit does he cite if the system outgrows it?",
+  "excerpt": "The pattern I reach for most often for new systems is a well-structured modular monolith with hexagonal architecture inside. It provides the separation of concerns and testability of the more complex patterns without the operational overhead. If the system outgrows it, the modular boundaries make it straightforward to extract services.",
+  "expected_answer": "He recommends a well-structured modular monolith with hexagonal architecture inside, noting that the modular boundaries make it straightforward to extract services if the system outgrows it."
+ },
+ {
+  "id": "highlights_040",
+  "set": "highlights",
+  "url": "https://github.com/containernetworking/cni/blob/master/SPEC.md",
+  "question": "In the CNI specification, what specific runtime behavior does error code 3 (\"Container unknown or does not exist\") imply regarding container network cleanup?",
+  "excerpt": "| 3 | Container unknown or does not exist. This error implies the runtime does not need to perform any container network cleanup (for example, calling the DEL action on the container). |",
+  "expected_answer": "Error code 3 implies the runtime does not need to perform any container network cleanup, for example calling the DEL action on the container."
+ },
+ {
+  "id": "highlights_041",
+  "set": "highlights",
+  "url": "https://puckeditor.com/blog/top-5-drag-and-drop-libraries-for-react",
+  "question": "How does Atlassian manage the open-source development and contribution process for pragmatic-drag-and-drop?",
+  "excerpt": "Unlike most open-source projects, Atlassian doesn't fully embrace the traditional open-source model. Their development happens internally, with updates being synchronized to GitHub by a bot, meaning there's no public roadmap or direct insight into upcoming changes. While the project is technically open-source, this lack of transparency could be a drawback if you're looking for a library with active community involvement or want to contribute to its development.",
+  "expected_answer": "Atlassian develops pragmatic-drag-and-drop internally, with updates synchronized to GitHub by a bot. There is no public roadmap or direct insight into upcoming changes, and external community contributions do not follow the traditional open-source model."
+ },
+ {
+  "id": "highlights_045",
+  "set": "highlights",
+  "url": "https://github.com/scalable-ml-deep-learning/fine_tune_whisper",
+  "question": "When fine-tuning Whisper small on 10% of the Italian Common Voice 11 dataset, how many rows are in the training set and testing set respectively?",
+  "excerpt": "We wrote a **training pipeline** that loads our dataset, consisting in 15261 rows for the training set and 1500 rows for the testing set, loads a pre-trained Whisper checkpoint Whisper small and runs the training and evaluations to verify that we have correctly trained it to transcribe speech in Italian.",
+  "expected_answer": "The training set contains 15261 rows and the testing set contains 1500 rows."
+ },
+ {
+  "id": "highlights_046",
+  "set": "highlights",
+  "url": "https://www.turbodocx.com/blog/react-design-patterns",
+  "question": "In the React Provider Pattern anti-pattern example showing a single monolithic context that causes unnecessary re-renders, what five state domains are combined into one createContext call?",
+  "excerpt": "// Anti-pattern: giant monolithic context\n// ✗ Updating notifications re-renders EVERY consumer\nconst AppContext = createContext({\n  user, theme, notifications, settings, permissions\n});",
+  "expected_answer": "The monolithic context combines user, theme, notifications, settings, and permissions into a single createContext call, causing every consumer to re-render when any domain updates."
+ },
+ {
+  "id": "highlights_047",
+  "set": "highlights",
+  "url": "https://www.rapid7.com/blog/post/em-patch-tuesday-march-2026/",
+  "question": "What is the oldest SQL Server version that receives a security patch for CVE-2026-21262, the SQL Server elevation of privilege zero-day?",
+  "excerpt": "Today, however, all versions from the latest and greatest SQL Server 2025 back as far as SQL Server 2016 SP3 receive patches for CVE-2026-21262, a SQL Server elevation of privilege vulnerability.",
+  "expected_answer": "SQL Server 2016 SP3 is the oldest version patched, with no patches available for SQL Server 2014 or SQL Server 2012 ESU versions."
+ },
+ {
+  "id": "highlights_051",
+  "set": "highlights",
+  "url": "https://git.durrantlab.pitt.edu/ofek/mcp-rust-sdk",
+  "question": "What JSON Schema draft version does the RMCP Rust SDK's schemars dependency use for schema generation?",
+  "excerpt": "Json Schema generation (version 2020-12):\n- [schemars](https://github.com/GREsau/schemars)",
+  "expected_answer": "RMCP uses schemars for JSON Schema generation with version 2020-12."
+ },
+ {
+  "id": "highlights_054",
+  "set": "highlights",
+  "url": "https://arxiv.org/html/2511.18870v1",
+  "question": "What is the task ratio of T2I, T2V, and I2V used during mixed pretraining in HunyuanVideo 1.5?",
+  "excerpt": "Throughout the pretraining phase, we employ a mixed training regimen combining T2I, T2V, and I2V tasks, with a task ratio of 1:6:3.",
+  "expected_answer": "The mixed training task ratio is T2I:T2V:I2V = 1:6:3 during the video pretraining stages."
+ },
+ {
+  "id": "highlights_057",
+  "set": "highlights",
+  "url": "https://aiorg.dev/blog/seo-for-developers",
+  "question": "When doing keyword research for a new website with a domain rating between 0 and 20, what maximum keyword difficulty (KD) score and minimum monthly search volume should be targeted?",
+  "excerpt": "For a new site (DR 0-20), target keywords with:\n\n- KD under 30\n- Volume of 100+ monthly searches\n- Clear search intent you can satisfy",
+  "expected_answer": "Target keywords with KD under 30 and volume of 100+ monthly searches, along with clear search intent you can satisfy."
+ },
+ {
+  "id": "highlights_058",
+  "set": "highlights",
+  "url": "https://docs.cypress.io/app/end-to-end-testing/writing-your-first-end-to-end-test",
+  "question": "In Cypress's Command Log, what specific visual indicator does the VISIT command display while the target page is still loading?",
+  "excerpt": "The `VISIT` displays a **blue pending state** until the page finishes loading.",
+  "expected_answer": "The VISIT command displays a blue pending state until the page finishes loading."
+ },
+ {
+  "id": "highlights_059",
+  "set": "highlights",
+  "url": "https://docs.gitlab.com/api/project_webhooks/",
+  "question": "What was the rate limit for the GitLab project webhook test endpoint in version 17.0, and how did it change in version 17.1?",
+  "excerpt": "In GitLab 17.0 and later, this endpoint has a special rate limit:\n\n- In GitLab 17.0, the rate was three requests per minute for each project webhook.\n- In GitLab 17.1, this was changed to five requests per minute for each project and authenticated user.",
+  "expected_answer": "In GitLab 17.0, the rate was three requests per minute for each project webhook; in GitLab 17.1, it changed to five requests per minute for each project and authenticated user."
+ },
+ {
+  "id": "highlights_062",
+  "set": "highlights",
+  "url": "https://docs.oracle.com/en/database/oracle/oracle-database/26/vecse/create-tables-using-vector-data-type.html",
+  "question": "What is the maximum number of dimensions allowed for BINARY vectors in the Oracle VECTOR data type?",
+  "excerpt": "The number of dimensions must be strictly greater than zero with a maximum of 65535 for non-`BINARY` vectors and 65528 for `BINARY` vectors.",
+  "expected_answer": "The maximum dimension count for BINARY vectors is 65528, compared to 65535 for non-BINARY vectors."
+ },
+ {
+  "id": "highlights_063",
+  "set": "highlights",
+  "url": "https://nextjs.org/docs/app/getting-started/server-and-client-components",
+  "question": "For which TypeScript configuration option does Next.js provide its own type declarations for the `server-only` and `client-only` packages?",
+  "excerpt": "Next.js also provides its own type declarations for `server-only` and `client-only`, for TypeScript configurations where [`noUncheckedSideEffectImports`](https://www.typescriptlang.org/tsconfig/#noUncheckedSideEffectImports) is active.",
+  "expected_answer": "Next.js provides its own type declarations for `server-only` and `client-only` when the TypeScript `noUncheckedSideEffectImports` option is active."
+ },
+ {
+  "id": "highlights_064",
+  "set": "highlights",
+  "url": "https://github.com/roarkhq/sdk-roark-analytics-python",
+  "question": "In the Roark Python SDK, which HTTP status codes are automatically retried by default in addition to connection errors?",
+  "excerpt": "Certain errors are automatically retried 2 times by default, with a short exponential backoff. Connection errors (for example, due to a network connectivity problem), 408 Request Timeout, 409 Conflict, 429 Rate Limit, and >=500 Internal errors are all retried by default.",
+  "expected_answer": "408 Request Timeout, 409 Conflict, 429 Rate Limit, and >=500 Internal errors are all retried by default."
+ },
+ {
+  "id": "highlights_066",
+  "set": "highlights",
+  "url": "https://noc.org/support/product-features/cdn-waf-api",
+  "question": "What is the default rate limit for cache purge requests in the NOC CDN REST API?",
+  "excerpt": "- **Cache purge:** 30 requests per minute.",
+  "expected_answer": "Cache purge requests are rate-limited to 30 requests per minute."
+ },
+ {
+  "id": "highlights_067",
+  "set": "highlights",
+  "url": "https://www.websocket.org/guides/use-cases/chat/",
+  "question": "According to websocket.org's chat guidance, at approximately what concurrent user count does the build-vs-buy crossover typically occur for WebSocket-based chat features?",
+  "excerpt": "The build-vs-buy crossover typically comes around 100-500 concurrent users, depending on your feature requirements. If chat is a feature of your product rather than your product itself, the engineering time is almost certainly better spent elsewhere.",
+  "expected_answer": "Around 100-500 concurrent users, depending on feature requirements such as ordering, persistence, presence, and typing indicators."
+ },
+ {
+  "id": "highlights_072",
+  "set": "highlights",
+  "url": "https://bytepane.com/blog/typescript-utility-types/",
+  "question": "In a TypeScript Record type example that maps a Theme union ('light' | 'dark' | 'auto') to config objects with bg, text, and border string properties, what border color hex value is assigned to the light theme?",
+  "excerpt": "const themes: ThemeConfig = {\n  light: { bg: '#ffffff', text: '#1a1a1a', border: '#e5e5e5' },\n  dark:  { bg: '#0a0a0a', text: '#fafafa', border: '#333333' },\n  auto:  { bg: 'inherit', text: 'inherit', border: 'inherit' },\n};",
+  "expected_answer": "The light theme's border color is set to '#e5e5e5' in the ThemeConfig Record example."
+ },
+ {
+  "id": "highlights_074",
+  "set": "highlights",
+  "url": "https://zxweb.eu/en/resources/articles/react-vs-angular-vs-vue-enterprise-comparison",
+  "question": "In the 2026 zxweb.eu enterprise framework comparison, what specific organization types and backend developer backgrounds are listed as reasons to choose Angular?",
+  "excerpt": "Choose Angular if: You are a bank, insurance firm, or large enterprise with Java/C# backend developers. The strict typing and OOP patterns will feel familiar.",
+  "expected_answer": "Banks, insurance firms, or large enterprises with Java/C# backend developers, due to familiar strict typing and OOP patterns."
+ },
+ {
+  "id": "highlights_077",
+  "set": "highlights",
+  "url": "https://javascriptfundamentals.com/build-a-react-js-interactive-simple-portfolio-website/",
+  "question": "In a Create React App portfolio project, what CSS padding value is applied to the header component inside a media query targeting screens smaller than 768px for tablet responsiveness?",
+  "excerpt": "@media (max-width: 768px) {\n    /* Styles for screens smaller than 768px (e.g., tablets) */\n    .header {\n      padding: 0.5rem;\n    }\n  }",
+  "expected_answer": "The header padding is set to 0.5rem for screens at max-width 768px."
+ },
+ {
+  "id": "highlights_078",
+  "set": "highlights",
+  "url": "https://javascriptfundamentals.com/react-context-api-a-beginners-guide-to-state-management/",
+  "question": "In a React Context API FAQ about performance, how is the Context API described as indirectly affecting application performance, and what specific hook is recommended to optimize frequently-changing context values to prevent unnecessary re-renders?",
+  "excerpt": "The Context API itself doesn't inherently improve performance. However, by reducing the need for prop drilling, it can make your application easier to maintain and update, which indirectly helps improve performance by making your code more efficient. If the context value changes, all components that use the context will re-render, so avoid putting values in context that change frequently. Use `useMemo` to memoize the value if necessary.",
+  "expected_answer": "The Context API indirectly helps improve performance \"by reducing the need for prop drilling\" which makes code \"more efficient\" and easier to maintain/update. The `useMemo` hook is recommended to memoize context values that change frequently, since all components consuming the context will re-render when the value changes."
+ },
+ {
+  "id": "highlights_080",
+  "set": "highlights",
+  "url": "https://docs.gitlab.com/api/merge_requests",
+  "question": "In the GitLab Merge Requests API, what specific preparation steps must complete before the `prepared_at` timestamp field is populated on a merge request?",
+  "excerpt": "The `prepared_at` field populates one time, only after these steps complete:\n\n- Create the diff.\n- Create the pipelines.\n- Check mergeability.\n- Link all Git LFS objects.\n- Send notifications.\n\nThe `prepared_at` field does not update if more changes are added to the merge request.",
+  "expected_answer": "The five preparation steps are: create the diff, create the pipelines, check mergeability, link all Git LFS objects, and send notifications. The field does not update if more changes are added afterward."
+ },
+ {
+  "id": "highlights_081",
+  "set": "highlights",
+  "url": "https://cloudburn.io/blog/amazon-s3-pricing",
+  "question": "What is the compaction (binpack) pricing for Amazon S3 Tables buckets in us-east-1?",
+  "excerpt": "| Compaction (binpack) | $0.002 per 1,000 objects + $0.005/GB processed |",
+  "expected_answer": "S3 Tables compaction (binpack) is charged at $0.002 per 1,000 objects plus $0.005 per GB processed."
+ },
+ {
+  "id": "highlights_082",
+  "set": "highlights",
+  "url": "https://github.com/fiberplane/mcp-lite",
+  "question": "In mcp-lite, what client capabilities can be declared under MCP protocol version 2025-03-26 versus 2025-06-18?",
+  "excerpt": "#### Client Capabilities\n\n- **`2025-06-18`**: Clients may declare `elicitation` and `sampling` capabilities\n- **`2025-03-26`**: Clients may declare `roots` and `sampling` capabilities",
+  "expected_answer": "Under 2025-03-26, clients may declare `roots` and `sampling` capabilities; under 2025-06-18, clients may declare `elicitation` and `sampling` capabilities."
+ },
+ {
+  "id": "highlights_083",
+  "set": "highlights",
+  "url": "https://www.digitalocean.com/community/tutorials/how-to-set-up-a-private-docker-registry-on-ubuntu-20-04",
+  "question": "When configuring Nginx as a reverse proxy for a private Docker Registry on Ubuntu, what client_max_body_size value is set in nginx.conf to support large image uploads?",
+  "excerpt": "The `client_max_body_size` parameter is now set to `16384m`, making the maximum upload size equal to 16GB.",
+  "expected_answer": "16384m, making the maximum upload size equal to 16 GB"
+ },
+ {
+  "id": "highlights_085",
+  "set": "highlights",
+  "url": "https://nilcoalescing.com/blog/BuildAMacOSMenuBarUtilityInSwiftUI",
+  "question": "When styling a SwiftUI TextEditor inside a MenuBarExtra window-style scene to blend with the popover appearance, what specific ShapeStyle material is applied as the background after hiding the default scroll content background?",
+  "excerpt": "TextEditor(text: $textInput)\n    .padding(.vertical, 4)\n    .scrollContentBackground(.hidden)\n    .background(.thinMaterial)",
+  "expected_answer": ".thinMaterial is applied via .background(.thinMaterial) after setting .scrollContentBackground(.hidden) on the TextEditor."
+ },
+ {
+  "id": "highlights_086",
+  "set": "highlights",
+  "url": "https://peasycss.com/guides/css-container-queries-responsive-components/",
+  "question": "In a CSS container query product card example, at what container width threshold does the card switch from vertical stacking to a horizontal layout, and what is the resulting element arrangement?",
+  "excerpt": "In a wide main area (> 600px), it layouts horizontally: image left, text right. With container queries, this single component adapts automatically without the parent needing to communicate its width through classes.",
+  "expected_answer": "At container width > 600px, the card layouts horizontally with image left and text right."
+ },
+ {
+  "id": "highlights_090",
+  "set": "highlights",
+  "url": "https://github.com/gohugoio/hugo/releases/tag/v0.158.0",
+  "question": "In Hugo v0.158.0, what CLDR versions were involved in the locales library upgrade?",
+  "excerpt": "Move to new locales library and upgrade CLDR from v36.1 to v48.1 4652ae4 @bep",
+  "expected_answer": "CLDR was upgraded from v36.1 to v48.1 as part of moving to a new locales library."
+ },
+ {
+  "id": "highlights_091",
+  "set": "highlights",
+  "url": "https://developers.google.com/identity/protocols/oauth2/web-server",
+  "question": "In Google OAuth 2.0 redirect URI validation, what path requirement must be met if an app that owns a URL shortener domain chooses to redirect to that domain?",
+  "excerpt": "Redirect URIs cannot contain URL shortener domains (e.g. goo.gl) unless the app owns the domain. Furthermore, if an app that owns a shortener domain chooses to redirect to that domain, that redirect URI must either contain \"/google-callback/\" in its path or end with \"/google-callback\".",
+  "expected_answer": "The redirect URI must either contain \"/google-callback/\" in its path or end with \"/google-callback\"."
+ },
+ {
+  "id": "highlights_092",
+  "set": "highlights",
+  "url": "https://developer.github.com/enterprise/2.17/v3/issues/comments/",
+  "question": "In the GitHub Enterprise 2.17 Issue Comments API, what query parameters does the endpoint for listing comments on a single issue (GET /repos/:owner/:repo/issues/:issue_number/comments) accept, and notably which parameters available on the repository-wide listing endpoint are absent?",
+  "excerpt": "### Parameters\n\n| Name | Type | Description |\n| --- | --- | --- |\n| since | string | Only comments updated at or after this time are returned. This is a timestamp in ISO 8601 format: YYYY-MM-DDTHH:MM:SSZ. |",
+  "expected_answer": "The single-issue comments endpoint only accepts the `since` parameter (an ISO 8601 timestamp). The `sort` and `direction` parameters available on the repository-wide listing endpoint are not supported."
+ },
+ {
+  "id": "highlights_093",
+  "set": "highlights",
+  "url": "https://www.pkgpulse.com/blog/state-of-javascript-build-tools-2026",
+  "question": "In 2026 JavaScript build tool benchmarks for a 500-component application, what are Rspack's dev cold start time, HMR update speed, and production build time?",
+  "excerpt": "| Rspack | ~400ms | ~50ms | ~10s | Rust |",
+  "expected_answer": "Rspack has ~400ms dev cold start, ~50ms HMR update speed, and ~10s production build time for a 500-component app."
+ },
+ {
+  "id": "highlights_095",
+  "set": "highlights",
+  "url": "https://forem.com/archibaldtitan/how-to-deploy-your-ai-model-to-production-complete-hosting-guide-43i3",
+  "question": "In a GitHub Actions CI/CD workflow for AI model deployment to DigitalOcean, what file paths should trigger the deployment workflow on push to main?",
+  "excerpt": "on:\n  push:\n    branches: [main]\n    paths: ['model/**', 'app.py', 'Dockerfile']",
+  "expected_answer": "The workflow triggers on pushes to main that change paths: 'model/**', 'app.py', or 'Dockerfile'."
+ },
+ {
+  "id": "highlights_096",
+  "set": "highlights",
+  "url": "https://www.truefoundry.com/blog/aws-bedrock-pricing-explained-everything-you-need-to-know",
+  "question": "What is the approximate minimum monthly baseline cost of an AWS Bedrock Knowledge Base backed by OpenSearch Serverless in us-east-1, and what drives this floor cost even with zero query traffic?",
+  "excerpt": "OpenSearch Serverless requires a minimum of 2 OCUs (OpenSearch Compute Units) for redundancy in production. At **~$0.24 per OCU/hour** (in us-east-1), this results in a baseline cost of approximately **$350/month** (for a standard redundant setup) for the index to exist, even with zero query traffic.",
+  "expected_answer": "Approximately $350/month, driven by OpenSearch Serverless requiring a minimum of 2 OCUs (OpenSearch Compute Units) for redundancy at ~$0.24 per OCU/hour, even with zero queries."
+ },
+ {
+  "id": "highlights_097",
+  "set": "highlights",
+  "url": "https://cvefind.com/CVE-2026-26116",
+  "question": "For CVE-2026-26116, what is the upper-bound excluded version for Microsoft SQL Server 2025 in the CU (Cumulative Update) branch?",
+  "excerpt": "Microsoft>>Sql_server_2025 >> Version From (including) 17.0.4006.2 To (excluding) 17.0.4020.2",
+  "expected_answer": "The excluded upper-bound version for SQL Server 2025 CU branch is 17.0.4020.2 (versions from 17.0.4006.2 up to but excluding 17.0.4020.2 are affected)."
+ },
+ {
+  "id": "highlights_099",
+  "set": "highlights",
+  "url": "https://react.dev/learn/reusing-logic-with-custom-hooks",
+  "question": "In React, what three specific custom Hook names does the React team identify as anti-pattern \"lifecycle\" Hooks that should not be created as convenience wrappers for useEffect?",
+  "excerpt": "**Keep custom Hooks focused on concrete high-level use cases.** Avoid creating and using custom \"lifecycle\" Hooks that act as alternatives and convenience wrappers for the `useEffect` API itself:\n\n- 🔴 `useMount(fn)`\n- 🔴 `useEffectOnce(fn)`\n- 🔴 `useUpdateEffect(fn)`",
+  "expected_answer": "useMount(fn), useEffectOnce(fn), and useUpdateEffect(fn) — they are anti-pattern lifecycle wrappers that don't fit the React paradigm."
+ },
+ {
+  "id": "highlights_100",
+  "set": "highlights",
+  "url": "https://github.com/servo/core-foundation-rs/issues/729",
+  "question": "In objc2-core-foundation's design, why is a direct CFURL to String conversion not provided, and what conversions are offered instead?",
+  "excerpt": "Be performance-minded when creating wrappers. For example, I wouldn't add a `CFURL -> String` conversion, since that requires at least two CoreFoundation functions to be called. Instead, `CFURL -> CFString` is provided, and so is `CFString -> String`.",
+  "expected_answer": "A direct CFURL to String conversion is avoided because it requires at least two CoreFoundation functions to be called. Instead, CFURL to CFString and CFString to String conversions are provided separately as a performance-minded design choice."
+ },
+ {
+  "id": "highlights_101",
+  "set": "highlights",
+  "url": "https://www.w3.org/TR/security-guidelines-cryptography/",
+  "question": "In the W3C cryptography usage guidelines, what is the minimum recommended HMAC tag length when SHA-1 is used as the underlying hash function?",
+  "excerpt": "For HMAC, the recommended tag length is at least 160 bits when using SHA-1 as the underlying hash function, and at least 256 bits when using SHA-256 or SHA-512.",
+  "expected_answer": "At least 160 bits when using SHA-1 as the underlying hash function for HMAC."
+ },
+ {
+  "id": "highlights_102",
+  "set": "highlights",
+  "url": "https://stevekinney.com/courses/full-stack-typescript/testing-with-zod-and-express",
+  "question": "In the Jest test pattern for Express API validation using superagent and zod-fixture, what specific invalid username and email values are sent to test the POST /users endpoint when the Zod schema enforces z.string().min(3) on username and z.string().email() on email?",
+  "excerpt": "const invalidUserData = { username: 'a', email: 'invalid-email' }; // Invalid username and email",
+  "expected_answer": "The invalid username value is 'a' (single character) and the invalid email is the literal string 'invalid-email'."
+ },
+ {
+  "id": "highlights_104",
+  "set": "highlights",
+  "url": "https://noqta.tn/en/tutorials/better-auth-nextjs-authentication-tutorial-2026",
+  "question": "In a feature comparison between Better Auth, Auth.js v5, and a custom JWT implementation, what are the approximate bundle sizes listed for each approach?",
+  "excerpt": "| Bundle Size | ~15KB | ~30KB | ~2KB |",
+  "expected_answer": "Better Auth is approximately 15KB, Auth.js v5 is approximately 30KB, and a custom JWT implementation is approximately 2KB."
+ },
+ {
+  "id": "highlights_107",
+  "set": "highlights",
+  "url": "https://docs.coveo.com/en/q3cb0086/",
+  "question": "In the Coveo Commerce API, what syntax is used to wrap a query string so Coveo treats it as literal text instead of a query expression?",
+  "excerpt": "Wrap the query in a no-syntax block so Coveo treats it as literal text, not a query expression making use of special symbols such as $.",
+  "expected_answer": "The query is wrapped in a no-syntax block using `<@- query -@>` delimiters, preventing Coveo from interpreting special symbols such as $ as query expression operators."
+ },
+ {
+  "id": "highlights_109",
+  "set": "highlights",
+  "url": "https://lib.rs/crates/typescript-type-def",
+  "question": "In the typescript-type-def Rust crate, how does a struct field of type `usize` appear in the generated TypeScript definition file?",
+  "excerpt": "export type Usize=number;\nexport type Foo={\"a\":types.Usize;\"b\":string;};",
+  "expected_answer": "A separate type alias `export type Usize=number;` is emitted, and the field references it as `types.Usize` rather than inlining `number` directly."
+ },
+ {
+  "id": "highlights_110",
+  "set": "highlights",
+  "url": "https://unmarkdown.com/blog/build-mcp-server-from-scratch-2026",
+  "question": "What localhost URL and port does the MCP Inspector debugging tool open on when launched with npx?",
+  "excerpt": "This opens at `http://127.0.0.1:6274`. You'll see all your registered tools with their parameter schemas. Click any tool, fill in the fields, hit \"Call Tool,\" and see the result. It's the closest thing to Postman for MCP servers.",
+  "expected_answer": "The MCP Inspector opens at http://127.0.0.1:6274 when launched via npx @modelcontextprotocol/inspector."
+ },
+ {
+  "id": "highlights_114",
+  "set": "highlights",
+  "url": "https://dev.to/pockit_tools/vercel-ai-sdk-complete-guide-building-production-ready-ai-chat-apps-with-nextjs-4cp6",
+  "question": "In the Vercel AI SDK comprehensive error handling pattern using AIError codes, what HTTP status code is returned when the error code is `invalid_api_key`, and what user-facing message accompanies it?",
+  "excerpt": "case 'invalid_api_key':\n        return new Response(\n          JSON.stringify({\n            error: 'Configuration error',\n            message: 'AI service is temporarily unavailable.',\n          }),\n          { status: 503 }\n        );",
+  "expected_answer": "HTTP status 503 with the message \"AI service is temporarily unavailable.\" — intentionally masking the auth error from end users."
+ },
+ {
+  "id": "highlights_117",
+  "set": "highlights",
+  "url": "https://dev.to/tech_croc_f32fbb6ea8ed4/pytorch-vs-tensorflow-vs-keras-for-deep-learning-a-comparative-guide-10f7",
+  "question": "Beyond TensorFlow's official Python, JavaScript, C++, and Java APIs, what is the complete set of programming languages that have third-party TensorFlow language binding packages?",
+  "excerpt": "Additionally, there are third-party packages that provide language bindings for C#, Haskell, Julia, MATLAB, Object Pascal, R, Scala, Rust, OCaml, and Crystal.",
+  "expected_answer": "Third-party packages provide TensorFlow language bindings for C#, Haskell, Julia, MATLAB, Object Pascal, R, Scala, Rust, OCaml, and Crystal."
+ },
+ {
+  "id": "highlights_120",
+  "set": "highlights",
+  "url": "https://voxel51.com/blog/how-to-use-segment-anything-model-sam3",
+  "question": "How many images, videos, and unique concepts are annotated in Meta's SA-Co (Segment Anything with Concepts) benchmark dataset released alongside SAM 3?",
+  "excerpt": "Meta released SAM 3 on November 19, 2025, alongside a benchmark dataset called SA-Co (Segment Anything with Concepts) contains 120K images and 1.7K videos annotated with exhaustive concept-level masks spanning over 200K unique concepts.",
+  "expected_answer": "SA-Co contains 120K images and 1.7K videos annotated with exhaustive concept-level masks spanning over 200K unique concepts."
+ },
+ {
+  "id": "highlights_121",
+  "set": "highlights",
+  "url": "https://www.javacodegeeks.com/2026/03/spring-boot-4-spring-ai-and-ai-first-java-development.html",
+  "question": "After Undertow support was removed in Spring Boot 4 due to Servlet 6.1 incompatibility, what specific embedded container versions are the supported migration targets?",
+  "excerpt": "Undertow has been removed entirely because it isn't yet compatible with Servlet 6.1. If your application uses Undertow as its embedded container, migration to Tomcat 11 or Jetty 12.1 is required before upgrading.",
+  "expected_answer": "Tomcat 11 or Jetty 12.1 are the supported embedded servlet container alternatives after Undertow's removal in Spring Boot 4."
+ },
+ {
+  "id": "highlights_122",
+  "set": "highlights",
+  "url": "https://cs4760.csl.mtu.edu/2026/lectures/interactive-3d-graphics-on-the-web/",
+  "question": "In the Three.js drone flight project (2021-SD-UI/drone_flight), when implementing ToggledOrbitControls with keydown/keyup event listeners for toggling between orbit and drag modes, what DOM element do the keyboard event listeners have to be attached to, and what alternative was tried unsuccessfully?",
+  "excerpt": "I tried setting the event listener on the scene-containing div but that did not work. Only the \"window\" worked.",
+  "expected_answer": "The keyboard event listeners must be added to the \"window\" object. Setting the event listener on the scene-containing div was tried but did not work."
+ },
+ {
+  "id": "highlights_124",
+  "set": "highlights",
+  "url": "https://www.builder.io/blog/parallax-scrolling-effect",
+  "question": "In a React parallax scrolling implementation using direct scroll with transform, what are the typical base translateY offset values for the foreground layer on mobile vs desktop, and at what viewport width breakpoint do they switch?",
+  "excerpt": "if (frontImageRef.current) {\n        const baseOffsetMobile = 680;\n        const baseOffsetDesktop = 820;\n        const isMobile = window.innerWidth < 768;\n        const baseOffset = isMobile ? baseOffsetMobile : baseOffsetDesktop;\n        frontImageRef.current.style.transform = `translateY(${baseOffset - currentScrollY * 0.5}px)`;\n      }",
+  "expected_answer": "The foreground layer uses a 680px base offset for mobile and 820px for desktop, switching at a viewport width of 768px."
+ },
+ {
+  "id": "highlights_126",
+  "set": "highlights",
+  "url": "https://github.com/huggingface/diffusers/issues/10662",
+  "question": "According to Hugging Face diffusers maintainers, how many training images were used for the best-quality ControlNet, and what type of ControlNet was it?",
+  "excerpt": "don't expect a controlnet to be good with just a 10000 dataset, you can always repeat the images but the quality will suffer, the good controlnets I've seen and that posted the training parameters, were trained in at least 500000 images and the best one, in my opinion, claims to be trained with over 10000000 but it is a union controlnet.",
+  "expected_answer": "The best ControlNet claims to be trained with over 10,000,000 images, and it is a union controlnet."
+ },
+ {
+  "id": "highlights_127",
+  "set": "highlights",
+  "url": "https://github.com/coactum/moodle-mod_discourse",
+  "question": "What known incompatibility exists for the moodle-mod_discourse plugin, and what happens if you trigger it?",
+  "excerpt": "Incompatible with 3rd party plugin block_sharing_cart (https://moodle.org/plugins/block_sharing_cart). If you try to copy a DisCourse with the Sharing-Cart it may create an incomplete and unusable DisCourse.",
+  "expected_answer": "It is incompatible with the block_sharing_cart plugin; copying a DisCourse with Sharing-Cart may create an incomplete and unusable DisCourse."
+ },
+ {
+  "id": "highlights_128",
+  "set": "highlights",
+  "url": "https://forem.com/kenzic/real-time-face-tracking-in-the-browser-with-mediapipe-22c9",
+  "question": "In the kenzic/monkey-ears-filter MediaPipe Face Landmarker demo, what specific pixel offsets are applied to the landmark coordinates when translating the canvas context for drawing the left ear overlay image?",
+  "excerpt": "ctx.translate(left.x * canvas.width - 26, left.y * canvas.height - 10);\n  ctx.rotate(angle);\n  ctx.drawImage(img, -w/2, -h/2, w, h);",
+  "expected_answer": "The left ear is offset by subtracting 26 pixels on the x-axis and subtracting 10 pixels on the y-axis from the scaled landmark position (left.x * canvas.width - 26, left.y * canvas.height - 10)."
+ },
+ {
+  "id": "highlights_129",
+  "set": "highlights",
+  "url": "https://aws.amazon.com/blogs/machine-learning/using-agents-for-amazon-bedrock-to-interactively-generate-infrastructure-as-code",
+  "question": "In the AWS blog post solution for generating Terraform IaC from architecture diagrams using Amazon Bedrock Agents, what are the two action group names referenced in the agent instruction prompt?",
+  "excerpt": "Assist users in creating IaC for provided architecture diagram. Ask user for S3 bucket name and object name where the diagram is stored. Upon receiving the information, run analysis-query action group. Give structured summary and ask user only the questions that are received from action group response. Take the answers from the user and give detailed summary to the user. Take approval from user. When approved, give all that information to final draft along with S3 bucket name, object name as input for the iac-deployment action group and run the action group.",
+  "expected_answer": "The two action group names are \"analysis-query action group\" and \"iac-deployment action group,\" referenced in the instruction attached to the Bedrock agent."
+ },
+ {
+  "id": "highlights_130",
+  "set": "highlights",
+  "url": "https://vitest.dev/guide/browser/component-testing",
+  "question": "In Vitest's browser mode, what method can be chained on locator queries to provide fallback selector strategies, and what common Playwright-like method is explicitly noted as unavailable on the `page` object?",
+  "excerpt": "```tsx\n// Multiple ways to find the same element using .or for auto-retrying\nconst submitButton = page.getByRole('button', { name: /submit/i }) // By accessible name\n  .or(page.getByTestId('submit-button')) // By test ID\n  .or(page.getByText('Submit')) // By exact text\n// Note: Vitest doesn't have page.locator(), use specific getBy* methods instead\n```",
+  "expected_answer": "The `.or()` method can be chained on getBy* locator queries to try alternative selectors as fallbacks, and the documentation explicitly notes that Vitest doesn't have `page.locator()` — users should use specific getBy* methods instead."
+ },
+ {
+  "id": "highlights_131",
+  "set": "highlights",
+  "url": "https://dev.to/synsun/fastapi-vs-django-vs-flask-what-i-actually-use-after-testing-all-three-in-2026-4e04",
+  "question": "In a load test comparing async FastAPI to synchronous Flask with 50 concurrent users calling an LLM endpoint, how many fewer workers did the FastAPI version require?",
+  "excerpt": "The async FastAPI version handled it with roughly 8x fewer workers than an equivalent synchronous Flask setup. I won't claim that number holds across all model latency profiles, but the directional result was consistent across several runs with different prompt lengths.",
+  "expected_answer": "The async FastAPI version handled the load with roughly 8x fewer workers than the equivalent synchronous Flask setup."
+ },
+ {
+  "id": "highlights_133",
+  "set": "highlights",
+  "url": "https://github.com/configu/configu",
+  "question": "What three types of custom implementations does the Configu project support as part of its extensibility?",
+  "excerpt": "**🛠 Extensible**: Supports **custom** configuration **storage** implementations, configuration **formatters**, and **injectors**. Continuously evolving and driven by **community** contributions.",
+  "expected_answer": "Configu supports custom configuration storage implementations, configuration formatters, and injectors."
+ },
+ {
+  "id": "highlights_135",
+  "set": "highlights",
+  "url": "https://github.com/krig/gleam-presenterm",
+  "question": "Which five terminal emulators does presenterm explicitly list as supporting images and animated gifs?",
+  "excerpt": "Images and animated gifs on terminals like *kitty*, *iterm2*, *wezterm*, *ghostty* and *foot*.",
+  "expected_answer": "presenterm lists kitty, iterm2, wezterm, ghostty, and foot as terminals supporting images and animated gifs"
+ },
+ {
+  "id": "highlights_136",
+  "set": "highlights",
+  "url": "https://nixos-and-flakes.thiscute.world/development/intro",
+  "question": "In the Nix pkgs.mkShell implementation, when assembling the final `shellHook` from multiple `inputsFrom` derivations, what transformation is applied to the `inputsFrom` list before extracting and concatenating the individual shellHook values?",
+  "excerpt": "shellHook = lib.concatStringsSep \"\\n\" (lib.catAttrs \"shellHook\"\n    (lib.reverseList inputsFrom ++ [ attrs ]));",
+  "expected_answer": "The `inputsFrom` list is reversed using `lib.reverseList` before the current derivation's attrs are appended and shellHook values are extracted with `lib.catAttrs \"shellHook\"` and joined with `lib.concatStringsSep \"\\n\"`."
+ },
+ {
+  "id": "highlights_137",
+  "set": "highlights",
+  "url": "https://techbullion.com/gpunex-vs-runpod-vs-vast-ai-gpu-cloud-comparison-2026/",
+  "question": "What are the listed and effective hourly cost ranges for an A100 80GB GPU on Vast.ai's marketplace in 2026, after factoring in downtime and reliability issues on unverified hosts?",
+  "excerpt": "| A100 80GB | $0.72–$1.50/hr | $1.19/hr | $0.50–$0.80/hr | $0.65–$1.00/hr |",
+  "expected_answer": "Listed rate is $0.50–$0.80/hr; effective rate is $0.65–$1.00/hr after accounting for downtime, restarts, and variable host quality on unverified hosts."
+ },
+ {
+  "id": "highlights_138",
+  "set": "highlights",
+  "url": "https://github.com/DSpace/RestContract/blob/main/bitstreams.md",
+  "question": "What dspace.cfg property controls whether the DSpace bitstream access status endpoint calculates status based on the anonymous group or the current user?",
+  "excerpt": "This endpoint expose the mechanism for retrieving and calculating the access status of a DSpace bitstream based on the anonymous group or the current user, depending on the system configuration. See access.status.for-user.bitstream property in the dspace.cfg file.",
+  "expected_answer": "The property is `access.status.for-user.bitstream` in the dspace.cfg configuration file."
+ },
+ {
+  "id": "highlights_139",
+  "set": "highlights",
+  "url": "https://www.cncf.io/blog/2026/03/18/understanding-kubernetes-metrics-best-practices-for-effective-monitoring/",
+  "question": "In Kubernetes control plane monitoring, at what scheduler queue length does it indicate potential resource allocation or configuration issues, and what operational aspects are negatively affected by a persistently large scheduler queue?",
+  "excerpt": "The cluster may be experiencing issues with resource allocation or setup if the scheduler queue length, which is typically small, unexpectedly increases to 50+. The availability and user experience can be negatively affected by delays in app deployment or workload scalability caused by a large queue length.",
+  "expected_answer": "A scheduler queue length unexpectedly increasing to 50+ indicates resource allocation or configuration issues. A large queue length causes delays in app deployment or workload scalability, negatively affecting availability and user experience."
+ },
+ {
+  "id": "highlights_142",
+  "set": "highlights",
+  "url": "https://www.research.ibm.com/blog/pytorch-support-ibm-spyre",
+  "question": "What is the maximum overhead target for IBM Spyre's out-of-tree PyTorch device registration compared to direct device access?",
+  "excerpt": "Spyre will register as a PyTorch device entirely through out-of-tree extensions: device lifecycle, memory management, data transfer, and dispatch. Our target is 100% of registration handled this way, with less than 5% overhead compared to direct device access.",
+  "expected_answer": "Less than 5% overhead compared to direct device access, with 100% of registration handled through out-of-tree extensions."
+ },
+ {
+  "id": "highlights_146",
+  "set": "highlights",
+  "url": "https://developers.hubspot.com/docs/api-reference/marketing-transactional-single-send-v3/guide",
+  "question": "In HubSpot's Single-Send transactional email API, under what specific condition does the `customProperties` field support arrays?",
+  "excerpt": "The `customProperties` field only supports arrays when used with [programmable email content](https://developers.hubspot.com/docs/cms/start-building/features/data-driven-content/emails-with-programmable-content).",
+  "expected_answer": "The customProperties field only supports arrays when used with programmable email content."
+ },
+ {
+  "id": "highlights_148",
+  "set": "highlights",
+  "url": "https://dev.to/suhas_mallesh/deploy-your-first-azure-ai-agent-with-terraform-model-agnostic-and-future-proof-1g72",
+  "question": "What SKU is required for the Azure AI Services cognitive account to support stateful features like the AI agent service, and what Terraform property must be enabled for agent operations?",
+  "excerpt": "**`project_management_enabled = true`** is the critical setting. Without it, the AI Services resource won't support agent operations. The S0 SKU is required for stateful features including the agent service.",
+  "expected_answer": "The S0 SKU is required for stateful features including the agent service, and `project_management_enabled = true` must be set on the cognitive account for agent operations."
+ },
+ {
+  "id": "highlights_149",
+  "set": "highlights",
+  "url": "https://www.pythonforbiginners.com/2025/06/create-animations-in-tkinter-python-gui.html",
+  "question": "In a Tkinter shake animation for form validation errors, what is the maximum shake count and the delay in milliseconds between each shake step in the commonly shown shake_widget implementation?",
+  "excerpt": "def shake_widget(widget):\n    def shake(count=0):\n        x = 5 if count % 2 == 0 else -5\n        widget.place(x=widget.winfo_x() + x)\n        if count < 6:\n            widget.after(50, shake, count + 1)\n        else:\n            widget.place(x=original_x)\n    original_x = widget.winfo_x()\n    shake()",
+  "expected_answer": "The shake animation runs for a maximum count of 6 shakes with a 50ms delay between each step, alternating the widget position by 5 pixels."
+ },
+ {
+  "id": "highlights_153",
+  "set": "highlights",
+  "url": "https://nextjs.org/docs/app/guides/data-security",
+  "question": "In Next.js, how long are Server Action secure IDs cached before they are regenerated?",
+  "excerpt": "The IDs are created during compilation and are cached for a maximum of 14 days. They will be regenerated when a new build is initiated or when the build cache is invalidated.",
+  "expected_answer": "Server Action IDs are cached for a maximum of 14 days, and are regenerated when a new build is initiated or the build cache is invalidated."
+ },
+ {
+  "id": "highlights_154",
+  "set": "highlights",
+  "url": "https://reactnative.dev/blog/2026/02/11/react-native-0.84",
+  "question": "What environment variables must be passed during CocoaPods installation to opt out of Hermes V1 on iOS in React Native 0.84?",
+  "excerpt": "When installing CocoaPods dependencies, pass the `RCT_HERMES_V1_ENABLED=0` and `RCT_USE_PREBUILT_RNCORE=0` environment variables.",
+  "expected_answer": "Both `RCT_HERMES_V1_ENABLED=0` and `RCT_USE_PREBUILT_RNCORE=0` must be passed when installing CocoaPods dependencies."
+ },
+ {
+  "id": "highlights_155",
+  "set": "highlights",
+  "url": "https://codercrafter.in/blogs/react-native/context-api-vs-redux-vs-zustand-the-2025-state-management-showdown-real-talk",
+  "question": "In a side-by-side comparison of React state management solutions, what are the approximate bundle sizes listed for Redux Toolkit with React-Redux and for Zustand?",
+  "excerpt": "| Bundle Size | 0kB (built-in) | ~9kB (RTK+React-Redux) | ~3kB |",
+  "expected_answer": "Redux Toolkit combined with React-Redux is listed at approximately 9kB, while Zustand is approximately 3kB — roughly one-third the size."
+ },
+ {
+  "id": "highlights_159",
+  "set": "highlights",
+  "url": "https://vercel.com/docs/environment-variables",
+  "question": "What is the minimum Vercel CLI version required to use development environment variable features such as `vercel env pull`?",
+  "excerpt": "You need Vercel CLI version 21.0.1 or higher to use the features described in this section.",
+  "expected_answer": "Vercel CLI version 21.0.1 or higher is required for development environment variable features."
+ },
+ {
+  "id": "highlights_160",
+  "set": "highlights",
+  "url": "https://react.dev/learn/synchronizing-with-effects",
+  "question": "In React, when useEffect-based analytics logging fires twice in development due to Strict Mode, what alternative event source does the React team recommend for sending analytics instead of Effects, and what specific browser API do they recommend for tracking how long components remain visible in the viewport?",
+  "excerpt": "You may also send analytics from the route change event handlers instead of Effects. For more precise analytics, intersection observers can help track which components are in the viewport and how long they remain visible.",
+  "expected_answer": "Send analytics from route change event handlers instead of Effects, and use intersection observers to track which components are in the viewport and how long they remain visible."
+ },
+ {
+  "id": "highlights_161",
+  "set": "highlights",
+  "url": "https://github.com/huggingface/transformers/issues/30860",
+  "question": "What approximate memory reduction percentage is achieved for Mistral models by removing `logits = logits.float()` from the forward pass in HuggingFace Transformers ModelForCausalLM?",
+  "excerpt": "Of course, other models usually have smaller vocabulary size so will not benefit as much, but still the memory peak will decrease by a non-negligible portion for all applicable models (see below for Mistral, ~30% memory gain).",
+  "expected_answer": "Approximately 30% memory gain for Mistral models, compared to more than 2x reduction for Llama3 which has a larger vocabulary size."
+ },
+ {
+  "id": "highlights_163",
+  "set": "highlights",
+  "url": "https://www.getknit.dev/blog/ats-integration-guide",
+  "question": "Beyond standard dual encryption for data at rest and in transit, what additional security measure does Knit's unified API platform apply specifically to personally identifiable information in ATS integrations?",
+  "excerpt": "Dual encryption (data at rest and in transit), plus an additional layer for personally identifiable information (PII).",
+  "expected_answer": "Knit applies an additional encryption layer specifically for personally identifiable information (PII), beyond the standard dual encryption for data at rest and in transit."
+ },
+ {
+  "id": "highlights_165",
+  "set": "highlights",
+  "url": "https://docs.gitlab.com/18.5/user/project/issues/create_issues/",
+  "question": "In GitLab, what URL parameter is used to prefill description templates specifically for tasks, OKRs, and epics when creating issues via URL, and in which version was it introduced?",
+  "excerpt": "| Description template (tasks, OKRs, issues with the new look, and epics. | description_template | Must be URL-encoded. Introduced in GitLab 17.9. |",
+  "expected_answer": "The `description_template` URL parameter, introduced in GitLab 17.9, is used for tasks, OKRs, issues with the new look, and epics."
+ },
+ {
+  "id": "highlights_166",
+  "set": "highlights",
+  "url": "https://articles.mergify.com/best-practice-for-software-development/",
+  "question": "When first implementing CI/CD, what is the recommended ideal maximum duration for the CI pipeline that automates builds and unit tests on every commit?",
+  "excerpt": "Start with CI: Begin by automating the build and unit test process for every code commit. Ensure the pipeline is fast, ideally under 15 minutes.",
+  "expected_answer": "The CI pipeline should ideally complete in under 15 minutes per commit."
+ },
+ {
+  "id": "highlights_168",
+  "set": "highlights",
+  "url": "https://forem.com/link2twenty/react-singletons-arent-as-evil-as-you-think-44m8",
+  "question": "In a TypeScript singleton-based ToastManager built on TypedEventTarget for React, what are the four allowed literal values for the Toast interface's `type` property?",
+  "excerpt": "type: \"info\" | \"success\" | \"loading\" | \"error\";",
+  "expected_answer": "The four allowed type values are \"info\", \"success\", \"loading\", and \"error\" — notably using \"loading\" rather than the more conventional \"warning\"."
+ },
+ {
+  "id": "highlights_169",
+  "set": "highlights",
+  "url": "https://github.com/react-native-skia/react-native-skia",
+  "question": "In the react-native-skia project's Linux build configuration, what is the default value of the `is_component_build` gn arg?",
+  "excerpt": "is_component_build=true : Default is \"is_debug\" value , set to true to build components as shared libraries",
+  "expected_answer": "The default value of `is_component_build` is the current value of `is_debug` (i.e., it mirrors the `is_debug` setting)."
+ },
+ {
+  "id": "highlights_172",
+  "set": "highlights",
+  "url": "https://thelinuxcode.com/what-is-mixed-precision-training-a-practical-2026-era-guide-for-faster-deep-learning/",
+  "question": "In mixed precision training guides, what GPU idle time percentage range indicates that enabling AMP is unlikely to provide meaningful speedup due to a dataloader bottleneck?",
+  "excerpt": "If your GPU is idle 30–50% of the time, mixed precision won't move the needle much.",
+  "expected_answer": "30–50% GPU idle time indicates a dataloader bottleneck where mixed precision won't move the needle much"
+ },
+ {
+  "id": "highlights_174",
+  "set": "highlights",
+  "url": "https://scrimba.com/articles/how-to-learn-javascript-the-complete-beginners-guide-2026/",
+  "question": "How long is Scrimba's Advanced JavaScript course and who teaches it?",
+  "excerpt": "For learners ready to go deeper, the Advanced JavaScript course (9.8 hours, Tom Chant) and full career paths are available with Pro ($24.50/mo on the annual plan, $294/year, with additional discounts available including regional pricing and student rates).",
+  "expected_answer": "The Advanced JavaScript course on Scrimba is 9.8 hours long and taught by Tom Chant."
+ },
+ {
+  "id": "highlights_178",
+  "set": "highlights",
+  "url": "https://www.sitepoint.com/why-react-19-s-compiler-changes-everything-for-senior-devs/",
+  "question": "During React Compiler migration, what two specific failure modes can occur when removing useMemo from values that provided referential stability for useEffect dependency arrays?",
+  "excerpt": "Beyond timing, removing `useMemo` from code that relied on referential stability (e.g., values passed to `useEffect` dependency arrays) can trigger cascading re-renders or effect loops. In impure code, these changes can surface latent bugs.",
+  "expected_answer": "Removing useMemo from values relied upon for referential stability in useEffect dependency arrays can trigger cascading re-renders or effect loops, and in impure code these changes can surface latent bugs."
+ },
+ {
+  "id": "highlights_179",
+  "set": "highlights",
+  "url": "https://aws.amazon.com/blogs/machine-learning/accelerate-custom-llm-deployment-fine-tune-with-oumi-and-deploy-to-amazon-bedrock/",
+  "question": "What default EC2 instance type, AMI, and storage volume are provisioned by the Oumi fine-tuning Bedrock Custom Model Import setup script (setup-aws-env.sh)?",
+  "excerpt": "Defaults: g6.12xlarge instance, Deep Learning Base AMI with Single CUDA (Amazon Linux 2023), and 100 GB gp3 storage.",
+  "expected_answer": "g6.12xlarge instance, Deep Learning Base AMI with Single CUDA (Amazon Linux 2023), and 100 GB gp3 storage."
+ },
+ {
+  "id": "highlights_180",
+  "set": "highlights",
+  "url": "https://lancedb.com/blog/rethinking-table-file-paths-lance-multi-base-layout/",
+  "question": "In Lance's multi-base layout protobuf specification, which field in the BasePath message is defined as optional, and what is its data type?",
+  "excerpt": "message BasePath {\n  uint32 id = 1;\n  optional string name = 2;\n  bool is_dataset_root = 3;\n  string path = 4;\n}",
+  "expected_answer": "The `name` field (field number 2) is the only optional field in BasePath, defined as `optional string`."
+ },
+ {
+  "id": "highlights_181",
+  "set": "highlights",
+  "url": "https://blog.logrocket.com/tailwind-css-guide/",
+  "question": "In a Tailwind CSS v4 glassmorphism implementation using @utility, what are the backdrop-filter blur values for a base `glass` utility, a `glass-strong` utility for modals, and a `popup-blur` overlay utility?",
+  "excerpt": "/* Glassmorphism utility */\n@utility glass {\n  background: rgba(186, 162, 220, 0.15);\n  backdrop-filter: blur(12px);\n  border: 1px solid rgba(234, 227, 245, 0.2);\n}\n/* Stronger glass effect for popups and modals */\n@utility glass-strong {\n  background: rgba(118, 74, 188, 0.5);\n  backdrop-filter: blur(15px);\n  border: 1px solid rgba(118, 74, 188, 0.5);\n}\n/* Popup overlay blur */\n@utility popup-blur {\n  backdrop-filter: blur(5px);\n  background-color: rgba(118, 74, 188, 0.1);\n}",
+  "expected_answer": "The `glass` utility uses blur(12px), `glass-strong` uses blur(15px), and `popup-blur` uses blur(5px)."
+ },
+ {
+  "id": "highlights_182",
+  "set": "highlights",
+  "url": "https://checkmarx.com/learn/ai-security/top-12-ai-developer-tools-in-2026-for-security-coding-and-quality/",
+  "question": "How much less test maintenance does testRigor claim compared to Selenium or Appium-based frameworks?",
+  "excerpt": "**Low maintenance overhead:** Designed to require 99.5% less upkeep compared to Selenium or Appium-based frameworks",
+  "expected_answer": "testRigor claims 99.5% less maintenance upkeep compared to Selenium or Appium-based frameworks."
+ },
+ {
+  "id": "highlights_183",
+  "set": "highlights",
+  "url": "https://spec.openapis.org/oas/latest.html",
+  "question": "In OpenAPI Specification v3.2.0, what is the default `style` value for a Parameter Object with `in: \"cookie\"` when using `schema`, and what style is recommended instead?",
+  "excerpt": "Default values (based on value of `in`): for `\"query\"` - `\"form\"`; for `\"path\"` - `\"simple\"`; for `\"header\"` - `\"simple\"`; for `\"cookie\"` - `\"form\"` (for compatibility reasons; note that `style: \"cookie\"` *SHOULD* be used with `in: \"cookie\"`; see [Appendix D] for details).",
+  "expected_answer": "The default style for `in: \"cookie\"` is `\"form\"` for compatibility reasons, but `style: \"cookie\"` SHOULD be used with `in: \"cookie\"` instead."
+ },
+ {
+  "id": "highlights_184",
+  "set": "highlights",
+  "url": "https://dev.to/rahulxsingh/code-review-best-practices-the-complete-guide-for-engineering-teams-2026-52a4",
+  "question": "When measuring code review effectiveness using time-to-merge as a metric, what is the recommended target for a standard pull request and what threshold is considered excellent?",
+  "excerpt": "**Time to merge**\n\nThe total time from PR creation to merge. This includes review time, revision time, and any waiting time for CI or additional approvals. Long time-to-merge often indicates large PRs, slow review turnaround, or excessive ping-pong cycles.\n\n**Target:** Under 48 hours for a standard PR. Under 24 hours is excellent.",
+  "expected_answer": "The target for time-to-merge on a standard PR is under 48 hours; under 24 hours is considered excellent."
+ },
+ {
+  "id": "highlights_186",
+  "set": "highlights",
+  "url": "https://fluttergems.dev/widget-library-ui-framework/",
+  "question": "What does the Flutter adaptive_platform_ui package automatically render for devices running iOS 26 or later?",
+  "excerpt": "Adaptive platform-specific widgets for Flutter. Auto renders native iOS 26+ liquid glass designs, traditional Cupertino widgets for older iOS versions, Material Design for Android.",
+  "expected_answer": "It auto-renders native iOS 26+ liquid glass designs for those devices."
+ },
+ {
+  "id": "highlights_191",
+  "set": "highlights",
+  "url": "https://hammerspoon.org/docs/LuaSkin/Classes/LuaSkin/index.html",
+  "question": "In LuaSkin's pushNSObject method, what is the ordered list of default NSObject classes checked for conversion to Lua representations?",
+  "excerpt": "The default classes are (in order): NSNull, NSNumber, NSValue, NSString, NSData, NSDate, NSArray, NSSet, NSOrderedSet, NSDictionary, NSURL, and NSObject.",
+  "expected_answer": "The default classes checked in order are: NSNull, NSNumber, NSValue, NSString, NSData, NSDate, NSArray, NSSet, NSOrderedSet, NSDictionary, NSURL, and NSObject."
+ },
+ {
+  "id": "highlights_192",
+  "set": "highlights",
+  "url": "https://github.com/spring-projects/spring-ai/releases/tag/v2.0.0-M3",
+  "question": "What configuration file path does Spring AI's OpenAiEmbeddingModel use for specifying custom embedding dimensions?",
+  "excerpt": "Added support for custom embedding dimensions via '/embedding/embedding-model-dimensions.properties' configuration for `OpenAiEmbeddingModel` [47cdb08]",
+  "expected_answer": "Custom embedding dimensions are configured via '/embedding/embedding-model-dimensions.properties'"
+ },
+ {
+  "id": "highlights_194",
+  "set": "highlights",
+  "url": "https://www.mikeash.com/pyblog/friday-qa-2012-03-02-key-value-observing-done-right-take-2.html",
+  "question": "In MAKVONotificationCenter's observation removal method, when a key path is specified, does it match helpers that observe any of the specified key paths, or only those whose key path set exactly matches?",
+  "excerpt": "Note: The code checks for exact equality of key path sets, rather than whether the helper being checked observes \"any\" of the paths passed instead of \"all\" of them. It didn't strike me that it'd be worth the extra effort to add the extra checks.",
+  "expected_answer": "It checks for exact equality of the full key path set (using isEqualToSet:), not partial or subset matching of individual paths."
+ },
+ {
+  "id": "highlights_196",
+  "set": "highlights",
+  "url": "https://sqlite.org/fileformat.html",
+  "question": "In SQLite's freelist trunk page format, how many entries at the end of the array are avoided by newer versions for backward compatibility with older versions?",
+  "excerpt": "A bug in SQLite versions prior to 3.6.0 (2008-07-16) caused the database to be reported as corrupt if any of the last 6 entries in the freelist trunk page array contained non-zero values. Newer versions of SQLite do not have this problem. However, newer versions of SQLite still avoid using the last six entries in the freelist trunk page array in order that database files created by newer versions of SQLite can be read by older versions of SQLite.",
+  "expected_answer": "Newer versions of SQLite avoid using the last six entries in the freelist trunk page array, to maintain compatibility with versions prior to 3.6.0 that would report the database as corrupt if those entries contained non-zero values."
+ },
+ {
+  "id": "highlights_199",
+  "set": "highlights",
+  "url": "https://forums.swift.org/t/weird-behavior-using-mainactor-isolation-across-modules-on-ios-17/82628",
+  "question": "How can the Swift compiler bug involving `nonisolated(nonsending)` function type metadata crashing on older OS versions be reproduced without using SwiftUI or Combine?",
+  "excerpt": "It appears to be a bug in the Swift compiler. You should be able to trigger it without using SwiftUI and Combine by using the standard library's Mirror type, for example by calling `dump()` on a struct with a stored property that contains an `nonisolated(nonsending)` function type.",
+  "expected_answer": "By calling `dump()` on a struct with a stored property containing a `nonisolated(nonsending)` function type, which triggers the crash through the standard library's Mirror type."
+ },
+ {
+  "id": "highlights_200",
+  "set": "highlights",
+  "url": "https://www.brimco.io/software/issue-tracking-software/",
+  "question": "What automation capability does Zoho BugTracker offer for handling incoming bug reports, and what is its entry-level per-user pricing?",
+  "excerpt": "Zoho BugTracker is a cost-effective, simple yet powerful issue tracking tool designed to streamline bug management. It features automated routing, time tracking, and the ability to assign issues and attach relevant files. Zoho BugTracker offers an intuitive interface and integrates well with other Zoho products. Its pricing starts from €3 per user per month, making it accessible for small to medium-sized teams.",
+  "expected_answer": "Zoho BugTracker offers automated routing for incoming issues, with pricing starting from €3 per user per month."
+ },
+ {
+  "id": "highlights_201",
+  "set": "highlights",
+  "url": "https://github.com/anthropics/claude-code/issues/34430",
+  "question": "In Claude Code on macOS, what is the root cause when renaming a parent directory while the CLI is running leads to a persistent \"--print\" error across all directories, even after reinstallation?",
+  "excerpt": "Because the parent directory was renamed while Claude Code was actively running inside it, the background zsh process crashed in a way that permanently corrupted its standard input (stdin) file descriptors.\n\nAs a result, the CLI's internal TTY (interactive terminal) check permanently fails. Claude Code asks the shell if a human is typing at a keyboard, the broken shell reports \"No,\" and Claude assumes it is running in a non-interactive background script. This is why it constantly demands the --print flag.\n\nThis is also why wiping ~/.claude, reinstalling the CLI, or doing a visual \"Hard Reset\" in the Terminal app doesn't work: none of those actions fix the underlying corrupted zsh process.",
+  "expected_answer": "The background zsh process's stdin file descriptors become permanently corrupted, causing the CLI's internal TTY (interactive terminal) check to permanently fail, so Claude assumes it's running in a non-interactive background script."
+ },
+ {
+  "id": "highlights_202",
+  "set": "highlights",
+  "url": "https://docs.lumalabs.ai/docs/python-video-generation",
+  "question": "In the Luma AI Python SDK, what is the retry policy and timeout for callback_url notifications when the endpoint returns a non-200 status code?",
+  "excerpt": "If the endpoint returns a status code other than 200, it will be retried max 3 times with 100ms delay and the request has a 5s timeout",
+  "expected_answer": "The callback is retried a maximum of 3 times with a 100ms delay between retries, and each request has a 5-second timeout."
+ },
+ {
+  "id": "highlights_206",
+  "set": "highlights",
+  "url": "https://milvus.io/docs/v2.4.x/schema.md",
+  "question": "What is the maximum allowed value for the max_length property of a VARCHAR field in Milvus?",
+  "excerpt": "`max_length` (Mandatory for VARCHAR field) | Maximum byte length for strings allowed to be inserted. Note that multibyte characters (e.g., Unicode characters) may occupy more than one byte each, so ensure the byte length of inserted strings does not exceed the specified limit. | [1, 65,535]",
+  "expected_answer": "The maximum allowed value for max_length on a VARCHAR field is 65,535 bytes, with the valid range being [1, 65,535]."
+ },
+ {
+  "id": "highlights_207",
+  "set": "highlights",
+  "url": "https://nextjs.org/blog/next-16-2",
+  "question": "What prerequisite experimental flag must be enabled for `experimental.cachedNavigations` to work in Next.js 16.2?",
+  "excerpt": "This flag independently controls the Cached Navigations behavior, which caches static and dynamic Server Components data from navigations and the initial HTML loads so that repeat visits can be served instantly. Requires `cacheComponents` to be enabled.",
+  "expected_answer": "The `experimental.cachedNavigations` flag requires `cacheComponents` to be enabled."
+ },
+ {
+  "id": "highlights_208",
+  "set": "highlights",
+  "url": "https://buttondown.com/weekly-project-news/archive/weekly-github-report-for-maui-december-01-2025/",
+  "question": "In .NET MAUI, what is the workaround for custom MapHandler event handlers not firing on iOS when the linker is set to \"Link Framework SDK Only\"?",
+  "excerpt": "The user provides a minimal reproduction project and discovers a workaround by explicitly adding a using directive for Microsoft.Maui.Maps.Platform in the MapPage.xaml.cs file, which restores event functionality despite the linker setting.",
+  "expected_answer": "Explicitly adding a using directive for Microsoft.Maui.Maps.Platform in the MapPage.xaml.cs file restores event functionality despite the linker setting."
+ },
+ {
+  "id": "highlights_209",
+  "set": "highlights",
+  "url": "https://playwright.help/docs/next/api/class-browsercontext",
+  "question": "What is the default value of the `updateMode` option in Playwright's `browserContext.routeFromHAR()` method, and what does it omit?",
+  "excerpt": "`updateMode` \"full\" | \"minimal\" *(optional)* Added in: v1.32 — When set to `minimal`, only record information necessary for routing from HAR. This omits sizes, timing, page, cookies, security and other types of HAR information that are not used when replaying from HAR. Defaults to `minimal`.",
+  "expected_answer": "Defaults to `minimal`, which omits sizes, timing, page, cookies, security and other HAR information not used when replaying from HAR."
+ },
+ {
+  "id": "highlights_210",
+  "set": "highlights",
+  "url": "https://oneuptime.com/blog/post/2026-02-02-flask-celery-background-tasks/view",
+  "question": "In a Celery task that imports CSV files with chunked processing and progress tracking, what default chunk_size is used when no import options are specified?",
+  "excerpt": "    # Process in chunks\n    chunk_size = options.get('chunk_size', 100)\n\n    for chunk_start in range(0, total_rows, chunk_size):\n        chunk_end = min(chunk_start + chunk_size, total_rows)",
+  "expected_answer": "The default chunk_size is 100 rows per chunk, set via `options.get('chunk_size', 100)` in the import_csv task."
+ },
+ {
+  "id": "highlights_211",
+  "set": "highlights",
+  "url": "https://smashsend.com/blog/email-drip-campaign-examples",
+  "question": "In a B2B SaaS feature announcement email drip campaign, what is the recommended target percentage of the user segment that should adopt a new feature, and within what timeframe?",
+  "excerpt": "**Goal:** Drive adoption of the new feature by 10-15% of the targeted segment within the first 30 days.",
+  "expected_answer": "The goal is to drive adoption by 10-15% of the targeted segment within the first 30 days of launch."
+ },
+ {
+  "id": "highlights_215",
+  "set": "highlights",
+  "url": "https://developer.chrome.com/blog/new-in-devtools-144",
+  "question": "What Chrome flag must be enabled to use individual network request throttling in Chrome 144 DevTools, and why is it needed?",
+  "excerpt": "This feature was disabled by default in Chrome 144 due to a regression. To enable it for Chrome 144, set the flag `Enable individual request throttling in DevTools` and select *Enable blocking and throttling* checkbox in the *Request Conditions* drawer. The feature will be available again by default in **Chrome 145**.",
+  "expected_answer": "The flag \"Enable individual request throttling in DevTools\" must be set because the feature was disabled by default in Chrome 144 due to a regression."
+ },
+ {
+  "id": "highlights_216",
+  "set": "highlights",
+  "url": "https://github.com/semver/semver/pull/682",
+  "question": "In the semver 3.0.0 LIBRARY version RFC proposal (PR #682), what specific version number was proposed as the correct bump for the Rails 5.2.4 breaking change instead of going to 6.x?",
+  "excerpt": "So, for the above example, the bump could have been: 5.3.0.0",
+  "expected_answer": "Under the proposed LIBRARY.MAJOR.MINOR.PATCH scheme, the suggested version bump was 5.3.0.0, treating 5 as the LIBRARY version and incrementing MAJOR for the incompatible API change."
+ },
+ {
+  "id": "highlights_217",
+  "set": "highlights",
+  "url": "https://github.com/github/gh-aw/issues/16294",
+  "question": "What GraphQL-Features header value is required when using GitHub's GraphQL API to assign the Copilot coding agent to an issue with a specific model selection?",
+  "excerpt": "All GraphQL requests for model selection **must** include this header:\n\n```\nGraphQL-Features: issues_copilot_assignment_api_support,coding_agent_model_selection\n```",
+  "expected_answer": "The required header value is `issues_copilot_assignment_api_support,coding_agent_model_selection` — mutations will fail without it."
+ },
+ {
+  "id": "highlights_218",
+  "set": "highlights",
+  "url": "https://dev.to/amals367/i-ship-a-lot-of-apiwebhook-integrations-heres-how-i-make-them-not-hurt-in-production-50hb",
+  "question": "In a two-layer webhook logging strategy that separates request-level and async job-level logging, what four specific data points should be captured at the job/worker processing layer?",
+  "excerpt": "### Job layer\n\n- event id\n- job attempt\n- result\n- full error stack (if any)",
+  "expected_answer": "The four job layer logging fields are: event id, job attempt, result, and full error stack (if any)."
+ },
+ {
+  "id": "highlights_219",
+  "set": "highlights",
+  "url": "https://github.com/WCSCourses/index/blob/main/Docker_guide.md",
+  "question": "What Globus endpoint names should you search for when downloading Wellcome Connecting Science (WCS) Docker course files?",
+  "excerpt": "Search for the endpoint `wcs_data_transfers` or `wcs_data_transfers_backup`. Click on the endpoint labelled `wcs_data_transfers` or `wcs_data_transfers_backup` and select \"Open in File Manager.\"",
+  "expected_answer": "Search for the endpoints named `wcs_data_transfers` or `wcs_data_transfers_backup`."
+ },
+ {
+  "id": "highlights_221",
+  "set": "highlights",
+  "url": "https://www.hackingwithswift.com/forums/100-days-of-swiftui/day-53-swiftdata-and-swiftui-introduction-data-not-persisting/28494",
+  "question": "When using SwiftData with iOS 18.1.1 on a physical device, under what condition does the data persistence bug remain even after upgrading the device OS?",
+  "excerpt": "I have discovered that upgrading to ioS version 18.1.1 on my iPhone does resolve the issue on a physical device if its running exclusively on the device (IE not in debug mode from Xcode in which case the problem remains). I have therefore concluded that this is an XCode 16.1 and iOS 18.1 version specific problem that will resolve fully once the XCode simulators are upgraded to 18.1.1.",
+  "expected_answer": "The persistence bug remains when running the app in debug mode from Xcode, even on a physical device upgraded to iOS 18.1.1. It only resolves when running exclusively on the device (not tethered to Xcode)."
+ },
+ {
+  "id": "highlights_225",
+  "set": "highlights",
+  "url": "https://awscli.amazonaws.com/v2/documentation/api/latest/reference/rekognition/get-face-search.html",
+  "question": "What regex pattern constraint applies to the JobTag output field in the AWS Rekognition GetFaceSearch API?",
+  "excerpt": "JobTag -> (string)\n\n> A job identifier specified in the call to StartFaceSearch and returned in the job completion notification sent to your Amazon Simple Notification Service topic.\n>\n> Constraints:\n>\n> - min: `1`\n> - max: `1024`\n> - pattern: `[a-zA-Z0-9_.\\-:+=\\/]+`",
+  "expected_answer": "The JobTag pattern constraint is `[a-zA-Z0-9_.\\-:+=\\/]+` with a max length of 1024 characters."
+ },
+ {
+  "id": "highlights_230",
+  "set": "highlights",
+  "url": "https://github.com/github/github-mcp-server/issues/2229",
+  "question": "In the github-mcp-server project, what existing type names in pullrequests.go must the proposed list_pull_request_review_threads tool's implementation avoid colliding with?",
+  "excerpt": "Type names chosen to avoid collision with existing `reviewThreadsQuery` / `reviewThreadNode` types in `pullrequests.go`",
+  "expected_answer": "The existing `reviewThreadsQuery` and `reviewThreadNode` types in pullrequests.go must be avoided when choosing new type names."
+ },
+ {
+  "id": "highlights_231",
+  "set": "highlights",
+  "url": "https://spin.atomicobject.com/react-native-skia/",
+  "question": "In the gvanderclay/skia-white-board React Native Skia project, what are the predefined stroke width values available in the toolbar for brush thickness selection?",
+  "excerpt": "const strokes = [2, 4, 6, 8, 10, 12, 14, 16, 18, 20];",
+  "expected_answer": "The predefined stroke width values are even integers from 2 to 20: [2, 4, 6, 8, 10, 12, 14, 16, 18, 20]."
+ },
+ {
+  "id": "highlights_233",
+  "set": "highlights",
+  "url": "https://docs.astral.sh/uv/concepts/configuration-files/",
+  "question": "In uv, how are array settings merged when they appear in both project-level and user-level configuration files?",
+  "excerpt": "If an array is present in both tables, the arrays will be concatenated, with the project-level settings appearing earlier in the merged array.",
+  "expected_answer": "The arrays are concatenated, with project-level settings appearing earlier in the merged array."
+ },
+ {
+  "id": "highlights_234",
+  "set": "highlights",
+  "url": "https://docs.oracle.com/en/cloud/paas/content-cloud/solutions/integrate-oracle-content-management-using-oauth.html",
+  "question": "In Oracle Content Management, after creating a new OAuth client with client credentials in IDCS or IAM Identity Domain, how long must you wait before the client appears in search within the OCM web UI Members dialog?",
+  "excerpt": "Just as a regular user, an OAuth client with the client credentials requires relevant permission on objects in your Oracle Content Management instance to be able to perform actions using REST API for Content Management. For example, it needs to be a repository member with Contributor permission to create assets in it, or a Manager on the repository to modify its settings. In the Oracle Content Management web UI, you can use the Members dialog to find your OAuth client by name and add it to the required object. A newly created OAuth client will appear in search only after the next hourly Identity Domain sync is complete.",
+  "expected_answer": "A newly created OAuth client will appear in search only after the next hourly Identity Domain (or IDCS) sync is complete."
+ },
+ {
+  "id": "highlights_235",
+  "set": "highlights",
+  "url": "https://thelinuxcode.com/building-a-rest-api-with-php-and-mysql-in-2026-a-practical-crud-service-you-can-run-locally/",
+  "question": "In a PHP REST API using PDO with a users endpoint, what is the default pagination limit and the maximum allowed limit value for the GET /users list endpoint?",
+  "excerpt": "$limit  = isset($GET['limit']) && ctypedigit((string)$GET['limit']) ? (int)$GET['limit'] : 50;\n$offset = isset($GET['offset']) && ctypedigit((string)$GET['offset']) ? (int)$GET['offset'] : 0;\nif ($limit < 1 || $limit > 200) {\nerrorjson('VALIDATIONERROR', 'limit must be 1-200', 400, ['field' => 'limit']);\n}",
+  "expected_answer": "The default pagination limit is 50, and the maximum allowed limit is 200 (valid range is 1–200)."
+ },
+ {
+  "id": "highlights_236",
+  "set": "highlights",
+  "url": "https://blog.jetbrains.com/go/2026/03/02/secure-go-error-handling-best-practices/",
+  "question": "In the \"split-brain\" SafeError pattern for secure Go error handling, what format string does the LogString() method use to produce the detailed internal string?",
+  "excerpt": "func (e *SafeError) LogString() string {\n\n    return fmt.Sprintf(\"Code: %s | Msg: %s | Cause: %v | Meta: %v\", \n\n        e.Code, e.UserMsg, e.Internal, e.Metadata)\n\n}",
+  "expected_answer": "The format string is `\"Code: %s | Msg: %s | Cause: %v | Meta: %v\"`, producing a pipe-delimited representation of Code, UserMsg, Internal cause, and Metadata."
+ },
+ {
+  "id": "highlights_237",
+  "set": "highlights",
+  "url": "https://github.com/software-mansion/react-native-reanimated/discussions/7264",
+  "question": "In react-native-worklets, what builtins does createWorkletRuntime provide to a Worklet Runtime by default?",
+  "excerpt": "**builtins** - an object defining what builtins react-native-worklets should provide to the Worklet Runtime out-of-the-box. By default only console and performance are provided.",
+  "expected_answer": "By default, only `console` and `performance` are provided as builtins to a Worklet Runtime created with createWorkletRuntime."
+ },
+ {
+  "id": "highlights_240",
+  "set": "highlights",
+  "url": "https://github.com/rive-app/rive-react-native/blob/main/docs/rive-react-native-reference.md",
+  "question": "In rive-react-native, what happens when the `stop` ref method is called without passing any animationNames argument?",
+  "excerpt": "##### animationNames\n\ndefault: `[]`\n\nSpecifies which animations should be stopped. String can be passed in case of a single animation. If this argument hasn't been passed whole artboard will be reset and paused.",
+  "expected_answer": "The whole artboard will be reset and paused."
+ },
+ {
+  "id": "highlights_243",
+  "set": "highlights",
+  "url": "https://dev.to/devjordan/nextjs-15-app-router-complete-guide-to-server-and-client-components-5h6k",
+  "question": "In Next.js 15 App Router, when fixing a hydration mismatch for a time-dependent Client Component by deferring rendering to useEffect, what TypeScript type annotation is used for the useState hook's generic parameter, and what fallback text is displayed while the value is still unset?",
+  "excerpt": "```\n// ✅ CORRECT - Render after hydration\n'use client';\n\nimport { useState, useEffect } from 'react';\n\nexport function DateDisplay() {\n  const [date, setDate] = useState<string | null>(null);\n\n  useEffect(() => {\n    setDate(new Date().toISOString());\n  }, []);\n\n  if (!date) return <div>Loading time...</div>;\n\n  return <div>Current time: {date}</div>;\n}\n```",
+  "expected_answer": "The useState hook uses a generic type of `string | null` (initialized to `null`), and the fallback text displayed before the client-side value is set is \"Loading time...\""
+ },
+ {
+  "id": "highlights_246",
+  "set": "highlights",
+  "url": "https://jotai.pmnd.rs/",
+  "question": "In Jotai's official extension ecosystem, which two atom types are specifically cited as examples of extensions that provide two-way data binding?",
+  "excerpt": "Others provide new atom types with two-way data binding such as `atomWithLocation` or `atomWithHash`.",
+  "expected_answer": "`atomWithLocation` and `atomWithHash` are cited as the two-way data binding extension atom types."
+ },
+ {
+  "id": "highlights_247",
+  "set": "highlights",
+  "url": "https://www.cozcore.com/blog/flutter-vs-react-native-2026",
+  "question": "In a 2026 comparison of Flutter vs React Native for enterprise apps, what framework is recommended for offline-first applications with complex local data, and what specific reasoning is given for that recommendation?",
+  "excerpt": "| Offline-first with complex local data | Flutter | Hive/Drift + strong type safety |",
+  "expected_answer": "Flutter is recommended for offline-first apps with complex local data, with the reasoning being \"Hive/Drift + strong type safety.\""
+ },
+ {
+  "id": "highlights_248",
+  "set": "highlights",
+  "url": "https://github.com/rootcause-rs/rootcause",
+  "question": "What is the Minimum Supported Rust Version (MSRV) for the rootcause error handling library?",
+  "excerpt": "Our current Minimum Supported Rust Version is 1.89.0. When adding features, we will follow these guidelines:\n\n- We will always support the latest five minor Rust versions (or more). This gives you a 6 month window to upgrade your compiler.",
+  "expected_answer": "The MSRV for rootcause is Rust 1.89.0, with a policy of always supporting the latest five minor Rust versions."
+ },
+ {
+  "id": "highlights_249",
+  "set": "highlights",
+  "url": "https://reintech.io/blog/how-to-call-javascript-from-webassembly-and-vice-versa",
+  "question": "In a comparison of WebAssembly-JavaScript interop patterns, which pattern is classified as \"High\" complexity, and what is it best suited for?",
+  "excerpt": "| Callback-based async | Network requests, file I/O | High |",
+  "expected_answer": "Callback-based async pattern is classified as High complexity, best suited for network requests and file I/O."
+ }
+]

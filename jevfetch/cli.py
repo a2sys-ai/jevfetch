@@ -24,9 +24,18 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--json", action="store_true", help="print the result as JSON")
     ap.add_argument("--no-render", action="store_true", help="do not fall back to a headless browser")
     ap.add_argument("--model", default=Config.model, help="Jev model name (default: %(default)s)")
+    ap.add_argument(
+        "--no-notes",
+        action="store_true",
+        help="do not score note and warning boxes on pages too long to pass through, saving their Jev requests",
+    )
     args = ap.parse_args(argv)
     try:
-        res = fetch_relevant(args.url, args.question, Config(render_fallback=not args.no_render, model=args.model))
+        res = fetch_relevant(
+            args.url,
+            args.question,
+            Config(render_fallback=not args.no_render, model=args.model, score_notes=not args.no_notes),
+        )
     except JevError as e:
         print(f"jevfetch: Jev error: {e}", file=sys.stderr)
         return 2

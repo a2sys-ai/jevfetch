@@ -4,6 +4,7 @@ A block is a paragraph, list item, table row, or code block, labelled with its h
 lead-in ending in a colon is merged with the list items that follow it, because the lead-in often
 carries the condition that the items depend on."""
 
+import bisect
 import json
 import re
 from dataclasses import dataclass
@@ -13,6 +14,11 @@ from urllib.parse import quote, urljoin
 from bs4 import BeautifulSoup, CData, NavigableString, Tag
 
 DROP = {"script", "style", "noscript", "nav", "footer", "aside", "form", "svg", "button", "iframe"}
+# An <aside> is a sidebar, table of contents, or promotion on most sites, but documentation sites also write their
+# notes and warnings as one. These names mark the notes, which are kept.
+NOTE_CLASSES = {"note", "tip", "hint", "important", "warning", "caution", "danger", "admonition", "key-point"}
+NOTE_ROLES = {"note", "doc-note", "doc-notice", "doc-tip"}
+NOTE_LABEL = re.compile(r"(?:note|important|warning|caution|tip|key point|danger)\s*:", re.I)
 HEADINGS = {"h1", "h2", "h3", "h4", "h5", "h6"}
 LEAF_BLOCKS = {"p", "li", "pre", "blockquote", "dt", "dd", "tr", "figcaption", "caption"}
 CONTAINERS = {"table", "ul", "ol", "dl"}
@@ -44,6 +50,9 @@ class Block:
     path: list[str]
     text: str
     kind: Kind
+    note: bool = False  # read from a note (an aside kept by _clean)
+    table: int = 0  # for a table row, the id() of its <table>; 0 otherwise
+    head: bool = False  # a table's header row: in <thead>, or a first row of <th> cells
 
     @property
     def heading(self) -> str:
@@ -76,22 +85,35 @@ def merge_fragments(blocks: list[Block], short: int = 100, cap: int = 800) -> li
     """Merge consecutive short paragraphs or list items under the same heading (e.g. steps of a flow chart).
 
     Such fragments rarely say on their own what they are about. Table rows and code are never merged. Lengths
-    are measured without link targets, so a list of short links still merges."""
-    out: list[Block] = []
-    for b in blocks:
-        prev = out[-1] if out else None
-        if (
-            prev
-            and b.kind in ("p", "li")
-            and len(plain(b.text)) < short
-            and prev.path == b.path
-            and (prev.kind == "frag" or (prev.kind in ("p", "li") and len(plain(prev.text)) < short))
-            and len(plain(prev.text)) + len(plain(b.text)) < cap
-        ):
-            out[-1] = Block(0, prev.path, prev.text + "\n" + b.text, "frag")
-        else:
-            out.append(Block(0, b.path, b.text, b.kind))
-    return _number(_split_long(out))
+    are measured without link targets, so a list of short links still merges. The rest of the page is merged as if
+    its notes were not there, and a note only within its run of note blocks."""
+
+    def merge(seq: list[tuple[int, Block]]) -> list[tuple[int, Block]]:  # (position of the first block, merged)
+        out: list[tuple[int, Block]] = []
+        for k, b in seq:
+            prev = out[-1][1] if out else None
+            if (
+                prev
+                and b.kind in ("p", "li")
+                and len(plain(b.text)) < short
+                and prev.path == b.path
+                and (prev.kind == "frag" or (prev.kind in ("p", "li") and len(plain(prev.text)) < short))
+                and len(plain(prev.text)) + len(plain(b.text)) < cap
+            ):
+                out[-1] = (out[-1][0], Block(0, prev.path, prev.text + "\n" + b.text, "frag", b.note))
+            else:
+                out.append((k, Block(0, b.path, b.text, b.kind, b.note, b.table, b.head)))
+        return out
+
+    parts = merge([(k, b) for k, b in enumerate(blocks) if not b.note])
+    run: list[tuple[int, Block]] = []
+    for k, b in enumerate([*blocks, None]):
+        if b is not None and b.note:
+            run.append((k, b))
+        elif run:
+            parts += merge(run)
+            run = []
+    return _number(_split_long([b for _, b in sorted(parts, key=lambda kb: kb[0])]))
 
 
 def render(blocks: list[Block], keep: set[int] | None = None) -> str:
@@ -305,7 +327,17 @@ def _parse_xml(doc: str) -> list[Block]:
     return _number(_split_long(out))
 
 
-def _clean(soup: BeautifulSoup) -> None:
+def _is_note(aside: Tag) -> bool:
+    for c in aside.get("class") or []:
+        if c.lower().rpartition("--")[2] in NOTE_CLASSES:  # also a BEM modifier, as in starlight-aside--note
+            return True
+    return (aside.get("role") or "").lower() in NOTE_ROLES or bool(
+        NOTE_LABEL.match(aside.get_text(" ", strip=True)[:40])
+    )
+
+
+def _clean(soup: BeautifulSoup) -> list[Tag]:
+    """Drop what is not content. Returns the asides kept as notes, outermost only."""
     # Keep the page title but drop the rest of the header: Wikipedia puts the h1 and its language menu
     # in the same <header>.
     for t in soup.find_all("header"):
@@ -314,10 +346,18 @@ def _clean(soup: BeautifulSoup) -> None:
             t.replace_with(h1.extract())
         else:
             t.decompose()
+    notes = []
     for t in soup.find_all(DROP):
-        t.decompose()
+        if t.decomposed:  # inside an element dropped before it
+            continue
+        if t.name == "aside" and _is_note(t):
+            notes.append(t)
+        else:
+            t.decompose()
     for t in soup.select(NOISE):
         t.decompose()
+    kept = {id(t) for t in notes if not t.decomposed}
+    return [t for t in notes if id(t) in kept and not any(id(p) in kept for p in t.parents)]
 
 
 def _own_text(li: Tag, base: str) -> str:
@@ -345,30 +385,96 @@ def _parse_html(html: str, base: str = "") -> list[Block]:
     soup = BeautifulSoup(html, "lxml")
     if (tag := soup.find("base", href=True)) is not None:
         base = urljoin(base, tag["href"])
-    _clean(soup)
-    path: list[tuple[int, str]] = []
-    out: list[Block] = []
+    notes = _clean(soup)
+    # The page is read as if its notes had been dropped too, so that its content root and its blocks are what they
+    # would be without them; each note is read on its own and its blocks follow the block before it in the page.
+    order = {id(n): k for k, n in enumerate(soup.descendants)} if notes else {}
+    ends = (
+        {id(dl): max((order[id(d)] for d in dl.descendants), default=order[id(dl)]) for dl in soup.find_all("dl")}
+        if notes
+        else {}
+    )
+    holders = [{id(p) for p in n.parents} for n in notes]
+    for n in notes:
+        n.extract()
+    root = _root(soup)
+    notes = [n for n, held_by in zip(notes, holders, strict=True) if id(root) in held_by]
+    return _number(_split_long(_merge_leadins(*_read(root, base, [], notes, order, ends))))
 
-    def emit(text: str, kind: Kind) -> None:
+
+def _read(
+    el: Tag, base: str, path0: list[tuple[int, str]], notes: list[Tag], order: dict[int, int], ends: dict[int, int]
+) -> tuple[list[Block], set[int]]:
+    """Blocks of `el` without its `notes` (asides inside it, in page order), each note's blocks (grouped within the
+    note) put after the block that it sits in or follows. Also returns the indices of the blocks from notes."""
+    for n in notes:
+        n.extract()
+    blocks, src, events = _walk(el, base, path0, order, ends)
+    at_events = [at for at, _ in events]
+    out: list[Block] = []
+    from_notes: set[int] = set()
+    k = 0
+    for n in notes:
+        at = order[id(n)]
+        p = bisect.bisect_left(src, at)  # src is in page order
+        out += blocks[k:p]
+        k = max(k, p)
+        e = bisect.bisect_left(at_events, at)
+        inner = [a for a in n.find_all("aside") if a.find_parent("aside") is n]
+        sub = _merge_leadins(*_read(n, base, events[e - 1][1] if e else path0, inner, order, ends))
+        for b in sub:
+            b.note = True
+        from_notes.update(range(len(out), len(out) + len(sub)))
+        out += sub
+    out += blocks[k:]
+    return out, from_notes
+
+
+def _walk(
+    root: Tag, base: str, path0: list[tuple[int, str]], order: dict[int, int], ends: dict[int, int]
+) -> tuple[list[Block], list[int], list[tuple[int, list[tuple[int, str]]]]]:
+    """Blocks of `root`. With `order` (page position of each node), also the position each block was read from
+    and the positions where the heading path changed, with the path from there on."""
+    path = list(path0)
+    out: list[Block] = []
+    src: list[int] = []
+    events: list[tuple[int, list[tuple[int, str]]]] = []
+    here = 0
+
+    def emit(text: str, kind: Kind, table: int = 0, head: bool = False) -> None:
         text = text.strip("\n") if kind == "pre" else _norm(text)
         if len(text.strip()) >= 3:
-            out.append(Block(0, [h for _, h in path], text, kind))
+            out.append(Block(0, [h for _, h in path], text, kind, table=table, head=head))
+            if order:
+                src.append(here)
+
+    def moved(at: float) -> None:
+        if order:
+            events.append((at, path[:]))
 
     def flush(run: list[NavigableString | Tag]) -> None:
         """Mintlify writes each paragraph as <span data-as="p">, so such a span is a paragraph of its own; the
         rest of a run of inline content is one paragraph."""
+        nonlocal here
         text = ""
+        start = order.get(id(run[0]), 0) if run else 0  # where the text being gathered begins
         for n in run:
             if isinstance(n, Tag) and n.get("data-as") == "p":
+                here = start
                 emit(text, "p")
                 text = ""
+                here = start = order.get(id(n), 0)
                 emit(_text(n, links=True, base=base), "p")
             else:
+                if not text.strip():  # the paragraph begins at its first visible text
+                    start = order.get(id(n), 0)
                 text += str(n) if isinstance(n, NavigableString) else _text(n, links=True, base=base)
+        here = start
         emit(text, "p")
         run.clear()
 
     def walk(node: Tag, children: list[Tag] | None = None) -> None:
+        nonlocal here
         run: list[NavigableString | Tag] = []
         for ch in node.children if children is None else children:
             if not isinstance(ch, Tag):
@@ -379,27 +485,39 @@ def _parse_html(html: str, base: str = "") -> list[Block]:
                 run.append(ch)
                 continue
             flush(run)
+            if order:
+                here = order[id(ch)]
             if ch.name == "dl":
                 # A definition term (a function signature, an option name) becomes the heading of its
                 # descriptions; without it "the child process will be killed" loses which function it is about.
                 depth = len(path)
                 for item in _definition_items(ch):
+                    if order:
+                        here = order[id(item)]
                     if item.name == "dt":
                         del path[depth:]
                         path.append((99, _norm(_text(item))[:160]))
+                        moved(here)
                     elif item.find(list(LEAF_BLOCKS | CONTAINERS | {"div"})):
                         walk(item)
                     else:
                         emit(_text(item, links=True, base=base), "p")
                 del path[depth:]
+                moved(ends.get(id(ch), here) + 0.5)  # after everything that was in the list, notes included
             elif ch.name in HEADINGS:
                 level = int(ch.name[1])
                 while path and path[-1][0] >= level:
                     path.pop()
                 path.append((level, _norm(_text(ch))))
+                moved(here)
             elif ch.name == "tr":
-                cells = [_norm(_text(c, links=True, base=base)) for c in ch.find_all(["td", "th"], recursive=False)]
-                emit(" | ".join(cells), "row")
+                tags = ch.find_all(["td", "th"], recursive=False)
+                cells = [_norm(_text(c, links=True, base=base)) for c in tags]
+                table = ch.find_parent("table")
+                head = ch.parent.name == "thead" or (
+                    table is not None and table.find("tr") is ch and bool(tags) and all(c.name == "th" for c in tags)
+                )
+                emit(" | ".join(cells), "row", id(table) if table is not None else 0, head)
             elif ch.name == "pre":
                 emit(ch.get_text(), "pre")
             elif ch.name == "li":
@@ -414,34 +532,40 @@ def _parse_html(html: str, base: str = "") -> list[Block]:
                 walk(ch)
         flush(run)
 
-    walk(_root(soup))
-    return _number(_split_long(_merge_leadins(out)))
+    walk(root)
+    return out, src, events
 
 
-def _merge_leadins(blocks: list[Block]) -> list[Block]:
-    """Join a lead-in ending in a colon with the list items after it under the same heading (up to 1,500 chars)."""
+def _merge_leadins(blocks: list[Block], notes: set[int] | None = None) -> list[Block]:
+    """Join a lead-in ending in a colon with the list items after it under the same heading (up to 1,500 chars).
+
+    `notes` are the indices of blocks read from notes, already grouped within their note. They are never lead-ins
+    here; between a lead-in and its list items they do not end the group, and follow it."""
+    notes = notes or set()
     merged: list[Block] = []
     i = 0
     while i < len(blocks):
         b = blocks[i]
-        j = i + 1
-        if b.text.rstrip().endswith(":") and b.kind != "pre":
-            parts = [b.text]
-            while (
-                j < len(blocks)
-                and blocks[j].kind == "li"
-                and blocks[j].path == b.path
-                and len("\n".join(parts)) < 1500
-                and not blocks[j].text.rstrip().endswith(":")
-            ):
-                parts.append("- " + blocks[j].text)
+        parts, end = [b.text], i + 1
+        if b.text.rstrip().endswith(":") and b.kind != "pre" and i not in notes:
+            j = i + 1
+            while j < len(blocks) and len("\n".join(parts)) < 1500:
+                if j in notes:
+                    j += 1
+                    continue
+                item = blocks[j]
+                if item.kind != "li" or item.path != b.path or item.text.rstrip().endswith(":"):
+                    break
+                parts.append("- " + item.text)
                 j += 1
-        if j > i + 1:
-            merged.append(Block(0, b.path, "\n".join(parts), "group"))
+                end = j
+        if len(parts) > 1:
+            merged.append(Block(0, b.path, "\n".join(parts), "group", table=b.table, head=b.head))
+            merged += [blocks[k] for k in range(i + 1, end) if k in notes]
         else:
             merged.append(b)
-            j = i + 1
-        i = j
+            end = i + 1
+        i = end
     return merged
 
 
@@ -457,18 +581,20 @@ def _split_long(blocks: list[Block]) -> list[Block]:
         cur = ""
         for s in parts:
             if cur and len(cur) + len(s) > MAX_BLOCK_CHARS:
-                out.append(Block(0, b.path, cur.rstrip(), b.kind))
+                out.append(Block(0, b.path, cur.rstrip(), b.kind, b.note, b.table, b.head))
                 cur = ""
             while len(s) > MAX_BLOCK_CHARS:  # a single sentence or line over the limit is cut by length
-                out.append(Block(0, b.path, s[:MAX_BLOCK_CHARS], b.kind))
+                out.append(Block(0, b.path, s[:MAX_BLOCK_CHARS], b.kind, b.note, b.table, b.head))
                 s = s[MAX_BLOCK_CHARS:]
             cur += s + sep
         if cur.strip():
-            out.append(Block(0, b.path, cur.rstrip(), b.kind))
+            out.append(Block(0, b.path, cur.rstrip(), b.kind, b.note, b.table, b.head))
     return out
 
 
 def _number(blocks: list[Block]) -> list[Block]:
-    for k, b in enumerate(blocks):
+    """Ids in page order, the page's blocks first and blocks read from notes after them, so that the page's blocks
+    have the ids they would have without notes (Jev sees them in its requests)."""
+    for k, b in enumerate([b for b in blocks if not b.note] + [b for b in blocks if b.note]):
         b.id = k
     return blocks

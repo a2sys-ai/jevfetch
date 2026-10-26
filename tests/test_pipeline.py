@@ -1,10 +1,11 @@
+import asyncio
 import json
 from pathlib import Path
 
 import httpx
 
-from jevfetch import cli, pipeline, scoring, web
-from jevfetch.blocks import Block
+from jevfetch import cli, pipeline, scoring, tokens, web
+from jevfetch.blocks import Block, render
 from jevfetch.jev import JevError
 from jevfetch.pipeline import Config, choose_blocks, fetch_relevant_async, select_relevant_async
 
@@ -22,7 +23,7 @@ class FakeJev:
 def fake_scores(monkeypatch, stage1: dict[int, float], stage2: dict[int, float]):
     async def fanout(jev, blocks, query, window_tokens):
         jev.requests += 1
-        return stage1
+        return {b.id: stage1[b.id] for b in blocks if b.id in stage1}
 
     async def rescore(jev, blocks, ids, query):
         jev.requests += len(ids)
@@ -72,6 +73,37 @@ def test_choose_does_not_rescue_across_paths_that_render_the_same():
     assert keep == {0, 1}
 
 
+def test_neighbours_are_page_blocks_next_to_each_other_on_the_page_not_notes():
+    page = blocks_of(4, words=50)
+    note = Block(4, ["Doc"], "Note: aside text.", "p", note=True)
+    blocks = [page[0], page[1], note, page[2], page[3]]  # the note sits between page blocks 1 and 2
+    stage2 = {1: 0.95, 2: 0.65, 3: 0.65, 4: 0.95}
+    keep = choose_blocks(blocks, {i: 0.9 for i in range(5)}, stage2, Config(min_output_tokens=0))
+    # 2 is rescued next to kept 1 across the note; the kept note (4) rescues nothing, not even page block 3
+    assert keep == {0, 1, 2, 4}
+
+
+def test_a_note_numbered_next_to_a_kept_page_block_is_not_rescued_as_its_neighbour():
+    page = blocks_of(3, words=50)
+    note = Block(3, ["Doc"], "Note: aside text.", "p", note=True)
+    keep = choose_blocks([*page, note], {i: 0.9 for i in range(4)}, {2: 0.95, 3: 0.65}, Config(min_output_tokens=0))
+    assert keep == {0, 2}
+
+
+def test_notes_are_kept_on_their_own_scores_and_the_page_is_topped_up_as_without_them():
+    page = blocks_of(6, words=50)
+    stage1, stage2 = {1: 0.9, 2: 0.5, 3: 0.2, 4: 0.25}, {1: 0.95, 2: 0.4}
+    without = choose_blocks(page, stage1, stage2, Config(min_output_tokens=150))
+    notes = [Block(6, ["Doc"], "note " * 200, "p", note=True), Block(7, ["Doc"], "weak note " * 50, "p", note=True)]
+    keep = choose_blocks(page + notes, {**stage1, 6: 0.9, 7: 0.99}, {**stage2, 6: 0.95}, Config(min_output_tokens=150))
+    assert keep == without | {6}
+
+
+def test_the_first_page_block_is_kept_when_a_note_comes_first():
+    blocks = [Block(0, ["Doc"], "Note: first.", "p", note=True), *blocks_of(3)[1:]]
+    assert choose_blocks(blocks, {}, {}, Config(min_output_tokens=0)) == {1}
+
+
 async def test_short_document_passes_through_without_jev(monkeypatch):
     fake_scores(monkeypatch, {}, {})
     res = await select_relevant_async(blocks_of(3, words=10), "q", Config(), FakeJev())
@@ -89,7 +121,61 @@ async def test_long_document_is_filtered_and_usage_counted(monkeypatch):
     res = await select_relevant_async(blocks_of(20), "q", Config(min_output_tokens=0), FakeJev())
     assert res.status == "filtered"
     assert res.blocks_kept == 2 and "block 7 " in res.text and "block 0 " in res.text
-    assert res.jev_requests == 2 and res.model == "jev-test"
+    windows = len(scoring.windows(blocks_of(20), Config().window_tokens))
+    assert res.jev_requests == windows + 1 and res.model == "jev-test"
+
+
+async def test_stage2_starts_while_a_slower_window_is_still_scored(monkeypatch):
+    blocks = blocks_of(20)
+    assert len(scoring.windows(blocks, Config().window_tokens)) > 1
+    rescored = asyncio.Event()
+
+    async def fanout(jev, win, query, window_tokens):
+        if win[0].id == 0:
+            await rescored.wait()  # the first window answers only after another window reached stage 2
+        return {b.id: 0.9 for b in win}
+
+    async def rescore(jev, blocks, ids, query):
+        rescored.set()
+        return {i: 0.99 for i in ids}
+
+    monkeypatch.setattr(scoring, "fanout", fanout)
+    monkeypatch.setattr(scoring, "rescore", rescore)
+    res = await asyncio.wait_for(select_relevant_async(blocks, "q", Config(), FakeJev()), 1)
+    assert res.status == "filtered"
+
+
+async def test_default_candidate_threshold_sends_six_tenths_and_above_to_stage2(monkeypatch):
+    sent: list[int] = []
+
+    async def fanout(jev, win, query, window_tokens):
+        return {b.id: {3: 0.59, 5: 0.6}.get(b.id, 0.0) for b in win}
+
+    async def rescore(jev, blocks, ids, query):
+        sent.extend(ids)
+        return {i: 0.9 for i in ids}
+
+    monkeypatch.setattr(scoring, "fanout", fanout)
+    monkeypatch.setattr(scoring, "rescore", rescore)
+    await select_relevant_async(blocks_of(20), "q", Config(), FakeJev())
+    assert sent == [5]
+
+
+async def test_score_ties_are_broken_by_page_order_not_arrival_order(monkeypatch):
+    blocks = blocks_of(20)
+    last = scoring.windows(blocks, Config().window_tokens)[-1][0].id
+    answered = asyncio.Event()
+
+    async def fanout(jev, win, query, window_tokens):
+        if win[0].id == last:
+            answered.set()
+        else:
+            await answered.wait()  # the last window arrives first
+        return {b.id: 0.2 for b in win}
+
+    monkeypatch.setattr(scoring, "fanout", fanout)
+    res = await asyncio.wait_for(select_relevant_async(blocks, "q", Config(min_output_tokens=300), FakeJev()), 1)
+    assert "block 1 " in res.text and "block 2 " in res.text and f"block {last} " not in res.text
 
 
 async def test_no_block_passing_keep_threshold_reports_no_match(monkeypatch):
@@ -296,3 +382,189 @@ def test_windows_measure_blocks_without_link_targets():
         return [[b.id for b in w] for w in ws]
 
     assert ids(scoring.windows(linked, 200)) == ids(scoring.windows(visible, 200))
+
+
+def test_notes_get_windows_of_their_own_and_leave_the_page_windows_as_they_were():
+    page = [Block(i, ["Doc"], f"page paragraph {i} " * 20, "p") for i in range(8)]
+    with_notes = [*page[:3], Block(8, ["Doc"], "note text " * 20, "p", note=True), *page[3:]]
+
+    def ids(ws):
+        return [[b.id for b in w] for w in ws]
+
+    assert ids(scoring.windows(with_notes, 300)) == [*ids(scoring.windows(page, 300)), [8]]
+
+
+async def test_stage2_context_of_a_page_block_skips_notes_and_a_note_sees_its_neighbours():
+    jev = CapturingJev()
+    blocks = [
+        Block(0, ["Doc"], "Before.", "p"),
+        Block(1, ["Doc"], "Note: aside.", "p", note=True),
+        Block(2, ["Doc"], "After.", "p"),
+    ]
+    await scoring.rescore(jev, blocks, [0, 2, 1], "q")
+    by_passage = {s["passage"]: s for s in jev.states}
+    assert by_passage["After."]["context_before"] == "Before."
+    assert by_passage["Before."]["context_after"] == "After."
+    assert by_passage["Note: aside."]["context_before"] == "Before."
+    assert by_passage["Note: aside."]["context_after"] == "After."
+
+
+def note_blocks(n: int, words: int) -> list[Block]:
+    return [Block(100 + i, ["Doc"], f"Note: {i} " + "caveat " * words, "p", note=True) for i in range(n)]
+
+
+async def test_notes_go_out_with_a_page_short_enough_to_pass_through(monkeypatch):
+    fake_scores(monkeypatch, {}, {})
+    res = await select_relevant_async(blocks_of(2, words=10) + note_blocks(1, 10), "q", Config(), FakeJev())
+    assert res.status == "passthrough" and "Note: 0" in res.text
+
+
+async def test_without_score_notes_a_short_page_that_notes_would_push_over_the_limit_passes_through_alone(
+    monkeypatch,
+):
+    fake_scores(monkeypatch, {}, {})
+    res = await select_relevant_async(
+        blocks_of(2, words=10) + note_blocks(1, 3000), "q", Config(score_notes=False), FakeJev()
+    )
+    assert res.status == "passthrough" and "Note: 0" not in res.text and "block 1" in res.text
+
+
+async def test_a_nearly_empty_page_with_a_long_note_is_still_rendered(monkeypatch):
+    fake_scores(monkeypatch, {}, {})
+    note = "<aside class='note'><p>" + "Note: caveat " * 200 + "</p></aside>"
+    monkeypatch.setattr(
+        pipeline, "fetch_page", lambda url: (f"<html><body><p>Loading...</p>{note}</body></html>", url, "text/html")
+    )
+    monkeypatch.setattr(
+        pipeline, "fetch_rendered", lambda url: "<html><body><p>" + "rendered text " * 40 + "</p></body></html>"
+    )
+    res = await fetch_relevant_async("https://example.com", "q", Config(), FakeJev())
+    assert res.rendered and "rendered text" in res.text
+
+
+async def test_a_short_document_of_only_notes_passes_through(monkeypatch):
+    fake_scores(monkeypatch, {}, {})
+    res = await select_relevant_async(note_blocks(1, 10), "q", Config(), FakeJev())
+    assert res.status == "passthrough" and "Note: 0" in res.text
+
+
+async def test_with_score_notes_an_answer_only_in_a_note_reaches_the_output(monkeypatch):
+    page = blocks_of(20)
+    note = note_blocks(1, 10)[0]
+    note.id = 20
+    fake_scores(monkeypatch, {20: 0.9}, {20: 0.95})
+    res = await select_relevant_async(page + [note], "q", Config(score_notes=True), FakeJev())
+    assert res.status == "filtered" and "Note: 0" in res.text
+
+
+async def test_a_long_page_is_scored_with_its_notes_unless_turned_off(monkeypatch):
+    seen = []
+
+    async def fanout(jev, blocks, query, window_tokens=3000):
+        seen.extend(b.text for b in blocks)
+        return {b.id: 0.0 for b in blocks}
+
+    monkeypatch.setattr(scoring, "fanout", fanout)
+    page = blocks_of(20)
+    await select_relevant_async(page + note_blocks(2, 10), "q", Config(), FakeJev())
+    assert any(t.startswith("Note:") for t in seen)
+    seen.clear()
+    await select_relevant_async(page + note_blocks(2, 10), "q", Config(score_notes=False), FakeJev())
+    assert seen == [b.text for b in page]
+
+
+async def test_a_short_page_goes_out_whole_and_only_its_notes_are_scored_when_they_do_not_fit(monkeypatch):
+    seen = []
+
+    async def fanout(jev, blocks, query, window_tokens=3000):
+        jev.requests += 1
+        seen.extend(b.note for b in blocks)
+        return {b.id: 0.9 for b in blocks}
+
+    async def rescore(jev, blocks, ids, query):
+        jev.requests += len(ids)
+        text = {b.id: b.text for b in blocks}
+        return {i: 0.95 if text[i].startswith("Note: 0 ") else 0.1 for i in ids}
+
+    monkeypatch.setattr(scoring, "fanout", fanout)
+    monkeypatch.setattr(scoring, "rescore", rescore)
+    notes = note_blocks(5, 500)  # each fits in one block; together they do not fit with the page
+    res = await select_relevant_async(blocks_of(2, words=10) + notes, "q", Config(), FakeJev())
+    assert res.status == "passthrough" and seen and all(seen)
+    assert "block 0" in res.text and "block 1" in res.text and "Note: 0" in res.text and "Note: 1" not in res.text
+
+
+def price_table(first: int, note: bool = False, words: int = 0) -> list[Block]:
+    return [
+        Block(first, ["Doc"], "GPU | Listed | Effective", "row", note=note, table=1, head=True),
+        Block(first + 1, ["Doc"], "A100 | $0.50 | $0.65" + " word" * words, "row", note=note, table=1),
+        Block(first + 2, ["Doc"], "H100 | $0.90 | $1.15", "row", note=note, table=1),
+        Block(first + 3, ["Doc"], "plain | row", "row", note=note, table=2),  # a table without a header row
+    ]
+
+
+async def test_a_kept_table_row_goes_out_with_its_tables_header_row(monkeypatch):
+    fake_scores(monkeypatch, {21: 0.9, 23: 0.9}, {21: 0.99, 23: 0.99})
+    res = await select_relevant_async(blocks_of(20) + price_table(20), "q", Config(min_output_tokens=0), FakeJev())
+    assert "GPU | Listed | Effective\nA100 | $0.50 | $0.65\nplain | row" in res.text
+    assert "H100" not in res.text and res.blocks_kept == 4  # the first block, two rows, and the header row
+    assert res.jev_requests == len(scoring.windows(blocks_of(20) + price_table(20), Config().window_tokens)) + 2
+
+
+async def test_a_table_none_of_whose_rows_is_kept_leaves_its_header_row_out(monkeypatch):
+    other = [
+        Block(24, ["Doc"], "Region | Latency", "row", table=3, head=True),
+        Block(25, ["Doc"], "us-east | 20 ms", "row", table=3),
+    ]
+    fake_scores(monkeypatch, {21: 0.9}, {21: 0.99})
+    res = await select_relevant_async(
+        blocks_of(20) + price_table(20) + other, "q", Config(min_output_tokens=0), FakeJev()
+    )
+    assert "GPU | Listed | Effective\nA100" in res.text and "Region | Latency" not in res.text
+
+
+async def test_a_note_table_row_kept_beside_a_whole_page_goes_out_with_its_header_row(monkeypatch):
+    async def fanout(jev, blocks, query, window_tokens=3000):
+        jev.requests += 1
+        return {b.id: 0.9 for b in blocks}
+
+    async def rescore(jev, blocks, ids, query):
+        jev.requests += len(ids)
+        text = {b.id: b.text for b in blocks}
+        return {i: 0.95 if text[i].startswith("A100") else 0.1 for i in ids}
+
+    monkeypatch.setattr(scoring, "fanout", fanout)
+    monkeypatch.setattr(scoring, "rescore", rescore)
+    res = await select_relevant_async(
+        blocks_of(2, words=10) + price_table(2, note=True, words=2500), "q", Config(), FakeJev()
+    )
+    assert res.status == "passthrough" and "block 1" in res.text
+    assert "GPU | Listed | Effective\nA100" in res.text and "H100" not in res.text
+
+
+async def test_a_document_of_notes_too_long_to_pass_through_is_scored(monkeypatch):
+    fake_scores(monkeypatch, {}, {})
+    res = await select_relevant_async(note_blocks(2, 1500), "q", Config(), FakeJev())
+    assert res.status == "no_match" and res.jev_requests > 0
+
+
+def test_cli_scores_notes_unless_no_notes_is_given(monkeypatch, capsys):
+    seen = []
+
+    def fake(url, q, cfg):
+        seen.append(cfg.score_notes)
+        return pipeline.Result("passthrough", "text", url=url)
+
+    monkeypatch.setattr(cli, "fetch_relevant", fake)
+    cli.main(["https://example.com", "q"])
+    cli.main(["https://example.com", "q", "--no-notes"])
+    assert seen == [True, False]
+
+
+async def test_doc_tokens_count_the_page_and_its_notes_as_rendered_together(monkeypatch):
+    fake_scores(monkeypatch, {}, {})
+    page = [Block(i, [f"Section {i}"], f"block {i} " + "word " * 200, "p") for i in range(10)]
+    notes = [Block(10 + i, [f"Section {i}"], f"Note: {i} " + "caveat " * 50, "p", note=True) for i in range(10)]
+    mixed = [b for pair in zip(page, notes, strict=True) for b in pair]
+    res = await select_relevant_async(mixed, "q", Config(), FakeJev())
+    assert res.doc_tokens == tokens.count(render(mixed))
