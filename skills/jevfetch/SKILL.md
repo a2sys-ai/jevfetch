@@ -40,7 +40,7 @@ jevfetch "https://docs.python.org/3/library/functools.html" "What happens if lru
 
 ## Reading the output
 
-The first lines start with `# ` and report the status and how much of the page was kept. Lines starting with `## ` are the page's heading path: they say which section, function, or option the text below them belongs to. Everything else is copied from the page, so you can quote it; the only additions are link targets as `[text](url)`, ` | ` between table cells, and `- ` before merged list items. JSON and XML output is re-serialized: check exact numbers against the source before quoting them.
+The first lines start with `# ` and report the status and how much of the page was kept. Lines starting with `## ` are the page's heading path: they say which section, function, or option the text below them belongs to. Everything else is copied from the page, so you can quote it; the only additions are link targets as `[text](url)`, ` | ` between table cells, `- ` before merged list items, and spaces around superscripts and subscripts, so `10<sup>6</sup>` reads `10 6`. JSON and XML output is re-serialized: check exact numbers against the source before quoting them.
 
 | Status | What to do |
 |---|---|
