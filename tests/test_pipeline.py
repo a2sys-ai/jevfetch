@@ -264,6 +264,49 @@ async def test_nearly_empty_page_is_rendered_with_a_browser(monkeypatch):
     assert res.rendered and "rendered text" in res.text
 
 
+PROSE = "<p>" + "pricing prose " * 150 + "</p>"
+TABLE = "<table><tr><th>Size</th><th>Price</th></tr><tr><td>D32ns v6</td><td>$1.50/hour</td></tr></table>"
+
+
+def html(*parts: str) -> str:
+    return "<html><body><h1>Prices</h1>" + "".join(parts) + "</body></html>"
+
+
+async def test_a_page_whose_tables_are_built_by_javascript_is_rendered(monkeypatch):
+    fake_scores(monkeypatch, {}, {})
+    monkeypatch.setattr(pipeline, "fetch_page", lambda url: (html(PROSE), url, "text/html"))
+    monkeypatch.setattr(pipeline, "fetch_rendered", lambda url: html(PROSE, TABLE))
+    res = await fetch_relevant_async("https://example.com", "q", Config(), FakeJev())
+    assert tokens.count(res.text) > Config().render_below_tokens
+    assert res.rendered and "Size | Price\nD32ns v6 | $1.50/hour" in res.text
+
+
+async def test_a_rendered_page_without_more_table_rows_is_not_used(monkeypatch):
+    fake_scores(monkeypatch, {}, {})
+    monkeypatch.setattr(pipeline, "fetch_page", lambda url: (html(TABLE), url, "text/html"))
+    monkeypatch.setattr(pipeline, "fetch_rendered", lambda url: html(PROSE))
+    res = await fetch_relevant_async("https://example.com", "q", Config(), FakeJev())
+    assert not res.rendered and "D32ns v6 | $1.50/hour" in res.text
+
+
+async def test_a_long_page_without_tables_is_not_rendered_when_rendering_is_off(monkeypatch):
+    fake_scores(monkeypatch, {}, {})
+    monkeypatch.setattr(pipeline, "fetch_page", lambda url: (html(PROSE), url, "text/html"))
+    rendered = []
+    monkeypatch.setattr(pipeline, "fetch_rendered", rendered.append)
+    await fetch_relevant_async("https://example.com", "q", Config(render_fallback=False), FakeJev())
+    assert not rendered
+
+
+async def test_a_long_page_with_tables_is_not_rendered(monkeypatch):
+    fake_scores(monkeypatch, {}, {})
+    monkeypatch.setattr(pipeline, "fetch_page", lambda url: (html(PROSE, TABLE), url, "text/html"))
+    rendered = []
+    monkeypatch.setattr(pipeline, "fetch_rendered", rendered.append)
+    res = await fetch_relevant_async("https://example.com", "q", Config(), FakeJev())
+    assert not rendered and "D32ns v6 | $1.50/hour" in res.text
+
+
 async def test_markdown_served_as_plain_text_keeps_its_headings_and_is_not_rendered(monkeypatch):
     doc = "# Client\n\n```pycon\n>>> r.text\n'<!doctype html>\\n<html>'\n```\n\n## Install\n\nRun pip install.\n"
     monkeypatch.setattr(pipeline, "fetch_page", lambda url: (doc, url, "text/plain"))

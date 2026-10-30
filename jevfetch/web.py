@@ -1,4 +1,4 @@
-"""Fetching pages. Pages whose static HTML has almost no text are rendered with headless Chrome."""
+"""Fetching pages. Pages whose static HTML has almost no text or no table rows are rendered with headless Chrome."""
 
 import glob
 import hashlib

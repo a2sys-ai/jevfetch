@@ -173,7 +173,8 @@ async def select_relevant_async(
 
 
 async def fetch_relevant_async(url: str, query: str, cfg: Config | None = None, jev: Jev | None = None) -> Result:
-    """Fetch `url` and keep the blocks relevant to `query`, re-rendering the page if its static HTML is nearly empty."""
+    """Fetch `url` and keep the blocks relevant to `query`, re-rendering the page if its static HTML is nearly empty
+    or has no table rows."""
     cfg = cfg or Config()
     try:
         html, final_url, media_type = await asyncio.to_thread(fetch_page, url)
@@ -188,15 +189,23 @@ async def fetch_relevant_async(url: str, query: str, cfg: Config | None = None, 
         return Result("fetch_error", "", url=url, error=f"{type(e).__name__}: {e}")
     blocks, rendered = parse(html, final_url, media_type), False
 
-    def size(bs: list[Block]) -> int:  # the page without its notes, as rendering was decided without them
+    # The page without its notes, as rendering was decided without them.
+    def size(bs: list[Block]) -> int:
         return tokens.count(render([b for b in bs if not b.note]))
 
+    def rows(bs: list[Block]) -> int:
+        return sum(b.kind == "row" and not b.note for b in bs)
+
     # A browser shows a plain-text type as source, so rendering adds nothing and turns the text into HTML.
-    if cfg.render_fallback and media_type not in PLAIN_TYPES and size(blocks) < cfg.render_below_tokens:
+    # A page with prose but no table rows may build its tables with JavaScript.
+    small = size(blocks) < cfg.render_below_tokens
+    if cfg.render_fallback and media_type not in PLAIN_TYPES and (small or not rows(blocks)):
         dom = await asyncio.to_thread(fetch_rendered, url)
         if dom:
             again = parse(dom, final_url)
-            if size(again) > size(blocks):
+            # Rendering can drop tables the static HTML had, and a page with prose may render shorter but with tables.
+            gained = rows(again) - rows(blocks)
+            if gained > 0 or (small and gained == 0 and size(again) > size(blocks)):
                 blocks, rendered = again, True
     res = await select_relevant_async(blocks, query, cfg, jev)
     res.url, res.rendered = url, rendered

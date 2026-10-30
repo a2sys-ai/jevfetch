@@ -206,7 +206,7 @@ Use something else when:
 
 ## How it works
 
-1. Fetch the page. If the static HTML has less than 200 tokens of text, render it in headless Chrome.
+1. Fetch the page. If the static HTML has less than 200 tokens of text or no table rows, render it in headless Chrome. The rendered page is used if it has more table rows, or, for a page under 200 tokens, as many table rows and more text. Tables built by JavaScript are read, and tables already in the static HTML are not lost to rendering.
 2. Split the page into blocks, tag each with its heading path, and drop navigation, footers, sidebars, and other page chrome. Notes and warnings that documentation sites write as `<aside>` are kept: an aside whose class or role names a note, tip, warning, caution, or similar, or whose text starts with a label such as `Note:`. They are read apart from the page and placed after the block they follow, so the page's own blocks are what they would be without them. A sentence ending in a colon is merged with the list items that follow it under the same heading, up to 1,500 characters, so that a condition it states stays with the items. JSON is split by key and array item, and XML by element, with the key or tag path in place of the heading path.
 3. Return documents of 2,000 tokens or less as they are, decided on the page without its notes. The notes are included when the whole still fits; when it doesn't, the page is returned whole and only its notes go through the passes below.
 4. First pass: group blocks into windows of about 3,000 tokens and send one Jev request per window, asking yes or no for each block. Notes get windows of their own, so the page is judged in the windows it would have without them. Blocks scoring 0.6 or higher become candidates.
