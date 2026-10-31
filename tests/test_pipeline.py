@@ -7,7 +7,7 @@ import httpx
 from jevfetch import cli, pipeline, scoring, tokens, web
 from jevfetch.blocks import Block, render
 from jevfetch.jev import JevError
-from jevfetch.pipeline import Config, choose_blocks, fetch_relevant_async, select_relevant_async
+from jevfetch.pipeline import Config, choose_blocks, fetch_relevant_async, select_relevant, select_relevant_async
 
 
 def blocks_of(n: int, words: int = 200) -> list[Block]:
