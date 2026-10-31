@@ -104,6 +104,11 @@ def test_the_first_page_block_is_kept_when_a_note_comes_first():
     assert choose_blocks(blocks, {}, {}, Config(min_output_tokens=0)) == {1}
 
 
+def test_select_relevant_resolves_relative_links_with_base_url():
+    res = select_relevant('<p><a href="/x">x</a></p>', "q", base_url="https://example.com/")
+    assert "[x](https://example.com/x)" in res.text
+
+
 async def test_short_document_passes_through_without_jev(monkeypatch):
     fake_scores(monkeypatch, {}, {})
     res = await select_relevant_async(blocks_of(3, words=10), "q", Config(), FakeJev())

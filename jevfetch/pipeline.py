@@ -94,11 +94,18 @@ def choose_blocks(blocks: list[Block], stage1: dict[int, float], stage2: dict[in
 
 
 async def select_relevant_async(
-    doc: str | list[Block], query: str, cfg: Config | None = None, jev: Jev | None = None
+    doc: str | list[Block],
+    query: str,
+    cfg: Config | None = None,
+    jev: Jev | None = None,
+    base_url: str = "",
 ) -> Result:
-    """The blocks of `doc` (text, HTML, or already parsed blocks) that are relevant to `query`."""
+    """The blocks of `doc` (text, HTML, or already parsed blocks) that are relevant to `query`.
+
+    `base_url` resolves relative links in a string document, via `parse`;
+    it is ignored for already parsed blocks."""
     cfg = cfg or Config()
-    blocks = parse(doc) if isinstance(doc, str) else doc
+    blocks = parse(doc, base_url) if isinstance(doc, str) else doc
     page = [b for b in blocks if not b.note]
     full = render(page)
     doc_tokens = tokens.count(full)
@@ -203,8 +210,10 @@ async def fetch_relevant_async(url: str, query: str, cfg: Config | None = None, 
     return res
 
 
-def select_relevant(doc: str | list[Block], query: str, cfg: Config | None = None) -> Result:
-    return asyncio.run(select_relevant_async(doc, query, cfg))
+def select_relevant(
+    doc: str | list[Block], query: str, cfg: Config | None = None, base_url: str = ""
+) -> Result:
+    return asyncio.run(select_relevant_async(doc, query, cfg, base_url=base_url))
 
 
 def fetch_relevant(url: str, query: str, cfg: Config | None = None) -> Result:
