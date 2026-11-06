@@ -98,6 +98,7 @@ async def select_relevant_async(
     query: str,
     cfg: Config | None = None,
     jev: Jev | None = None,
+    *,
     base_url: str = "",
 ) -> Result:
     """The blocks of `doc` (text, HTML, or already parsed blocks) that are relevant to `query`.
@@ -210,9 +211,7 @@ async def fetch_relevant_async(url: str, query: str, cfg: Config | None = None, 
     return res
 
 
-def select_relevant(
-    doc: str | list[Block], query: str, cfg: Config | None = None, base_url: str = ""
-) -> Result:
+def select_relevant(doc: str | list[Block], query: str, cfg: Config | None = None, *, base_url: str = "") -> Result:
     return asyncio.run(select_relevant_async(doc, query, cfg, base_url=base_url))
 
 

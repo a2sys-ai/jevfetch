@@ -3,6 +3,7 @@ import json
 from pathlib import Path
 
 import httpx
+import pytest
 
 from jevfetch import cli, pipeline, scoring, tokens, web
 from jevfetch.blocks import Block, render
@@ -107,6 +108,15 @@ def test_the_first_page_block_is_kept_when_a_note_comes_first():
 def test_select_relevant_resolves_relative_links_with_base_url():
     res = select_relevant('<p><a href="/x">x</a></p>', "q", base_url="https://example.com/")
     assert "[x](https://example.com/x)" in res.text
+
+
+async def test_select_relevant_async_takes_base_url_by_keyword_only():
+    res = await select_relevant_async(
+        '<p><a href="/x">x</a></p>', "q", Config(), FakeJev(), base_url="https://example.com/"
+    )
+    assert "[x](https://example.com/x)" in res.text
+    with pytest.raises(TypeError):
+        await select_relevant_async("<p>x</p>", "q", Config(), None, "https://example.com/")
 
 
 async def test_short_document_passes_through_without_jev(monkeypatch):
