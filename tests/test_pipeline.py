@@ -3,11 +3,12 @@ import json
 from pathlib import Path
 
 import httpx
+import pytest
 
 from jevfetch import cli, pipeline, scoring, tokens, web
 from jevfetch.blocks import Block, render
 from jevfetch.jev import JevError
-from jevfetch.pipeline import Config, choose_blocks, fetch_relevant_async, select_relevant_async
+from jevfetch.pipeline import Config, choose_blocks, fetch_relevant_async, select_relevant, select_relevant_async
 
 
 def blocks_of(n: int, words: int = 200) -> list[Block]:
@@ -102,6 +103,20 @@ def test_notes_are_kept_on_their_own_scores_and_the_page_is_topped_up_as_without
 def test_the_first_page_block_is_kept_when_a_note_comes_first():
     blocks = [Block(0, ["Doc"], "Note: first.", "p", note=True), *blocks_of(3)[1:]]
     assert choose_blocks(blocks, {}, {}, Config(min_output_tokens=0)) == {1}
+
+
+def test_select_relevant_resolves_relative_links_with_base_url():
+    res = select_relevant('<p><a href="/x">x</a></p>', "q", base_url="https://example.com/")
+    assert "[x](https://example.com/x)" in res.text
+
+
+async def test_select_relevant_async_takes_base_url_by_keyword_only():
+    res = await select_relevant_async(
+        '<p><a href="/x">x</a></p>', "q", Config(), FakeJev(), base_url="https://example.com/"
+    )
+    assert "[x](https://example.com/x)" in res.text
+    with pytest.raises(TypeError):
+        await select_relevant_async("<p>x</p>", "q", Config(), None, "https://example.com/")
 
 
 async def test_short_document_passes_through_without_jev(monkeypatch):

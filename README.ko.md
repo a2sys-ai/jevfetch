@@ -234,6 +234,7 @@ from jevfetch import Config, fetch_relevant, select_relevant
 
 res = fetch_relevant(url, "question")  # fetch, then select
 res = select_relevant(html_or_text, "question")  # a document you already have
+res = select_relevant(html, "question", base_url="https://example.com/")  # resolve relative links against the page URL
 print(res.status, res.text, res.jev_input_tokens)
 ```
 
